@@ -20,189 +20,11 @@
 // Comments:
 //
 //********************************************************************************
+
 module eh2_swerv_wrapper
 import eh2_pkg::*;
 #(
-parameter eh2_param_t pt = '{
-    ATOMIC_ENABLE          : 5'h01         ,
-    BHT_ADDR_HI            : 8'h09         ,
-    BHT_ADDR_LO            : 6'h03         ,
-    BHT_ARRAY_DEPTH        : 16'h0080       ,
-    BHT_GHR_HASH_1         : 5'h00         ,
-    BHT_GHR_SIZE           : 8'h07         ,
-    BHT_SIZE               : 17'h00200      ,
-    BITMANIP_ZBA           : 5'h01         ,
-    BITMANIP_ZBB           : 5'h01         ,
-    BITMANIP_ZBC           : 5'h01         ,
-    BITMANIP_ZBE           : 5'h00         ,
-    BITMANIP_ZBF           : 5'h00         ,
-    BITMANIP_ZBP           : 5'h00         ,
-    BITMANIP_ZBR           : 5'h00         ,
-    BITMANIP_ZBS           : 5'h01         ,
-    BTB_ADDR_HI            : 9'h009        ,
-    BTB_ADDR_LO            : 7'h03         ,
-    BTB_ARRAY_DEPTH        : 15'h0080       ,
-    BTB_BTAG_FOLD          : 5'h00         ,
-    BTB_BTAG_SIZE          : 10'h005        ,
-    BTB_BYPASS_ENABLE      : 5'h01         ,
-    BTB_FOLD2_INDEX_HASH   : 5'h00         ,
-    BTB_FULLYA             : 5'h00         ,
-    BTB_INDEX1_HI          : 9'h009        ,
-    BTB_INDEX1_LO          : 9'h003        ,
-    BTB_INDEX2_HI          : 9'h010        ,
-    BTB_INDEX2_LO          : 9'h00A        ,
-    BTB_INDEX3_HI          : 9'h017        ,
-    BTB_INDEX3_LO          : 9'h011        ,
-    BTB_NUM_BYPASS         : 8'h08         ,
-    BTB_NUM_BYPASS_WIDTH   : 8'h04         ,
-    BTB_SIZE               : 17'h00200      ,
-    BTB_TOFFSET_SIZE       : 9'h00C        ,
-    BTB_USE_SRAM           : 5'h00         ,
-    BUILD_AHB_LITE         : 4'h0          ,
-    BUILD_AXI4             : 5'h01         ,
-    BUILD_AXI_NATIVE       : 5'h01         ,
-    BUS_PRTY_DEFAULT       : 6'h03         ,
-    DATA_ACCESS_ADDR0      : 36'h000000000  ,
-    DATA_ACCESS_ADDR1      : 36'h0C0000000  ,
-    DATA_ACCESS_ADDR2      : 36'h0A0000000  ,
-    DATA_ACCESS_ADDR3      : 36'h080000000  ,
-    DATA_ACCESS_ADDR4      : 36'h000000000  ,
-    DATA_ACCESS_ADDR5      : 36'h000000000  ,
-    DATA_ACCESS_ADDR6      : 36'h000000000  ,
-    DATA_ACCESS_ADDR7      : 36'h000000000  ,
-    DATA_ACCESS_ENABLE0    : 5'h01         ,
-    DATA_ACCESS_ENABLE1    : 5'h01         ,
-    DATA_ACCESS_ENABLE2    : 5'h01         ,
-    DATA_ACCESS_ENABLE3    : 5'h01         ,
-    DATA_ACCESS_ENABLE4    : 5'h00         ,
-    DATA_ACCESS_ENABLE5    : 5'h00         ,
-    DATA_ACCESS_ENABLE6    : 5'h00         ,
-    DATA_ACCESS_ENABLE7    : 5'h00         ,
-    DATA_ACCESS_MASK0      : 36'h07FFFFFFF  ,
-    DATA_ACCESS_MASK1      : 36'h03FFFFFFF  ,
-    DATA_ACCESS_MASK2      : 36'h01FFFFFFF  ,
-    DATA_ACCESS_MASK3      : 36'h00FFFFFFF  ,
-    DATA_ACCESS_MASK4      : 36'h0FFFFFFFF  ,
-    DATA_ACCESS_MASK5      : 36'h0FFFFFFFF  ,
-    DATA_ACCESS_MASK6      : 36'h0FFFFFFFF  ,
-    DATA_ACCESS_MASK7      : 36'h0FFFFFFFF  ,
-    DCCM_BANK_BITS         : 7'h03         ,
-    DCCM_BITS              : 9'h011        ,
-    DCCM_BYTE_WIDTH        : 7'h04         ,
-    DCCM_DATA_WIDTH        : 10'h020        ,
-    DCCM_ECC_WIDTH         : 7'h07         ,
-    DCCM_ENABLE            : 5'h01         ,
-    DCCM_FDATA_WIDTH       : 10'h027        ,
-    DCCM_INDEX_BITS        : 8'h0C         ,
-    DCCM_NUM_BANKS         : 9'h008        ,
-    DCCM_REGION            : 8'h0F         ,
-    DCCM_SADR              : 36'h0F0040000  ,
-    DCCM_SIZE              : 14'h0080       ,
-    DCCM_WIDTH_BITS        : 6'h02         ,
-    DIV_BIT                : 7'h04         ,
-    DIV_NEW                : 5'h01         ,
-    DMA_BUF_DEPTH          : 7'h05         ,
-    DMA_BUS_ID             : 9'h001        ,
-    DMA_BUS_PRTY           : 6'h02         ,
-    DMA_BUS_TAG            : 8'h01         ,
-    FAST_INTERRUPT_REDIRECT : 5'h01         ,
-    ICACHE_2BANKS          : 5'h01         ,
-    ICACHE_BANK_BITS       : 7'h01         ,
-    ICACHE_BANK_HI         : 7'h03         ,
-    ICACHE_BANK_LO         : 6'h03         ,
-    ICACHE_BANK_WIDTH      : 8'h08         ,
-    ICACHE_BANKS_WAY       : 7'h02         ,
-    ICACHE_BEAT_ADDR_HI    : 8'h05         ,
-    ICACHE_BEAT_BITS       : 8'h03         ,
-    ICACHE_BYPASS_ENABLE   : 5'h01         ,
-    ICACHE_DATA_DEPTH      : 18'h00200      ,
-    ICACHE_DATA_INDEX_LO   : 7'h04         ,
-    ICACHE_DATA_WIDTH      : 11'h040        ,
-    ICACHE_ECC             : 5'h01         ,
-    ICACHE_ENABLE          : 5'h01         ,
-    ICACHE_FDATA_WIDTH     : 11'h047        ,
-    ICACHE_INDEX_HI        : 9'h00C        ,
-    ICACHE_LN_SZ           : 11'h040        ,
-    ICACHE_NUM_BEATS       : 8'h08         ,
-    ICACHE_NUM_BYPASS      : 8'h04         ,
-    ICACHE_NUM_BYPASS_WIDTH : 8'h03         ,
-    ICACHE_NUM_WAYS        : 7'h04         ,
-    ICACHE_ONLY            : 5'h00         ,
-    ICACHE_SCND_LAST       : 8'h06         ,
-    ICACHE_SIZE            : 13'h0020       ,
-    ICACHE_STATUS_BITS     : 7'h03         ,
-    ICACHE_TAG_BYPASS_ENABLE : 5'h01         ,
-    ICACHE_TAG_DEPTH       : 17'h00080      ,
-    ICACHE_TAG_INDEX_LO    : 7'h06         ,
-    ICACHE_TAG_LO          : 9'h00D        ,
-    ICACHE_TAG_NUM_BYPASS  : 8'h02         ,
-    ICACHE_TAG_NUM_BYPASS_WIDTH : 8'h02         ,
-    ICACHE_WAYPACK         : 5'h00         ,
-    ICCM_BANK_BITS         : 7'h02         ,
-    ICCM_BANK_HI           : 9'h003        ,
-    ICCM_BANK_INDEX_LO     : 9'h004        ,
-    ICCM_BITS              : 9'h010        ,
-    ICCM_ENABLE            : 5'h01         ,
-    ICCM_ICACHE            : 5'h01         ,
-    ICCM_INDEX_BITS        : 8'h0C         ,
-    ICCM_NUM_BANKS         : 9'h004        ,
-    ICCM_ONLY              : 5'h00         ,
-    ICCM_REGION            : 8'h0E         ,
-    ICCM_SADR              : 36'h0EE000000  ,
-    ICCM_SIZE              : 14'h0040       ,
-    IFU_BUS_ID             : 5'h01         ,
-    IFU_BUS_PRTY           : 6'h02         ,
-    IFU_BUS_TAG            : 8'h04         ,
-    INST_ACCESS_ADDR0      : 36'h000000000  ,
-    INST_ACCESS_ADDR1      : 36'h0C0000000  ,
-    INST_ACCESS_ADDR2      : 36'h0A0000000  ,
-    INST_ACCESS_ADDR3      : 36'h080000000  ,
-    INST_ACCESS_ADDR4      : 36'h000000000  ,
-    INST_ACCESS_ADDR5      : 36'h000000000  ,
-    INST_ACCESS_ADDR6      : 36'h000000000  ,
-    INST_ACCESS_ADDR7      : 36'h000000000  ,
-    INST_ACCESS_ENABLE0    : 5'h01         ,
-    INST_ACCESS_ENABLE1    : 5'h01         ,
-    INST_ACCESS_ENABLE2    : 5'h01         ,
-    INST_ACCESS_ENABLE3    : 5'h01         ,
-    INST_ACCESS_ENABLE4    : 5'h00         ,
-    INST_ACCESS_ENABLE5    : 5'h00         ,
-    INST_ACCESS_ENABLE6    : 5'h00         ,
-    INST_ACCESS_ENABLE7    : 5'h00         ,
-    INST_ACCESS_MASK0      : 36'h07FFFFFFF  ,
-    INST_ACCESS_MASK1      : 36'h03FFFFFFF  ,
-    INST_ACCESS_MASK2      : 36'h01FFFFFFF  ,
-    INST_ACCESS_MASK3      : 36'h00FFFFFFF  ,
-    INST_ACCESS_MASK4      : 36'h0FFFFFFFF  ,
-    INST_ACCESS_MASK5      : 36'h0FFFFFFFF  ,
-    INST_ACCESS_MASK6      : 36'h0FFFFFFFF  ,
-    INST_ACCESS_MASK7      : 36'h0FFFFFFFF  ,
-    LOAD_TO_USE_BUS_PLUS1  : 5'h01         ,
-    LOAD_TO_USE_PLUS1      : 5'h00         ,
-    LSU_BUS_ID             : 5'h01         ,
-    LSU_BUS_PRTY           : 6'h02         ,
-    LSU_BUS_TAG            : 8'h04         ,
-    LSU_NUM_NBLOAD         : 9'h008        ,
-    LSU_NUM_NBLOAD_WIDTH   : 7'h03         ,
-    LSU_SB_BITS            : 9'h011        ,
-    LSU_STBUF_DEPTH        : 8'h0A         ,
-    NO_ICCM_NO_ICACHE      : 5'h00         ,
-    NO_SECONDARY_ALU       : 5'h00         ,
-    NUM_THREADS            : 6'h02         ,
-    PIC_2CYCLE             : 5'h01         ,
-    PIC_BASE_ADDR          : 36'h0F00C0000  ,
-    PIC_BITS               : 9'h00F        ,
-    PIC_INT_WORDS          : 8'h04         ,
-    PIC_REGION             : 8'h0F         ,
-    PIC_SIZE               : 13'h0020       ,
-    PIC_TOTAL_INT          : 12'h07F        ,
-    PIC_TOTAL_INT_PLUS1    : 13'h0080       ,
-    RET_STACK_SIZE         : 8'h04         ,
-    SB_BUS_ID              : 5'h01         ,
-    SB_BUS_PRTY            : 6'h02         ,
-    SB_BUS_TAG             : 8'h01         ,
-    TIMER_LEGAL_EN         : 5'h01         
-}
+
 ) (
    input logic                       clk,
    input logic                       rst_l,
@@ -213,13 +35,13 @@ parameter eh2_param_t pt = '{
    input logic [31:1]                jtag_id,
 
 
-   output logic [pt.NUM_THREADS-1:0] [63:0] trace_rv_i_insn_ip,
-   output logic [pt.NUM_THREADS-1:0] [63:0] trace_rv_i_address_ip,
-   output logic [pt.NUM_THREADS-1:0] [1:0]  trace_rv_i_valid_ip,
-   output logic [pt.NUM_THREADS-1:0] [1:0]  trace_rv_i_exception_ip,
-   output logic [pt.NUM_THREADS-1:0] [4:0]  trace_rv_i_ecause_ip,
-   output logic [pt.NUM_THREADS-1:0] [1:0]  trace_rv_i_interrupt_ip,
-   output logic [pt.NUM_THREADS-1:0] [31:0] trace_rv_i_tval_ip,
+   output logic [`NUM_THREADS-1:0] [63:0] trace_rv_i_insn_ip,
+   output logic [`NUM_THREADS-1:0] [63:0] trace_rv_i_address_ip,
+   output logic [`NUM_THREADS-1:0] [1:0]  trace_rv_i_valid_ip,
+   output logic [`NUM_THREADS-1:0] [1:0]  trace_rv_i_exception_ip,
+   output logic [`NUM_THREADS-1:0] [4:0]  trace_rv_i_ecause_ip,
+   output logic [`NUM_THREADS-1:0] [1:0]  trace_rv_i_interrupt_ip,
+   output logic [`NUM_THREADS-1:0] [31:0] trace_rv_i_tval_ip,
 
    // Bus signals
 
@@ -228,7 +50,7 @@ parameter eh2_param_t pt = '{
    // AXI Write Channels
    output logic                            lsu_axi_awvalid,
    input  logic                            lsu_axi_awready,
-   output logic [pt.LSU_BUS_TAG-1:0]       lsu_axi_awid,
+   output logic [`LSU_BUS_TAG-1:0]       lsu_axi_awid,
    output logic [31:0]                     lsu_axi_awaddr,
    output logic [3:0]                      lsu_axi_awregion,
    output logic [7:0]                      lsu_axi_awlen,
@@ -248,12 +70,12 @@ parameter eh2_param_t pt = '{
    input  logic                            lsu_axi_bvalid,
    output logic                            lsu_axi_bready,
    input  logic [1:0]                      lsu_axi_bresp,
-   input  logic [pt.LSU_BUS_TAG-1:0]       lsu_axi_bid,
+   input  logic [`LSU_BUS_TAG-1:0]       lsu_axi_bid,
 
    // AXI Read Channels
    output logic                            lsu_axi_arvalid,
    input  logic                            lsu_axi_arready,
-   output logic [pt.LSU_BUS_TAG-1:0]       lsu_axi_arid,
+   output logic [`LSU_BUS_TAG-1:0]       lsu_axi_arid,
    output logic [31:0]                     lsu_axi_araddr,
    output logic [3:0]                      lsu_axi_arregion,
    output logic [7:0]                      lsu_axi_arlen,
@@ -266,7 +88,7 @@ parameter eh2_param_t pt = '{
 
    input  logic                            lsu_axi_rvalid,
    output logic                            lsu_axi_rready,
-   input  logic [pt.LSU_BUS_TAG-1:0]       lsu_axi_rid,
+   input  logic [`LSU_BUS_TAG-1:0]       lsu_axi_rid,
    input  logic [63:0]                     lsu_axi_rdata,
    input  logic [1:0]                      lsu_axi_rresp,
    input  logic                            lsu_axi_rlast,
@@ -275,7 +97,7 @@ parameter eh2_param_t pt = '{
    // AXI Write Channels
    output logic                            ifu_axi_awvalid,
    input  logic                            ifu_axi_awready,
-   output logic [pt.IFU_BUS_TAG-1:0]       ifu_axi_awid,
+   output logic [`IFU_BUS_TAG-1:0]       ifu_axi_awid,
    output logic [31:0]                     ifu_axi_awaddr,
    output logic [3:0]                      ifu_axi_awregion,
    output logic [7:0]                      ifu_axi_awlen,
@@ -295,12 +117,12 @@ parameter eh2_param_t pt = '{
    input  logic                            ifu_axi_bvalid,
    output logic                            ifu_axi_bready,
    input  logic [1:0]                      ifu_axi_bresp,
-   input  logic [pt.IFU_BUS_TAG-1:0]       ifu_axi_bid,
+   input  logic [`IFU_BUS_TAG-1:0]       ifu_axi_bid,
 
    // AXI Read Channels
    output logic                            ifu_axi_arvalid,
    input  logic                            ifu_axi_arready,
-   output logic [pt.IFU_BUS_TAG-1:0]       ifu_axi_arid,
+   output logic [`IFU_BUS_TAG-1:0]       ifu_axi_arid,
    output logic [31:0]                     ifu_axi_araddr,
    output logic [3:0]                      ifu_axi_arregion,
    output logic [7:0]                      ifu_axi_arlen,
@@ -313,7 +135,7 @@ parameter eh2_param_t pt = '{
 
    input  logic                            ifu_axi_rvalid,
    output logic                            ifu_axi_rready,
-   input  logic [pt.IFU_BUS_TAG-1:0]       ifu_axi_rid,
+   input  logic [`IFU_BUS_TAG-1:0]       ifu_axi_rid,
    input  logic [63:0]                     ifu_axi_rdata,
    input  logic [1:0]                      ifu_axi_rresp,
    input  logic                            ifu_axi_rlast,
@@ -322,7 +144,7 @@ parameter eh2_param_t pt = '{
    // AXI Write Channels
    output logic                            sb_axi_awvalid,
    input  logic                            sb_axi_awready,
-   output logic [pt.SB_BUS_TAG-1:0]        sb_axi_awid,
+   output logic [`SB_BUS_TAG-1:0]        sb_axi_awid,
    output logic [31:0]                     sb_axi_awaddr,
    output logic [3:0]                      sb_axi_awregion,
    output logic [7:0]                      sb_axi_awlen,
@@ -342,12 +164,12 @@ parameter eh2_param_t pt = '{
    input  logic                            sb_axi_bvalid,
    output logic                            sb_axi_bready,
    input  logic [1:0]                      sb_axi_bresp,
-   input  logic [pt.SB_BUS_TAG-1:0]        sb_axi_bid,
+   input  logic [`SB_BUS_TAG-1:0]        sb_axi_bid,
 
    // AXI Read Channels
    output logic                            sb_axi_arvalid,
    input  logic                            sb_axi_arready,
-   output logic [pt.SB_BUS_TAG-1:0]        sb_axi_arid,
+   output logic [`SB_BUS_TAG-1:0]        sb_axi_arid,
    output logic [31:0]                     sb_axi_araddr,
    output logic [3:0]                      sb_axi_arregion,
    output logic [7:0]                      sb_axi_arlen,
@@ -360,7 +182,7 @@ parameter eh2_param_t pt = '{
 
    input  logic                            sb_axi_rvalid,
    output logic                            sb_axi_rready,
-   input  logic [pt.SB_BUS_TAG-1:0]        sb_axi_rid,
+   input  logic [`SB_BUS_TAG-1:0]        sb_axi_rid,
    input  logic [63:0]                     sb_axi_rdata,
    input  logic [1:0]                      sb_axi_rresp,
    input  logic                            sb_axi_rlast,
@@ -369,7 +191,7 @@ parameter eh2_param_t pt = '{
    // AXI Write Channels
    input  logic                         dma_axi_awvalid,
    output logic                         dma_axi_awready,
-   input  logic [pt.DMA_BUS_TAG-1:0]    dma_axi_awid,
+   input  logic [`DMA_BUS_TAG-1:0]    dma_axi_awid,
    input  logic [31:0]                  dma_axi_awaddr,
    input  logic [2:0]                   dma_axi_awsize,
    input  logic [2:0]                   dma_axi_awprot,
@@ -386,12 +208,12 @@ parameter eh2_param_t pt = '{
    output logic                         dma_axi_bvalid,
    input  logic                         dma_axi_bready,
    output logic [1:0]                   dma_axi_bresp,
-   output logic [pt.DMA_BUS_TAG-1:0]    dma_axi_bid,
+   output logic [`DMA_BUS_TAG-1:0]    dma_axi_bid,
 
    // AXI Read Channels
    input  logic                         dma_axi_arvalid,
    output logic                         dma_axi_arready,
-   input  logic [pt.DMA_BUS_TAG-1:0]    dma_axi_arid,
+   input  logic [`DMA_BUS_TAG-1:0]    dma_axi_arid,
    input  logic [31:0]                  dma_axi_araddr,
    input  logic [2:0]                   dma_axi_arsize,
    input  logic [2:0]                   dma_axi_arprot,
@@ -400,7 +222,7 @@ parameter eh2_param_t pt = '{
 
    output logic                         dma_axi_rvalid,
    input  logic                         dma_axi_rready,
-   output logic [pt.DMA_BUS_TAG-1:0]    dma_axi_rid,
+   output logic [`DMA_BUS_TAG-1:0]    dma_axi_rid,
    output logic [63:0]                  dma_axi_rdata,
    output logic [1:0]                   dma_axi_rresp,
    output logic                         dma_axi_rlast,
@@ -476,20 +298,20 @@ parameter eh2_param_t pt = '{
 
  // all of these test inputs are brought to top-level; must be tied off based on usage by physical design (ie. icache or not, iccm or not, dccm or not)
 
-   input                             eh2_dccm_ext_in_pkt_t  [pt.DCCM_NUM_BANKS-1:0] dccm_ext_in_pkt,
-   input                             eh2_ccm_ext_in_pkt_t  [pt.ICCM_NUM_BANKS/4-1:0][1:0][1:0] iccm_ext_in_pkt,
+   input                             eh2_dccm_ext_in_pkt_t  [`DCCM_NUM_BANKS-1:0] dccm_ext_in_pkt,
+   input                             eh2_ccm_ext_in_pkt_t  [`ICCM_NUM_BANKS/4-1:0][1:0][1:0] iccm_ext_in_pkt,
    input                             eh2_ccm_ext_in_pkt_t  [1:0] btb_ext_in_pkt,
-   input                             eh2_ic_data_ext_in_pkt_t  [pt.ICACHE_NUM_WAYS-1:0][pt.ICACHE_BANKS_WAY-1:0] ic_data_ext_in_pkt,
-   input                             eh2_ic_tag_ext_in_pkt_t   [pt.ICACHE_NUM_WAYS-1:0]                        ic_tag_ext_in_pkt,
+   input                             eh2_ic_data_ext_in_pkt_t  [`ICACHE_NUM_WAYS-1:0][`ICACHE_BANKS_WAY-1:0] ic_data_ext_in_pkt,
+   input                             eh2_ic_tag_ext_in_pkt_t   [`ICACHE_NUM_WAYS-1:0]                        ic_tag_ext_in_pkt,
 
-   input logic [pt.NUM_THREADS-1:0]  timer_int,
-   input logic [pt.NUM_THREADS-1:0]  soft_int,
-   input logic [pt.PIC_TOTAL_INT:1] extintsrc_req,
+   input logic [`NUM_THREADS-1:0]  timer_int,
+   input logic [`NUM_THREADS-1:0]  soft_int,
+   input logic [`PIC_TOTAL_INT:1] extintsrc_req,
 
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt0,                  // toggles when perf counter 0 has an event inc
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt1,                  // toggles when perf counter 1 has an event inc
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt2,                  // toggles when perf counter 2 has an event inc
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt3,                  // toggles when perf counter 3 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt0,                  // toggles when perf counter 0 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt1,                  // toggles when perf counter 1 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt2,                  // toggles when perf counter 2 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt3,                  // toggles when perf counter 3 has an event inc
 
    // ports added by the soc team
    input logic                       jtag_tck,    // JTAG clk
@@ -502,21 +324,21 @@ parameter eh2_param_t pt = '{
 
 
    // external MPC halt/run interface
-   input logic  [pt.NUM_THREADS-1:0] mpc_debug_halt_req, // Async halt request
-   input logic  [pt.NUM_THREADS-1:0] mpc_debug_run_req,  // Async run request
-   input logic  [pt.NUM_THREADS-1:0] mpc_reset_run_req,  // Run/halt after reset
-   output logic [pt.NUM_THREADS-1:0] mpc_debug_halt_ack, // Halt ack
-   output logic [pt.NUM_THREADS-1:0] mpc_debug_run_ack,  // Run ack
-   output logic [pt.NUM_THREADS-1:0] debug_brkpt_status, // debug breakpoint
+   input logic  [`NUM_THREADS-1:0] mpc_debug_halt_req, // Async halt request
+   input logic  [`NUM_THREADS-1:0] mpc_debug_run_req,  // Async run request
+   input logic  [`NUM_THREADS-1:0] mpc_reset_run_req,  // Run/halt after reset
+   output logic [`NUM_THREADS-1:0] mpc_debug_halt_ack, // Halt ack
+   output logic [`NUM_THREADS-1:0] mpc_debug_run_ack,  // Run ack
+   output logic [`NUM_THREADS-1:0] debug_brkpt_status, // debug breakpoint
 
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_mhartstart, // running harts
+   output logic [`NUM_THREADS-1:0] dec_tlu_mhartstart, // running harts
 
-   input logic          [pt.NUM_THREADS-1:0]         i_cpu_halt_req,      // Async halt req to CPU
-   output logic         [pt.NUM_THREADS-1:0]         o_cpu_halt_ack,      // core response to halt
-   output logic         [pt.NUM_THREADS-1:0]         o_cpu_halt_status,   // 1'b1 indicates core is halted
-   output logic         [pt.NUM_THREADS-1:0]         o_debug_mode_status, // Core to the PMU that core is in debug mode. When core is in debug mode, the PMU should refrain from sendng a halt or run request
-   input logic          [pt.NUM_THREADS-1:0]         i_cpu_run_req, // Async restart req to CPU
-   output logic         [pt.NUM_THREADS-1:0]         o_cpu_run_ack, // Core response to run req
+   input logic          [`NUM_THREADS-1:0]         i_cpu_halt_req,      // Async halt req to CPU
+   output logic         [`NUM_THREADS-1:0]         o_cpu_halt_ack,      // core response to halt
+   output logic         [`NUM_THREADS-1:0]         o_cpu_halt_status,   // 1'b1 indicates core is halted
+   output logic         [`NUM_THREADS-1:0]         o_debug_mode_status, // Core to the PMU that core is in debug mode. When core is in debug mode, the PMU should refrain from sendng a halt or run request
+   input logic          [`NUM_THREADS-1:0]         i_cpu_run_req, // Async restart req to CPU
+   output logic         [`NUM_THREADS-1:0]         o_cpu_run_ack, // Core response to run req
    input logic                       scan_mode, // To enable scan mode
    input logic                       mbist_mode // to enable mbist
 );
@@ -524,51 +346,51 @@ parameter eh2_param_t pt = '{
    // DCCM ports
    logic         dccm_wren;
    logic         dccm_rden;
-   logic [pt.DCCM_BITS-1:0]  dccm_wr_addr_lo;
-   logic [pt.DCCM_BITS-1:0]  dccm_wr_addr_hi;
-   logic [pt.DCCM_BITS-1:0]  dccm_rd_addr_lo;
-   logic [pt.DCCM_BITS-1:0]  dccm_rd_addr_hi;
-   logic [pt.DCCM_FDATA_WIDTH-1:0]  dccm_wr_data_lo;
-   logic [pt.DCCM_FDATA_WIDTH-1:0]  dccm_wr_data_hi;
+   logic [`DCCM_BITS-1:0]  dccm_wr_addr_lo;
+   logic [`DCCM_BITS-1:0]  dccm_wr_addr_hi;
+   logic [`DCCM_BITS-1:0]  dccm_rd_addr_lo;
+   logic [`DCCM_BITS-1:0]  dccm_rd_addr_hi;
+   logic [`DCCM_FDATA_WIDTH-1:0]  dccm_wr_data_lo;
+   logic [`DCCM_FDATA_WIDTH-1:0]  dccm_wr_data_hi;
 
-   logic [pt.DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_lo;
-   logic [pt.DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_hi;
+   logic [`DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_lo;
+   logic [`DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_hi;
 
    // PIC ports
 
    // Icache & Itag ports
    logic [31:1]  ic_rw_addr;
-   logic [pt.ICACHE_NUM_WAYS-1:0]   ic_wr_en  ;     // Which way to write
+   logic [`ICACHE_NUM_WAYS-1:0]   ic_wr_en  ;     // Which way to write
    logic         ic_rd_en ;
 
 
-   logic [pt.ICACHE_NUM_WAYS-1:0]   ic_tag_valid;   // Valid from the I$ tag valid outside (in flops).
+   logic [`ICACHE_NUM_WAYS-1:0]   ic_tag_valid;   // Valid from the I$ tag valid outside (in flops).
 
-   logic [pt.ICACHE_NUM_WAYS-1:0]   ic_rd_hit;
+   logic [`ICACHE_NUM_WAYS-1:0]   ic_rd_hit;
    logic         ic_tag_perr;    // Ic tag parity error
 
-   logic [pt.ICACHE_INDEX_HI:3]  ic_debug_addr;      // Read/Write addresss to the Icache.
+   logic [`ICACHE_INDEX_HI:3]  ic_debug_addr;      // Read/Write addresss to the Icache.
    logic         ic_debug_rd_en;     // Icache debug rd
    logic         ic_debug_wr_en;     // Icache debug wr
    logic         ic_debug_tag_array; // Debug tag array
-   logic [pt.ICACHE_NUM_WAYS-1:0]   ic_debug_way;       // Debug way. Rd or Wr.
+   logic [`ICACHE_NUM_WAYS-1:0]   ic_debug_way;       // Debug way. Rd or Wr.
 
-   logic [pt.ICACHE_BANKS_WAY-1:0] [70:0] ic_wr_data;           // Data to fill to the Icache. With ECC
+   logic [`ICACHE_BANKS_WAY-1:0] [70:0] ic_wr_data;           // Data to fill to the Icache. With ECC
    logic [63:0]                           ic_rd_data;          // Data read from Icache. 2x64bits + parity bits. F2 stage. With ECC
    logic [70:0]                           ic_debug_rd_data;    // Data read from Icache. 2x64bits + parity bits. F2 stage. With ECC
    logic [25:0]                           ictag_debug_rd_data;  // Debug icache tag.
    logic [70:0]                           ic_debug_wr_data;     // Debug wr cache.
-   logic [pt.ICACHE_BANKS_WAY-1:0]        ic_eccerr;
+   logic [`ICACHE_BANKS_WAY-1:0]        ic_eccerr;
     //
-   logic [pt.ICACHE_BANKS_WAY-1:0]        ic_parerr;
+   logic [`ICACHE_BANKS_WAY-1:0]        ic_parerr;
 
 
    logic [63:0]  ic_premux_data;
    logic         ic_sel_premux_data;
 
    // ICCM ports
-   logic [pt.ICCM_BITS-1:1]  iccm_rw_addr;
-   logic [pt.NUM_THREADS-1:0]iccm_buf_correct_ecc_thr;                // ICCM is doing a single bit error correct cycle
+   logic [`ICCM_BITS-1:1]  iccm_rw_addr;
+   logic [`NUM_THREADS-1:0]iccm_buf_correct_ecc_thr;                // ICCM is doing a single bit error correct cycle
    logic                     iccm_correction_state, iccm_corr_scnd_fetch;
    logic                     iccm_stop_fetch;                     // ICCM hits need to ignored for replacement purposes as we have fetched ahead.. dont want to stop fetch through dma_active as it causes timing issues there
 
@@ -582,16 +404,16 @@ parameter eh2_param_t pt = '{
 
    // BTB
    eh2_btb_sram_pkt btb_sram_pkt;
-   logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0] btb_vbank0_rd_data_f1;
-   logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0] btb_vbank1_rd_data_f1;
-   logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0] btb_vbank2_rd_data_f1;
-   logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0] btb_vbank3_rd_data_f1;
+   logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0] btb_vbank0_rd_data_f1;
+   logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0] btb_vbank1_rd_data_f1;
+   logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0] btb_vbank2_rd_data_f1;
+   logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0] btb_vbank3_rd_data_f1;
    logic                                              btb_wren;
    logic                                              btb_rden;
-   logic [1:0] [pt.BTB_ADDR_HI:1]             btb_rw_addr;  // per bank
-   logic [1:0] [pt.BTB_ADDR_HI:1]             btb_rw_addr_f1;  // per bank
-   logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0] btb_sram_wr_data;
-   logic [1:0] [pt.BTB_BTAG_SIZE-1:0]                 btb_sram_rd_tag_f1;
+   logic [1:0] [`BTB_ADDR_HI:1]             btb_rw_addr;  // per bank
+   logic [1:0] [`BTB_ADDR_HI:1]             btb_rw_addr_f1;  // per bank
+   logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0] btb_sram_wr_data;
+   logic [1:0] [`BTB_BTAG_SIZE-1:0]                 btb_sram_rd_tag_f1;
 
    logic           active_l2clk;
    logic           free_l2clk;
@@ -701,7 +523,7 @@ parameter eh2_param_t pt = '{
 `ifdef RV_BUILD_AHB_LITE
    logic                           lsu_axi_awvalid;
    logic                           lsu_axi_awready;
-   logic [pt.LSU_BUS_TAG-1:0]      lsu_axi_awid;
+   logic [`LSU_BUS_TAG-1:0]      lsu_axi_awid;
    logic [31:0]                    lsu_axi_awaddr;
    logic [3:0]                     lsu_axi_awregion;
    logic [7:0]                     lsu_axi_awlen;
@@ -721,12 +543,12 @@ parameter eh2_param_t pt = '{
    logic                           lsu_axi_bvalid;
    logic                           lsu_axi_bready;
    logic [1:0]                     lsu_axi_bresp;
-   logic [pt.LSU_BUS_TAG-1:0]      lsu_axi_bid;
+   logic [`LSU_BUS_TAG-1:0]      lsu_axi_bid;
 
    // AXI Read Channels
    logic                           lsu_axi_arvalid;
    logic                           lsu_axi_arready;
-   logic [pt.LSU_BUS_TAG-1:0]      lsu_axi_arid;
+   logic [`LSU_BUS_TAG-1:0]      lsu_axi_arid;
    logic [31:0]                    lsu_axi_araddr;
    logic [3:0]                     lsu_axi_arregion;
    logic [7:0]                     lsu_axi_arlen;
@@ -739,7 +561,7 @@ parameter eh2_param_t pt = '{
 
    logic                           lsu_axi_rvalid;
    logic                           lsu_axi_rready;
-   logic [pt.LSU_BUS_TAG-1:0]      lsu_axi_rid;
+   logic [`LSU_BUS_TAG-1:0]      lsu_axi_rid;
    logic [63:0]                    lsu_axi_rdata;
    logic [1:0]                     lsu_axi_rresp;
    logic                           lsu_axi_rlast;
@@ -748,7 +570,7 @@ parameter eh2_param_t pt = '{
    // AXI Write Channels
    logic                           ifu_axi_awvalid;
    logic                           ifu_axi_awready;
-   logic [pt.IFU_BUS_TAG-1:0]      ifu_axi_awid;
+   logic [`IFU_BUS_TAG-1:0]      ifu_axi_awid;
    logic [31:0]                    ifu_axi_awaddr;
    logic [3:0]                     ifu_axi_awregion;
    logic [7:0]                     ifu_axi_awlen;
@@ -768,12 +590,12 @@ parameter eh2_param_t pt = '{
    logic                           ifu_axi_bvalid;
    logic                           ifu_axi_bready;
    logic [1:0]                     ifu_axi_bresp;
-   logic [pt.IFU_BUS_TAG-1:0]      ifu_axi_bid;
+   logic [`IFU_BUS_TAG-1:0]      ifu_axi_bid;
 
    // AXI Read Channels
    logic                           ifu_axi_arvalid;
    logic                           ifu_axi_arready;
-   logic [pt.IFU_BUS_TAG-1:0]      ifu_axi_arid;
+   logic [`IFU_BUS_TAG-1:0]      ifu_axi_arid;
    logic [31:0]                    ifu_axi_araddr;
    logic [3:0]                     ifu_axi_arregion;
    logic [7:0]                     ifu_axi_arlen;
@@ -786,7 +608,7 @@ parameter eh2_param_t pt = '{
 
    logic                           ifu_axi_rvalid;
    logic                           ifu_axi_rready;
-   logic [pt.IFU_BUS_TAG-1:0]      ifu_axi_rid;
+   logic [`IFU_BUS_TAG-1:0]      ifu_axi_rid;
    logic [63:0]                    ifu_axi_rdata;
    logic [1:0]                     ifu_axi_rresp;
    logic                           ifu_axi_rlast;
@@ -795,7 +617,7 @@ parameter eh2_param_t pt = '{
    // AXI Write Channels
    logic                           sb_axi_awvalid;
    logic                           sb_axi_awready;
-   logic [pt.SB_BUS_TAG-1:0]       sb_axi_awid;
+   logic [`SB_BUS_TAG-1:0]       sb_axi_awid;
    logic [31:0]                    sb_axi_awaddr;
    logic [3:0]                     sb_axi_awregion;
    logic [7:0]                     sb_axi_awlen;
@@ -815,12 +637,12 @@ parameter eh2_param_t pt = '{
    logic                           sb_axi_bvalid;
    logic                           sb_axi_bready;
    logic [1:0]                     sb_axi_bresp;
-   logic [pt.SB_BUS_TAG-1:0]       sb_axi_bid;
+   logic [`SB_BUS_TAG-1:0]       sb_axi_bid;
 
    // AXI Read Channels
    logic                           sb_axi_arvalid;
    logic                           sb_axi_arready;
-   logic [pt.SB_BUS_TAG-1:0]       sb_axi_arid;
+   logic [`SB_BUS_TAG-1:0]       sb_axi_arid;
    logic [31:0]                    sb_axi_araddr;
    logic [3:0]                     sb_axi_arregion;
    logic [7:0]                     sb_axi_arlen;
@@ -833,7 +655,7 @@ parameter eh2_param_t pt = '{
 
    logic                           sb_axi_rvalid;
    logic                           sb_axi_rready;
-   logic [pt.SB_BUS_TAG-1:0]       sb_axi_rid;
+   logic [`SB_BUS_TAG-1:0]       sb_axi_rid;
    logic [63:0]                    sb_axi_rdata;
    logic [1:0]                     sb_axi_rresp;
    logic                           sb_axi_rlast;
@@ -842,7 +664,7 @@ parameter eh2_param_t pt = '{
    // AXI Write Channels
    logic                           dma_axi_awvalid;
    logic                           dma_axi_awready;
-   logic [pt.DMA_BUS_TAG-1:0]      dma_axi_awid;
+   logic [`DMA_BUS_TAG-1:0]      dma_axi_awid;
    logic [31:0]                    dma_axi_awaddr;
    logic [2:0]                     dma_axi_awsize;
    logic [2:0]                     dma_axi_awprot;
@@ -859,12 +681,12 @@ parameter eh2_param_t pt = '{
    logic                           dma_axi_bvalid;
    logic                           dma_axi_bready;
    logic [1:0]                     dma_axi_bresp;
-   logic [pt.DMA_BUS_TAG-1:0]      dma_axi_bid;
+   logic [`DMA_BUS_TAG-1:0]      dma_axi_bid;
 
    // AXI Read Channels
    logic                           dma_axi_arvalid;
    logic                           dma_axi_arready;
-   logic [pt.DMA_BUS_TAG-1:0]      dma_axi_arid;
+   logic [`DMA_BUS_TAG-1:0]      dma_axi_arid;
    logic [31:0]                    dma_axi_araddr;
    logic [2:0]                     dma_axi_arsize;
    logic [2:0]                     dma_axi_arprot;
@@ -873,7 +695,7 @@ parameter eh2_param_t pt = '{
 
    logic                           dma_axi_rvalid;
    logic                           dma_axi_rready;
-   logic [pt.DMA_BUS_TAG-1:0]      dma_axi_rid;
+   logic [`DMA_BUS_TAG-1:0]      dma_axi_rid;
    logic [63:0]                    dma_axi_rdata;
    logic [1:0]                     dma_axi_rresp;
    logic                           dma_axi_rlast;
@@ -883,11 +705,11 @@ parameter eh2_param_t pt = '{
    assign lsu_axi_wready                          = '0;
    assign lsu_axi_bvalid                          = '0;
    assign lsu_axi_bresp[1:0]                      = '0;
-   assign lsu_axi_bid[pt.LSU_BUS_TAG-1:0]         = '0;
+   assign lsu_axi_bid[`LSU_BUS_TAG-1:0]         = '0;
 
    assign lsu_axi_arready                         = '0;
    assign lsu_axi_rvalid                          = '0;
-   assign lsu_axi_rid[pt.LSU_BUS_TAG-1:0]         = '0;
+   assign lsu_axi_rid[`LSU_BUS_TAG-1:0]         = '0;
    assign lsu_axi_rdata[63:0]                     = '0;
    assign lsu_axi_rresp[1:0]                      = '0;
    assign lsu_axi_rlast                           = '0;
@@ -897,11 +719,11 @@ parameter eh2_param_t pt = '{
    assign ifu_axi_wready                          = '0;
    assign ifu_axi_bvalid                          = '0;
    assign ifu_axi_bresp[1:0]                      = '0;
-   assign ifu_axi_bid[pt.IFU_BUS_TAG-1:0]         = '0;
+   assign ifu_axi_bid[`IFU_BUS_TAG-1:0]         = '0;
 
    assign ifu_axi_arready                         = '0;
    assign ifu_axi_rvalid                          = '0;
-   assign ifu_axi_rid[pt.IFU_BUS_TAG-1:0]         = '0;
+   assign ifu_axi_rid[`IFU_BUS_TAG-1:0]         = '0;
    assign ifu_axi_rdata[63:0]                     = '0;
    assign ifu_axi_rresp[1:0]                      = '0;
    assign ifu_axi_rlast                           = '0;
@@ -911,18 +733,18 @@ parameter eh2_param_t pt = '{
    assign sb_axi_wready                           = '0;
    assign sb_axi_bvalid                           = '0;
    assign sb_axi_bresp[1:0]                       = '0;
-   assign sb_axi_bid[pt.SB_BUS_TAG-1:0]           = '0;
+   assign sb_axi_bid[`SB_BUS_TAG-1:0]           = '0;
 
    assign sb_axi_arready                          = '0;
    assign sb_axi_rvalid                           = '0;
-   assign sb_axi_rid[pt.SB_BUS_TAG-1:0]           = '0;
+   assign sb_axi_rid[`SB_BUS_TAG-1:0]           = '0;
    assign sb_axi_rdata[63:0]                      = '0;
    assign sb_axi_rresp[1:0]                       = '0;
    assign sb_axi_rlast                            = '0;
 
    // DMA AXI
    assign  dma_axi_awvalid = '0;
-   assign  dma_axi_awid[pt.DMA_BUS_TAG-1:0]       = '0;
+   assign  dma_axi_awid[`DMA_BUS_TAG-1:0]       = '0;
    assign  dma_axi_awaddr[31:0]                   = '0;
    assign  dma_axi_awsize[2:0]                    = '0;
    assign  dma_axi_awprot[2:0]                    = '0;
@@ -937,7 +759,7 @@ parameter eh2_param_t pt = '{
    assign  dma_axi_bready                         = '0;
 
    assign  dma_axi_arvalid                        = '0;
-   assign  dma_axi_arid[pt.DMA_BUS_TAG-1:0]       = '0;
+   assign  dma_axi_arid[`DMA_BUS_TAG-1:0]       = '0;
    assign  dma_axi_araddr[31:0]                   = '0;
    assign  dma_axi_arsize[2:0]                    = '0;
    assign  dma_axi_arprot[2:0]                    = '0;
@@ -982,12 +804,12 @@ parameter eh2_param_t pt = '{
         .*
         );
 
-/*`ifdef RV_ASSERT_ON
+`ifdef RV_ASSERT_ON
 initial begin
     $assertoff(0, swerv);
     @ (negedge clk) $asserton(0, swerv);
 end
-`endif*/
+`endif
 
 endmodule
 

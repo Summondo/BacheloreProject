@@ -21,9 +21,8 @@
 //           And then Resume the core to do the normal mode
 // Author  :
 //********************************************************************************
-module eh2_dbg
-import eh2_param_pkg::*;
- #(
+module eh2_dbg #(
+`include "eh2_param.vh"
  )(
    // outputs to the core for command and data interface
    output logic [31:0]                 dbg_cmd_addr,
@@ -45,13 +44,13 @@ import eh2_param_pkg::*;
    input  logic                        dma_dbg_ready,    // DMA is ready to accept debug request
 
    // interface with the rest of the core to halt/resume handshaking
-   output logic [pt.NUM_THREADS-1:0]   dbg_halt_req, // This is a pulse
-   output logic [pt.NUM_THREADS-1:0]   dbg_resume_req, // Debug sends a resume requests. Pulse
-   input  logic [pt.NUM_THREADS-1:0]   dec_tlu_debug_mode,        // Core is in debug mode
-   input  logic [pt.NUM_THREADS-1:0]   dec_tlu_dbg_halted, // The core has finished the queiscing sequence. Core is halted now
-   input  logic [pt.NUM_THREADS-1:0]   dec_tlu_mpc_halted_only,   // Only halted due to MPC
-   input  logic [pt.NUM_THREADS-1:0]   dec_tlu_resume_ack, // core sends back an ack for the resume (pulse)
-   input  logic [pt.NUM_THREADS-1:0]   dec_tlu_mhartstart, // running harts
+   output logic [`NUM_THREADS-1:0]   dbg_halt_req, // This is a pulse
+   output logic [`NUM_THREADS-1:0]   dbg_resume_req, // Debug sends a resume requests. Pulse
+   input  logic [`NUM_THREADS-1:0]   dec_tlu_debug_mode,        // Core is in debug mode
+   input  logic [`NUM_THREADS-1:0]   dec_tlu_dbg_halted, // The core has finished the queiscing sequence. Core is halted now
+   input  logic [`NUM_THREADS-1:0]   dec_tlu_mpc_halted_only,   // Only halted due to MPC
+   input  logic [`NUM_THREADS-1:0]   dec_tlu_resume_ack, // core sends back an ack for the resume (pulse)
+   input  logic [`NUM_THREADS-1:0]   dec_tlu_mhartstart, // running harts
 
    // inputs from the JTAG
    input logic                         dmi_reg_en, // read or write
@@ -64,7 +63,7 @@ import eh2_param_pkg::*;
    // AXI Write Channels
    output logic                        sb_axi_awvalid,
    input  logic                        sb_axi_awready,
-   output logic [pt.SB_BUS_TAG-1:0]    sb_axi_awid,
+   output logic [`SB_BUS_TAG-1:0]    sb_axi_awid,
    output logic [31:0]                 sb_axi_awaddr,
    output logic [3:0]                  sb_axi_awregion,
    output logic [7:0]                  sb_axi_awlen,
@@ -88,7 +87,7 @@ import eh2_param_pkg::*;
    // AXI Read Channels
    output logic                        sb_axi_arvalid,
    input  logic                        sb_axi_arready,
-   output logic [pt.SB_BUS_TAG-1:0]    sb_axi_arid,
+   output logic [`SB_BUS_TAG-1:0]    sb_axi_arid,
    output logic [31:0]                 sb_axi_araddr,
    output logic [3:0]                  sb_axi_arregion,
    output logic [7:0]                  sb_axi_arlen,
@@ -119,9 +118,9 @@ import eh2_param_pkg::*;
    typedef enum logic [3:0] {IDLE=4'h0, HALTING=4'h1, HALTED=4'h2, CORE_CMD_START=4'h3, CORE_CMD_WAIT=4'h4, SB_CMD_START=4'h5, SB_CMD_SEND=4'h6, SB_CMD_RESP=4'h7, CMD_DONE=4'h8, RESUMING=4'h9} state_t;
    typedef enum logic [3:0] {SBIDLE=4'h0, WAIT_RD=4'h1, WAIT_WR=4'h2, CMD_RD=4'h3, CMD_WR=4'h4, CMD_WR_ADDR=4'h5, CMD_WR_DATA=4'h6, RSP_RD=4'h7, RSP_WR=4'h8, DONE=4'h9} sb_state_t;
 
-   state_t [pt.NUM_THREADS-1:0]  dbg_state;
-   state_t [pt.NUM_THREADS-1:0]  dbg_nxtstate;
-   logic   [pt.NUM_THREADS-1:0]  dbg_state_en;
+   state_t [`NUM_THREADS-1:0]  dbg_state;
+   state_t [`NUM_THREADS-1:0]  dbg_nxtstate;
+   logic   [`NUM_THREADS-1:0]  dbg_state_en;
    // these are the registers that the debug module implements
    logic [31:0]  dmstatus_reg;        // [26:24]-dmerr, [17:16]-resume ack, [9:8]-halted, [3:0]-version
    logic [31:0]  dmcontrol_reg;       // dmcontrol register has only 6 bits implemented. 31: haltreq, 30: resumereq, 29: haltreset, 28: ackhavereset, 1: ndmreset, 0: dmactive.
@@ -135,15 +134,15 @@ import eh2_param_pkg::*;
    // data 0
    logic [31:0]  data0_din;
    logic         data0_reg_wren, data0_reg_wren0, data0_reg_wren1;
-   logic [pt.NUM_THREADS-1:0]  data0_reg_wren2;
+   logic [`NUM_THREADS-1:0]  data0_reg_wren2;
    // data 1
    logic [31:0]  data1_din;
    logic         data1_reg_wren, data1_reg_wren0, data1_reg_wren1;
    // abstractcs
-   logic [pt.NUM_THREADS-1:0] abstractcs_busy;
+   logic [`NUM_THREADS-1:0] abstractcs_busy;
    logic [2:0]   abstractcs_error_din;
    logic         abstractcs_error_sel0, abstractcs_error_sel1, abstractcs_error_sel2, abstractcs_error_sel3, abstractcs_error_sel4, abstractcs_error_sel5, abstractcs_error_sel6;
-   logic [pt.NUM_THREADS-1:0]  dbg_sb_bus_error;
+   logic [`NUM_THREADS-1:0]  dbg_sb_bus_error;
    // abstractauto
    logic         abstractauto_reg_wren;
    logic [1:0]   abstractauto_reg;
@@ -167,13 +166,13 @@ import eh2_param_pkg::*;
 
    // needed to send the read data back for dmi reads
    logic [31:0]  dmi_reg_rdata_din;
-   logic [pt.NUM_THREADS-1:0] hart_sel;
-   logic [pt.NUM_THREADS-1:0] command_sel;
-   logic [pt.NUM_THREADS-1:0] dbg_halted;
-   logic [pt.NUM_THREADS-1:0] dbg_running;
-   logic [pt.NUM_THREADS-1:0] dbg_resumeack;
-   logic [pt.NUM_THREADS-1:0] dbg_havereset;
-   logic [pt.NUM_THREADS-1:0] dbg_unavailable;
+   logic [`NUM_THREADS-1:0] hart_sel;
+   logic [`NUM_THREADS-1:0] command_sel;
+   logic [`NUM_THREADS-1:0] dbg_halted;
+   logic [`NUM_THREADS-1:0] dbg_running;
+   logic [`NUM_THREADS-1:0] dbg_resumeack;
+   logic [`NUM_THREADS-1:0] dbg_havereset;
+   logic [`NUM_THREADS-1:0] dbg_unavailable;
 
    sb_state_t    sb_state;
    sb_state_t    sb_nxtstate;
@@ -212,9 +211,9 @@ import eh2_param_pkg::*;
    logic              sbreadondata_access;
    logic              sbdata0wr_access;
 
-   logic [pt.NUM_THREADS-1:0]  sb_abmem_cmd_done_in, sb_abmem_data_done_in;
-   logic [pt.NUM_THREADS-1:0]  sb_abmem_cmd_done_en, sb_abmem_data_done_en;
-   logic [pt.NUM_THREADS-1:0]  sb_abmem_cmd_done, sb_abmem_data_done;
+   logic [`NUM_THREADS-1:0]  sb_abmem_cmd_done_in, sb_abmem_data_done_in;
+   logic [`NUM_THREADS-1:0]  sb_abmem_cmd_done_en, sb_abmem_data_done_en;
+   logic [`NUM_THREADS-1:0]  sb_abmem_cmd_done, sb_abmem_data_done;
    logic [31:0]       abmem_addr;
    logic              abmem_addr_in_dccm_region, abmem_addr_in_iccm_region, abmem_addr_in_pic_region;
    logic              abmem_addr_core_local;
@@ -265,7 +264,7 @@ import eh2_param_pkg::*;
    // used for the abstract commands.
    always_comb begin
       dbg_free_clken  = dmi_reg_en | clk_override;
-      for (int i=0; i<pt.NUM_THREADS; i++) begin
+      for (int i=0; i<`NUM_THREADS; i++) begin
          dbg_free_clken |= dec_tlu_dbg_halted[i] | dec_tlu_mpc_halted_only[i] | dec_tlu_debug_mode[i] | dbg_halt_req[i] | execute_command | dbg_state_en[i] | (dbg_state[i] != IDLE);
       end
    end
@@ -352,8 +351,8 @@ import eh2_param_pkg::*;
    assign dmcontrol_reg[27]   = '0;
    assign dmcontrol_reg[25:17] = '0;
    assign dmcontrol_reg[15:2]  = '0;
-   assign dmcontrol_hasel_in  = (pt.NUM_THREADS > 1) & dmi_reg_wdata[26];   // hasel tied to 0 for single thread
-   assign dmcontrol_hartsel_in = (pt.NUM_THREADS > 1) & dmi_reg_wdata[16];   // hartsel tied to 0 for single thread
+   assign dmcontrol_hasel_in  = (`NUM_THREADS > 1) & dmi_reg_wdata[26];   // hasel tied to 0 for single thread
+   assign dmcontrol_hartsel_in = (`NUM_THREADS > 1) & dmi_reg_wdata[16];   // hartsel tied to 0 for single thread
    assign resumereq           = dmcontrol_reg[30] & ~dmcontrol_reg[31] & dmcontrol_wren_Q;
    rvdffs #(6) dmcontrolff (.din({dmi_reg_wdata[31:30],dmi_reg_wdata[28],dmcontrol_hasel_in,dmcontrol_hartsel_in,dmi_reg_wdata[1]}),
                             .dout({dmcontrol_reg[31:30],dmcontrol_reg[28],dmcontrol_reg[26],dmcontrol_reg[16],dmcontrol_reg[1]}), .en(dmcontrol_wren), .rst_l(dbg_dm_rst_l), .clk(dbg_free_clk));
@@ -364,24 +363,24 @@ import eh2_param_pkg::*;
    // [19:18]-havereset,[17:16]-resume ack, [15:14]-available, [9]-allhalted, [8]-anyhalted, [3:0]-version
    // rest all the bits are zeroed out
    assign dmstatus_reg[31:20] = '0;
-   assign dmstatus_reg[19]    = &(dbg_havereset[pt.NUM_THREADS-1:0] | ~hart_sel[pt.NUM_THREADS-1:0]);
-   assign dmstatus_reg[18]    = |(dbg_havereset[pt.NUM_THREADS-1:0] & hart_sel[pt.NUM_THREADS-1:0]);
-   assign dmstatus_reg[17]    = &(dbg_resumeack[pt.NUM_THREADS-1:0] | ~hart_sel[pt.NUM_THREADS-1:0]);
-   assign dmstatus_reg[16]    = |(dbg_resumeack[pt.NUM_THREADS-1:0] & hart_sel[pt.NUM_THREADS-1:0]);
+   assign dmstatus_reg[19]    = &(dbg_havereset[`NUM_THREADS-1:0] | ~hart_sel[`NUM_THREADS-1:0]);
+   assign dmstatus_reg[18]    = |(dbg_havereset[`NUM_THREADS-1:0] & hart_sel[`NUM_THREADS-1:0]);
+   assign dmstatus_reg[17]    = &(dbg_resumeack[`NUM_THREADS-1:0] | ~hart_sel[`NUM_THREADS-1:0]);
+   assign dmstatus_reg[16]    = |(dbg_resumeack[`NUM_THREADS-1:0] & hart_sel[`NUM_THREADS-1:0]);
    assign dmstatus_reg[15:14] = '0;
-   assign dmstatus_reg[13]    = &(dbg_unavailable[pt.NUM_THREADS-1:0] | ~hart_sel[pt.NUM_THREADS-1:0]);
-   assign dmstatus_reg[12]    = |(dbg_unavailable[pt.NUM_THREADS-1:0] & hart_sel[pt.NUM_THREADS-1:0]);
-   assign dmstatus_reg[11]    = &(dbg_running[pt.NUM_THREADS-1:0] | ~hart_sel[pt.NUM_THREADS-1:0]);
-   assign dmstatus_reg[10]    = |(dbg_running[pt.NUM_THREADS-1:0] & hart_sel[pt.NUM_THREADS-1:0]);
-   assign dmstatus_reg[9]     = &(dbg_halted[pt.NUM_THREADS-1:0] | ~hart_sel[pt.NUM_THREADS-1:0]);
-   assign dmstatus_reg[8]     = |(dbg_halted[pt.NUM_THREADS-1:0] & hart_sel[pt.NUM_THREADS-1:0]);
+   assign dmstatus_reg[13]    = &(dbg_unavailable[`NUM_THREADS-1:0] | ~hart_sel[`NUM_THREADS-1:0]);
+   assign dmstatus_reg[12]    = |(dbg_unavailable[`NUM_THREADS-1:0] & hart_sel[`NUM_THREADS-1:0]);
+   assign dmstatus_reg[11]    = &(dbg_running[`NUM_THREADS-1:0] | ~hart_sel[`NUM_THREADS-1:0]);
+   assign dmstatus_reg[10]    = |(dbg_running[`NUM_THREADS-1:0] & hart_sel[`NUM_THREADS-1:0]);
+   assign dmstatus_reg[9]     = &(dbg_halted[`NUM_THREADS-1:0] | ~hart_sel[`NUM_THREADS-1:0]);
+   assign dmstatus_reg[8]     = |(dbg_halted[`NUM_THREADS-1:0] & hart_sel[`NUM_THREADS-1:0]);
    assign dmstatus_reg[7]     = '1;
    assign dmstatus_reg[6:4]   = '0;
    assign dmstatus_reg[3:0]   = 4'h2;
 
    // haltsum0 register
-   assign haltsum0_reg[31:pt.NUM_THREADS] = '0;
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin: Gen_haltsum
+   assign haltsum0_reg[31:`NUM_THREADS] = '0;
+   for (genvar i=0; i<`NUM_THREADS; i++) begin: Gen_haltsum
       assign haltsum0_reg[i]  = dbg_halted[i];
    end
 
@@ -403,8 +402,8 @@ import eh2_param_pkg::*;
    assign        abstractcs_error_sel2 = ((core_dbg_cmd_done & core_dbg_cmd_fail) |                   // exception from core
                                           (execute_command & (command_reg[31:24] == 8'h0) &           // unimplemented regs
                                                 (((command_reg[15:12] == 4'h1) & (command_reg[11:5] != 0)) | (command_reg[15:13] != 0)))) & ~(|abstractcs_reg[10:8]);
-   assign        abstractcs_error_sel3 = execute_command & ~(|abstractcs_reg[10:8]) & ~(|(command_sel[pt.NUM_THREADS-1:0] & dbg_halted[pt.NUM_THREADS-1:0]));  //(dbg_state != HALTED);;
-   assign        abstractcs_error_sel4 = (|dbg_sb_bus_error[pt.NUM_THREADS-1:0]) & dbg_bus_clk_en & ~(|abstractcs_reg[10:8]);// sb bus error for abstract memory command
+   assign        abstractcs_error_sel3 = execute_command & ~(|abstractcs_reg[10:8]) & ~(|(command_sel[`NUM_THREADS-1:0] & dbg_halted[`NUM_THREADS-1:0]));  //(dbg_state != HALTED);;
+   assign        abstractcs_error_sel4 = (|dbg_sb_bus_error[`NUM_THREADS-1:0]) & dbg_bus_clk_en & ~(|abstractcs_reg[10:8]);// sb bus error for abstract memory command
    assign        abstractcs_error_sel5 = execute_command & (command_reg[31:24] == 8'h2) & ~(|abstractcs_reg[10:8]) &
                                          (((command_reg[22:20] == 3'b001) & data1_reg[0]) | ((command_reg[22:20] == 3'b010) & (|data1_reg[1:0])));  //Unaligned address for abstract memory
    assign        abstractcs_error_sel6 = (dmi_reg_addr ==  7'h16) & dmi_reg_en & dmi_reg_wr_en;
@@ -418,7 +417,7 @@ import eh2_param_pkg::*;
                                                                 abstractcs_error_sel6 ? (~dmi_reg_wdata[10:8] & abstractcs_reg[10:8]) :   //W1C
                                                                                         abstractcs_reg[10:8];                             //hold
 
-   assign abstractcs_reg[12] = |abstractcs_busy[pt.NUM_THREADS-1:0];
+   assign abstractcs_reg[12] = |abstractcs_busy[`NUM_THREADS-1:0];
 
    rvdff  #(3) dmabstractcs_error_reg (.din(abstractcs_error_din[2:0]), .dout(abstractcs_reg[10:8]), .rst_l(dbg_dm_rst_l), .clk(dbg_free_clk));
 
@@ -432,7 +431,7 @@ import eh2_param_pkg::*;
                                (dmi_reg_en & ~abstractcs_reg[12] & (((dmi_reg_addr == 7'h4) & abstractauto_reg[0]) | ((dmi_reg_addr == 7'h5) & abstractauto_reg[1])));
    always_comb begin
       command_wren = 1'b0;
-      for (int i=0; i<pt.NUM_THREADS; i++) begin
+      for (int i=0; i<`NUM_THREADS; i++) begin
          command_wren |= ((dmi_reg_addr == 7'h17) & dmi_reg_en & dmi_reg_wr_en & command_sel[i]);
       end
    end
@@ -447,9 +446,9 @@ import eh2_param_pkg::*;
 
    // hawindow reg
    assign hawindow_wren = dmi_reg_en & dmi_reg_wr_en & (dmi_reg_addr == 7'h15);
-   assign hawindow_reg[31:pt.NUM_THREADS] = '0;
+   assign hawindow_reg[31:`NUM_THREADS] = '0;
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin: GenHAWindow
+   for (genvar i=0; i<`NUM_THREADS; i++) begin: GenHAWindow
       rvdffs #(1) dbg_hawindow_reg (.*, .din(dmi_reg_wdata[i]), .dout(hawindow_reg[i]), .en(hawindow_wren), .rst_l(dbg_dm_rst_l), .clk(dbg_free_clk));
    end
 
@@ -457,12 +456,12 @@ import eh2_param_pkg::*;
    always_comb begin
       data0_reg_wren0 = 1'b0;
       data0_reg_wren1 = 1'b0;
-      for (int i=0; i<pt.NUM_THREADS; i++) begin
+      for (int i=0; i<`NUM_THREADS; i++) begin
          data0_reg_wren0   |= (dmi_reg_en & dmi_reg_wr_en & (dmi_reg_addr == 7'h4) & command_sel[i] & (dbg_state[i] == HALTED) & ~abstractcs_reg[12]);
          data0_reg_wren1   |= (core_dbg_cmd_done & (dbg_state[i] == CORE_CMD_WAIT) & ~command_reg[16]);
       end
    end
-   assign data0_reg_wren    = data0_reg_wren0 | data0_reg_wren1 | (|data0_reg_wren2[pt.NUM_THREADS-1:0]);
+   assign data0_reg_wren    = data0_reg_wren0 | data0_reg_wren1 | (|data0_reg_wren2[`NUM_THREADS-1:0]);
 
    assign data0_din[31:0]   = ({32{data0_reg_wren0}} & dmi_reg_wdata[31:0])   |
                               ({32{data0_reg_wren1}} & core_dbg_rddata[31:0]) |
@@ -474,7 +473,7 @@ import eh2_param_pkg::*;
    always_comb begin
       data1_reg_wren0 = 1'b0;
       data1_reg_wren1 = 1'b0;
-      for (int i=0; i<pt.NUM_THREADS; i++) begin
+      for (int i=0; i<`NUM_THREADS; i++) begin
          data1_reg_wren0   |= (dmi_reg_en & dmi_reg_wr_en & (dmi_reg_addr == 7'h5) & command_sel[i] & (dbg_state[i] == HALTED));
          data1_reg_wren1   |= ((dbg_state[i] == CMD_DONE) & (command_reg[31:24] == 8'h2) & command_reg[19] & ~(|abstractcs_reg[10:8]));   // aampostincrement
       end
@@ -487,11 +486,11 @@ import eh2_param_pkg::*;
    rvdffe #(32)    dbg_data1_reg    (.*, .din(data1_din[31:0]), .dout(data1_reg[31:0]), .en(data1_reg_wren), .rst_l(dbg_dm_rst_l));
 
    // Generate the per thread sel and state
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
 
-      logic [pt.NUM_THREADS-1:0] dbg_resumeack_wren, dbg_resumeack_din;
-      logic [pt.NUM_THREADS-1:0] dbg_haveresetn_wren, dbg_haveresetn;
-      logic [pt.NUM_THREADS-1:0] abstractcs_busy_wren, abstractcs_busy_din;
+      logic [`NUM_THREADS-1:0] dbg_resumeack_wren, dbg_resumeack_din;
+      logic [`NUM_THREADS-1:0] dbg_haveresetn_wren, dbg_haveresetn;
+      logic [`NUM_THREADS-1:0] abstractcs_busy_wren, abstractcs_busy_din;
 
       assign hart_sel[i] = (dmcontrol_reg[16] == 1'(i)) | (dmcontrol_reg[26] & hawindow_reg[i]);
       assign command_sel[i] = (dmcontrol_reg[16] == 1'(i));
@@ -608,7 +607,7 @@ import eh2_param_pkg::*;
            end
          endcase
       end // always_comb begin
-   end // for (genvar i=0; i<pt.NUM_THREADS; i++)
+   end // for (genvar i=0; i<`NUM_THREADS; i++)
 
    assign dmi_reg_rdata_din[31:0] = ({32{dmi_reg_addr == 7'h4}}  & data0_reg[31:0])      |
                                     ({32{dmi_reg_addr == 7'h5}}  & data1_reg[31:0])      |
@@ -632,16 +631,16 @@ import eh2_param_pkg::*;
    assign abmem_addr_core_local = (abmem_addr_in_dccm_region | abmem_addr_in_iccm_region | abmem_addr_in_pic_region);
    assign abmem_addr_external   = ~abmem_addr_core_local;
 
-   assign abmem_addr_in_dccm_region = (abmem_addr[31:28] == pt.DCCM_REGION) & pt.DCCM_ENABLE;
-   assign abmem_addr_in_iccm_region = (abmem_addr[31:28] == pt.ICCM_REGION) & pt.ICCM_ENABLE;
-   assign abmem_addr_in_pic_region  = (abmem_addr[31:28] == pt.PIC_REGION);
+   assign abmem_addr_in_dccm_region = (abmem_addr[31:28] == `DCCM_REGION) & `DCCM_ENABLE;
+   assign abmem_addr_in_iccm_region = (abmem_addr[31:28] == `ICCM_REGION) & `ICCM_ENABLE;
+   assign abmem_addr_in_pic_region  = (abmem_addr[31:28] == `PIC_REGION);
 
    // interface for the core
    assign dbg_cmd_addr[31:0]    = (command_reg[31:24] == 8'h2) ? data1_reg[31:0]  : {20'b0, command_reg[11:0]};
    assign dbg_cmd_wrdata[31:0]  = data0_reg[31:0];
    always_comb begin
       dbg_cmd_valid = 1'b0;
-      for (int i=0; i<pt.NUM_THREADS; i++) begin
+      for (int i=0; i<`NUM_THREADS; i++) begin
          dbg_cmd_valid  |= (dbg_state[i] == CORE_CMD_START) & ~((|abstractcs_reg[10:8]) | ((command_reg[31:24] == 8'h0) & ~command_reg[17]) | ((command_reg[31:24] == 8'h2) & abmem_addr_external)) &
                            ~((command_reg[31:24] == 8'h2) & ~dma_dbg_ready);
       end
@@ -658,7 +657,7 @@ import eh2_param_pkg::*;
    // Ask DMA to stop taking bus trxns since debug memory request is done
    always_comb begin
       dbg_dma_bubble = 1'b0;
-      for (int i=0; i<pt.NUM_THREADS; i++) begin
+      for (int i=0; i<`NUM_THREADS; i++) begin
          dbg_dma_bubble     |= ((((dbg_state[i] == CORE_CMD_START) & ~(|abstractcs_reg[10:8])) | (dbg_state[i] == CORE_CMD_WAIT)) & (command_reg[31:24] == 8'h2));
       end
    end
@@ -759,7 +758,7 @@ import eh2_param_pkg::*;
       sb_abmem_cmd_wvalid  = 1'b0;
       sb_abmem_cmd_arvalid = 1'b0;
       sb_abmem_read_pend   = 1'b0;
-      for (int i=0; i<pt.NUM_THREADS; i++) begin
+      for (int i=0; i<`NUM_THREADS; i++) begin
          sb_abmem_cmd_awvalid    |= (dbg_state[i] == SB_CMD_SEND) & sb_abmem_cmd_write & ~sb_abmem_cmd_done[i];
          sb_abmem_cmd_wvalid     |= (dbg_state[i] == SB_CMD_SEND) & sb_abmem_cmd_write & ~sb_abmem_data_done[i];
          sb_abmem_cmd_arvalid    |= (dbg_state[i] == SB_CMD_SEND) & ~sb_abmem_cmd_write & ~sb_abmem_cmd_done[i] & ~sb_abmem_data_done[i];
@@ -788,7 +787,7 @@ import eh2_param_pkg::*;
    // AXI Request signals
    assign sb_axi_awvalid              = sb_abmem_cmd_awvalid | sb_cmd_awvalid;
    assign sb_axi_awaddr[31:0]         = sb_axi_addr[31:0];
-   assign sb_axi_awid[pt.SB_BUS_TAG-1:0] = '0;
+   assign sb_axi_awid[`SB_BUS_TAG-1:0] = '0;
    assign sb_axi_awsize[2:0]          = sb_axi_size[2:0];
    assign sb_axi_awprot[2:0]          = 3'b001;
    assign sb_axi_awcache[3:0]         = 4'b1111;
@@ -811,7 +810,7 @@ import eh2_param_pkg::*;
 
    assign sb_axi_arvalid              = sb_abmem_cmd_arvalid | sb_cmd_arvalid;
    assign sb_axi_araddr[31:0]         = sb_axi_addr[31:0];
-   assign sb_axi_arid[pt.SB_BUS_TAG-1:0] = '0;
+   assign sb_axi_arid[`SB_BUS_TAG-1:0] = '0;
    assign sb_axi_arsize[2:0]          = sb_axi_size[2:0];
    assign sb_axi_arprot[2:0]          = 3'b001;
    assign sb_axi_arcache[3:0]         = 4'b0;
@@ -831,15 +830,15 @@ import eh2_param_pkg::*;
                                ({64{sb_axi_size == 3'h3}} & sb_axi_rdata[63:0]);
 
 
-/*`ifdef RV_ASSERT_ON
+`ifdef RV_ASSERT_ON
 // assertion.
 //  when the resume_ack is asserted then the dec_tlu_dbg_halted should be 0
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
       dm_check_resume_and_halted: assert property (@(posedge clk)  disable iff(~rst_l) (~dec_tlu_resume_ack[i] | ~dec_tlu_dbg_halted[i]));
 
       assert_b2b_haltreq: assert property (@(posedge clk) disable iff (~rst_l) (##1 dbg_halt_req[i] |=> ~dbg_halt_req[i]));
       assert_halt_resume_onehot: assert #0 ($onehot0({dbg_halt_req[i], dbg_resume_req[i]}));
    end
 
-`endif*/
+`endif
 endmodule

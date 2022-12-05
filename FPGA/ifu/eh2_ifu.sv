@@ -21,21 +21,21 @@
 
 module eh2_ifu
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
   (
    input logic clk,
    input logic active_clk,
-   input logic [pt.NUM_THREADS-1:0] active_thread_l2clk,
+   input logic [`NUM_THREADS-1:0] active_thread_l2clk,
    input logic clk_override,
    input logic rst_l,
 
 
-   input logic [pt.NUM_THREADS-1:0]        dec_i1_cancel_e1,
+   input logic [`NUM_THREADS-1:0]        dec_i1_cancel_e1,
 
-   input logic [pt.NUM_THREADS-1:0]        dec_ib3_valid_d,           // ib3 buffer valid
-   input logic [pt.NUM_THREADS-1:0]        dec_ib2_valid_d,           // ib2 buffer valid
+   input logic [`NUM_THREADS-1:0]        dec_ib3_valid_d,           // ib3 buffer valid
+   input logic [`NUM_THREADS-1:0]        dec_ib2_valid_d,           // ib2 buffer valid
 
    input logic dec_i0_tid_e4, // needed to maintain RS in BP
    input logic dec_i1_tid_e4,
@@ -45,11 +45,11 @@ import eh2_param_pkg::*;
    input logic        exu_i0_br_call_e4, // i0 branch commit is a call
    input logic        exu_i1_br_call_e4, // i1 branch commit is a call
 
-   input logic [pt.NUM_THREADS-1:0][31:1] exu_flush_path_final, // flush fetch address
-   input logic [pt.NUM_THREADS-1:0][31:1] dec_tlu_flush_path_wb, // flush fetch address
+   input logic [`NUM_THREADS-1:0][31:1] exu_flush_path_final, // flush fetch address
+   input logic [`NUM_THREADS-1:0][31:1] dec_tlu_flush_path_wb, // flush fetch address
 
-   input logic [pt.NUM_THREADS-1:0]             exu_flush_final_early,              // Pipe is being flushed this cycle
-   input logic [pt.NUM_THREADS-1:0][31:1]       exu_flush_path_final_early,         // Target for the oldest flush source
+   input logic [`NUM_THREADS-1:0]             exu_flush_final_early,              // Pipe is being flushed this cycle
+   input logic [`NUM_THREADS-1:0][31:1]       exu_flush_path_final_early,         // Target for the oldest flush source
 
 `ifdef REAL_COMM_RS
    input logic        exu_flush_upper_e2,    // flush upper, either i0 or i1
@@ -59,23 +59,23 @@ import eh2_param_pkg::*;
    input logic                         dec_tlu_bpred_disable, // disable all branch prediction
    input logic                         dec_tlu_core_ecc_disable,  // disable ecc checking and flagging
 
-   input logic [pt.NUM_THREADS-1:0]    dec_tlu_btb_write_kill, // Kill writes while working on forward progress after a branch error
+   input logic [`NUM_THREADS-1:0]    dec_tlu_btb_write_kill, // Kill writes while working on forward progress after a branch error
 
 // Threaded signals
 
-   input logic [pt.NUM_THREADS-1:0]        exu_flush_final,
-   input logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_err_wb , // flush due to parity error.
-   input logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_noredir_wb, // don't fetch, validated with exu_flush_final
-   input logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_lower_wb, //
-   input logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_mp_wb,
-   input logic [pt.NUM_THREADS-1:0]        dec_tlu_fence_i_wb, //
-   input logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_leak_one_wb, // ignore bp for leak one fetches
-   input logic [pt.NUM_THREADS-1:0]        dec_tlu_force_halt , // force halt.
+   input logic [`NUM_THREADS-1:0]        exu_flush_final,
+   input logic [`NUM_THREADS-1:0]        dec_tlu_flush_err_wb , // flush due to parity error.
+   input logic [`NUM_THREADS-1:0]        dec_tlu_flush_noredir_wb, // don't fetch, validated with exu_flush_final
+   input logic [`NUM_THREADS-1:0]        dec_tlu_flush_lower_wb, //
+   input logic [`NUM_THREADS-1:0]        dec_tlu_flush_mp_wb,
+   input logic [`NUM_THREADS-1:0]        dec_tlu_fence_i_wb, //
+   input logic [`NUM_THREADS-1:0]        dec_tlu_flush_leak_one_wb, // ignore bp for leak one fetches
+   input logic [`NUM_THREADS-1:0]        dec_tlu_force_halt , // force halt.
 
   //-------------------------- IFU AXI signals--------------------------
    // AXI Write Channels
    output logic                            ifu_axi_awvalid,
-   output logic [pt.IFU_BUS_TAG-1:0]       ifu_axi_awid,
+   output logic [`IFU_BUS_TAG-1:0]       ifu_axi_awid,
    output logic [31:0]                     ifu_axi_awaddr,
    output logic [3:0]                      ifu_axi_awregion,
    output logic [7:0]                      ifu_axi_awlen,
@@ -96,7 +96,7 @@ import eh2_param_pkg::*;
    // AXI Read Channels
    output logic                            ifu_axi_arvalid,
    input  logic                            ifu_axi_arready,
-   output logic [pt.IFU_BUS_TAG-1:0]       ifu_axi_arid,
+   output logic [`IFU_BUS_TAG-1:0]       ifu_axi_arid,
    output logic [31:0]                     ifu_axi_araddr,
    output logic [3:0]                      ifu_axi_arregion,
    output logic [7:0]                      ifu_axi_arlen,
@@ -109,7 +109,7 @@ import eh2_param_pkg::*;
 
    input  logic                            ifu_axi_rvalid,
    output logic                            ifu_axi_rready,
-   input  logic [pt.IFU_BUS_TAG-1:0]       ifu_axi_rid,
+   input  logic [`IFU_BUS_TAG-1:0]       ifu_axi_rid,
    input  logic [63:0]                     ifu_axi_rdata,
    input  logic [1:0]                      ifu_axi_rresp,
 
@@ -131,47 +131,47 @@ import eh2_param_pkg::*;
    output logic [63:0]               iccm_dma_rdata,
    output logic                      iccm_ready,
 
-   output logic [pt.NUM_THREADS-1:0][1:0] ifu_pmu_instr_aligned,
-   output logic [pt.NUM_THREADS-1:0]      ifu_pmu_align_stall,
+   output logic [`NUM_THREADS-1:0][1:0] ifu_pmu_instr_aligned,
+   output logic [`NUM_THREADS-1:0]      ifu_pmu_align_stall,
 
-   output logic [pt.NUM_THREADS-1:0] ifu_pmu_fetch_stall,
+   output logic [`NUM_THREADS-1:0] ifu_pmu_fetch_stall,
 
 //   I$ & ITAG Ports
    output logic [31:1]               ic_rw_addr,         // Read/Write addresss to the Icache.
-   output logic [pt.ICACHE_NUM_WAYS-1:0]                ic_wr_en,           // Icache write enable, when filling the Icache.
+   output logic [`ICACHE_NUM_WAYS-1:0]                ic_wr_en,           // Icache write enable, when filling the Icache.
    output logic                      ic_rd_en,           // Icache read  enable.
 
-   output logic [pt.ICACHE_BANKS_WAY-1:0] [70:0]               ic_wr_data,           // Data to fill to the Icache. With ECC
+   output logic [`ICACHE_BANKS_WAY-1:0] [70:0]               ic_wr_data,           // Data to fill to the Icache. With ECC
    input  logic [63:0]               ic_rd_data ,          // Data read from Icache. 2x64bits + parity bits. F2 stage. With ECC
    input  logic [70:0]               ic_debug_rd_data ,    // Data read from Icache. 2x64bits + parity bits. F2 stage. With ECC
    input  logic [25:0]               ictag_debug_rd_data,  // Debug icache tag.
    output logic [70:0]               ic_debug_wr_data,     // Debug wr cache.
    output logic [70:0]               ifu_ic_debug_rd_data, // debug data read
 
-   input  logic [pt.ICACHE_BANKS_WAY-1:0] ic_eccerr,    //
-   input  logic [pt.ICACHE_BANKS_WAY-1:0] ic_parerr,
+   input  logic [`ICACHE_BANKS_WAY-1:0] ic_eccerr,    //
+   input  logic [`ICACHE_BANKS_WAY-1:0] ic_parerr,
 
 
 
    output logic [63:0]               ic_premux_data,     // Premux data to be muxed with each way of the Icache.
    output logic                      ic_sel_premux_data, // Select the premux data.
 
-   output logic [pt.ICACHE_INDEX_HI:3]  ic_debug_addr,      // Read/Write addresss to the Icache.
+   output logic [`ICACHE_INDEX_HI:3]  ic_debug_addr,      // Read/Write addresss to the Icache.
    output logic                         ic_debug_rd_en,     // Icache debug rd
    output logic                         ic_debug_wr_en,     // Icache debug wr
    output logic                         ic_debug_tag_array, // Debug tag array
-   output logic [pt.ICACHE_NUM_WAYS-1:0]ic_debug_way,       // Debug way. Rd or Wr.
+   output logic [`ICACHE_NUM_WAYS-1:0]ic_debug_way,       // Debug way. Rd or Wr.
 
 
-   output logic [pt.ICACHE_NUM_WAYS-1:0]                ic_tag_valid,       // Valid bits when accessing the Icache. One valid bit per way. F2 stage
+   output logic [`ICACHE_NUM_WAYS-1:0]                ic_tag_valid,       // Valid bits when accessing the Icache. One valid bit per way. F2 stage
 
-   input  logic [pt.ICACHE_NUM_WAYS-1:0]                ic_rd_hit,          // Compare hits from Icache tags. Per way.  F2 stage
+   input  logic [`ICACHE_NUM_WAYS-1:0]                ic_rd_hit,          // Compare hits from Icache tags. Per way.  F2 stage
    input  logic                      ic_tag_perr,        // Icache Tag parity error
 
 
    // ICCM ports
-   output logic [pt.ICCM_BITS-1:1]   iccm_rw_addr,                        // ICCM read/write address.
-   output logic [pt.NUM_THREADS-1:0] iccm_buf_correct_ecc_thr,            // ICCM is doing a single bit error correct cycle
+   output logic [`ICCM_BITS-1:1]   iccm_rw_addr,                        // ICCM read/write address.
+   output logic [`NUM_THREADS-1:0] iccm_buf_correct_ecc_thr,            // ICCM is doing a single bit error correct cycle
    output logic                      iccm_stop_fetch,                     // We have fetched 4 bytes. Dont consider any hits for lru replacements
    output logic                      iccm_correction_state,               // We are under a correction - This is needed to guard replacements when hit
    output logic                      iccm_corr_scnd_fetch,                // dont match on middle bank when under correction
@@ -190,76 +190,76 @@ import eh2_param_pkg::*;
    // BTB ports
    input eh2_btb_sram_pkt btb_sram_pkt,
 
-   input logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0]      btb_vbank0_rd_data_f1,
-   input logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0]      btb_vbank1_rd_data_f1,
-   input logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0]      btb_vbank2_rd_data_f1,
-   input logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0]      btb_vbank3_rd_data_f1,
+   input logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0]      btb_vbank0_rd_data_f1,
+   input logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0]      btb_vbank1_rd_data_f1,
+   input logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0]      btb_vbank2_rd_data_f1,
+   input logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0]      btb_vbank3_rd_data_f1,
    output logic                         btb_wren,
    output logic                         btb_rden,
-   output logic [1:0] [pt.BTB_ADDR_HI:1] btb_rw_addr,  // per bank
-   output logic [1:0] [pt.BTB_ADDR_HI:1] btb_rw_addr_f1,  // per bank
-   output logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0]         btb_sram_wr_data,
-   output logic [1:0] [pt.BTB_BTAG_SIZE-1:0] btb_sram_rd_tag_f1,
+   output logic [1:0] [`BTB_ADDR_HI:1] btb_rw_addr,  // per bank
+   output logic [1:0] [`BTB_ADDR_HI:1] btb_rw_addr_f1,  // per bank
+   output logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0]         btb_sram_wr_data,
+   output logic [1:0] [`BTB_BTAG_SIZE-1:0] btb_sram_rd_tag_f1,
 
-   output logic [pt.NUM_THREADS-1:0] ifu_pmu_ic_miss,               // IC miss event
-   output logic [pt.NUM_THREADS-1:0] ifu_pmu_ic_hit,                // IC hit event
-   output logic [pt.NUM_THREADS-1:0] ifu_pmu_bus_error,             // Bus error event
-   output logic [pt.NUM_THREADS-1:0] ifu_pmu_bus_busy,              // Bus busy event
-   output logic [pt.NUM_THREADS-1:0] ifu_pmu_bus_trxn,              // Bus transaction
+   output logic [`NUM_THREADS-1:0] ifu_pmu_ic_miss,               // IC miss event
+   output logic [`NUM_THREADS-1:0] ifu_pmu_ic_hit,                // IC hit event
+   output logic [`NUM_THREADS-1:0] ifu_pmu_bus_error,             // Bus error event
+   output logic [`NUM_THREADS-1:0] ifu_pmu_bus_busy,              // Bus busy event
+   output logic [`NUM_THREADS-1:0] ifu_pmu_bus_trxn,              // Bus transaction
 
-   output logic  [pt.NUM_THREADS-1:0] ifu_i0_valid,        // Instruction 0 valid. From Aligner to Decode
-   output logic  [pt.NUM_THREADS-1:0] ifu_i1_valid,        // Instruction 1 valid. From Aligner to Decode
-   output logic  [pt.NUM_THREADS-1:0] ifu_i0_icaf,         // Instruction 0 access fault. From Aligner to Decode
+   output logic  [`NUM_THREADS-1:0] ifu_i0_valid,        // Instruction 0 valid. From Aligner to Decode
+   output logic  [`NUM_THREADS-1:0] ifu_i1_valid,        // Instruction 1 valid. From Aligner to Decode
+   output logic  [`NUM_THREADS-1:0] ifu_i0_icaf,         // Instruction 0 access fault. From Aligner to Decode
 
-   output logic  [pt.NUM_THREADS-1:0] [1:0]  ifu_i0_icaf_type, // Instruction 0 access fault type
+   output logic  [`NUM_THREADS-1:0] [1:0]  ifu_i0_icaf_type, // Instruction 0 access fault type
 
-   output logic  [pt.NUM_THREADS-1:0] ifu_i0_icaf_second,      // Instruction 0 has access fault on second 2B of 4B inst
-   output logic  [pt.NUM_THREADS-1:0] ifu_i0_dbecc,        // Instruction 0 has double bit ecc error
+   output logic  [`NUM_THREADS-1:0] ifu_i0_icaf_second,      // Instruction 0 has access fault on second 2B of 4B inst
+   output logic  [`NUM_THREADS-1:0] ifu_i0_dbecc,        // Instruction 0 has double bit ecc error
    output logic                     iccm_dma_sb_error,   // Single Bit ECC error from a DMA access
-   output logic  [pt.NUM_THREADS-1:0] [31:0] ifu_i0_instr,   // Instruction 0 . From Aligner to Decode
-   output logic  [pt.NUM_THREADS-1:0] [31:0] ifu_i1_instr,   // Instruction 1 . From Aligner to Decode
-   output logic  [pt.NUM_THREADS-1:0] [31:1] ifu_i0_pc,      // Instruction 0 pc. From Aligner to Decode
-   output logic  [pt.NUM_THREADS-1:0] [31:1] ifu_i1_pc,      // Instruction 1 pc. From Aligner to Decode
-   output logic  [pt.NUM_THREADS-1:0] ifu_i0_pc4,           // Instruction 0 is 4 byte. From Aligner to Decode
-   output logic  [pt.NUM_THREADS-1:0] ifu_i1_pc4,           // Instruction 1 is 4 byte. From Aligner to Decode
-   output eh2_predecode_pkt_t  [pt.NUM_THREADS-1:0] ifu_i0_predecode,
-   output eh2_predecode_pkt_t  [pt.NUM_THREADS-1:0] ifu_i1_predecode,
+   output logic  [`NUM_THREADS-1:0] [31:0] ifu_i0_instr,   // Instruction 0 . From Aligner to Decode
+   output logic  [`NUM_THREADS-1:0] [31:0] ifu_i1_instr,   // Instruction 1 . From Aligner to Decode
+   output logic  [`NUM_THREADS-1:0] [31:1] ifu_i0_pc,      // Instruction 0 pc. From Aligner to Decode
+   output logic  [`NUM_THREADS-1:0] [31:1] ifu_i1_pc,      // Instruction 1 pc. From Aligner to Decode
+   output logic  [`NUM_THREADS-1:0] ifu_i0_pc4,           // Instruction 0 is 4 byte. From Aligner to Decode
+   output logic  [`NUM_THREADS-1:0] ifu_i1_pc4,           // Instruction 1 is 4 byte. From Aligner to Decode
+   output eh2_predecode_pkt_t  [`NUM_THREADS-1:0] ifu_i0_predecode,
+   output eh2_predecode_pkt_t  [`NUM_THREADS-1:0] ifu_i1_predecode,
 
-   output eh2_br_pkt_t [pt.NUM_THREADS-1:0] i0_brp,           // Instruction 0 branch packet. From Aligner to Decode
-   output eh2_br_pkt_t [pt.NUM_THREADS-1:0] i1_brp,           // Instruction 1 branch packet. From Aligner to Decode
-   output logic [pt.NUM_THREADS-1:0] [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] ifu_i0_bp_index, // BP index
-   output logic [pt.NUM_THREADS-1:0] [pt.BHT_GHR_SIZE-1:0]           ifu_i0_bp_fghr, // BP FGHR
-   output logic [pt.NUM_THREADS-1:0] [pt.BTB_BTAG_SIZE-1:0]          ifu_i0_bp_btag, // BP tag
-   output logic [pt.NUM_THREADS-1:0] [pt.BTB_TOFFSET_SIZE-1:0]       ifu_i0_bp_toffset, // BP offset
+   output eh2_br_pkt_t [`NUM_THREADS-1:0] i0_brp,           // Instruction 0 branch packet. From Aligner to Decode
+   output eh2_br_pkt_t [`NUM_THREADS-1:0] i1_brp,           // Instruction 1 branch packet. From Aligner to Decode
+   output logic [`NUM_THREADS-1:0] [`BTB_ADDR_HI:`BTB_ADDR_LO] ifu_i0_bp_index, // BP index
+   output logic [`NUM_THREADS-1:0] [`BHT_GHR_SIZE-1:0]           ifu_i0_bp_fghr, // BP FGHR
+   output logic [`NUM_THREADS-1:0] [`BTB_BTAG_SIZE-1:0]          ifu_i0_bp_btag, // BP tag
+   output logic [`NUM_THREADS-1:0] [`BTB_TOFFSET_SIZE-1:0]       ifu_i0_bp_toffset, // BP offset
 
-   output logic [pt.NUM_THREADS-1:0] [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] ifu_i1_bp_index, // BP index
-   output logic [pt.NUM_THREADS-1:0] [pt.BHT_GHR_SIZE-1:0]           ifu_i1_bp_fghr, // BP FGHR
-   output logic [pt.NUM_THREADS-1:0] [pt.BTB_BTAG_SIZE-1:0]          ifu_i1_bp_btag, // BP tag
-   output logic [pt.NUM_THREADS-1:0] [pt.BTB_TOFFSET_SIZE-1:0]       ifu_i1_bp_toffset, // BP offset
+   output logic [`NUM_THREADS-1:0] [`BTB_ADDR_HI:`BTB_ADDR_LO] ifu_i1_bp_index, // BP index
+   output logic [`NUM_THREADS-1:0] [`BHT_GHR_SIZE-1:0]           ifu_i1_bp_fghr, // BP FGHR
+   output logic [`NUM_THREADS-1:0] [`BTB_BTAG_SIZE-1:0]          ifu_i1_bp_btag, // BP tag
+   output logic [`NUM_THREADS-1:0] [`BTB_TOFFSET_SIZE-1:0]       ifu_i1_bp_toffset, // BP offset
 
-   output logic [pt.NUM_THREADS-1:0] [$clog2(pt.BTB_SIZE)-1:0] ifu_i0_bp_fa_index,
-   output logic [pt.NUM_THREADS-1:0] [$clog2(pt.BTB_SIZE)-1:0] ifu_i1_bp_fa_index,
+   output logic [`NUM_THREADS-1:0] [$clog2(`BTB_SIZE)-1:0] ifu_i0_bp_fa_index,
+   output logic [`NUM_THREADS-1:0] [$clog2(`BTB_SIZE)-1:0] ifu_i1_bp_fa_index,
 
-   input eh2_predict_pkt_t [pt.NUM_THREADS-1:0]                    exu_mp_pkt, // mispredict packet
-   input [pt.NUM_THREADS-1:0][pt.BTB_TOFFSET_SIZE-1:0] exu_mp_toffset, // target offset
-   input logic [pt.NUM_THREADS-1:0][pt.BHT_GHR_SIZE-1:0]            exu_mp_eghr, // execute ghr
-   input logic [pt.NUM_THREADS-1:0][pt.BHT_GHR_SIZE-1:0]            exu_mp_fghr,                    // Mispredict fghr
-   input logic [pt.NUM_THREADS-1:0][pt.BTB_ADDR_HI:pt.BTB_ADDR_LO]  exu_mp_index,         // Mispredict index
-   input logic [pt.NUM_THREADS-1:0][pt.BTB_BTAG_SIZE-1:0]           exu_mp_btag,                   // Mispredict btag
+   input eh2_predict_pkt_t [`NUM_THREADS-1:0]                    exu_mp_pkt, // mispredict packet
+   input [`NUM_THREADS-1:0][`BTB_TOFFSET_SIZE-1:0] exu_mp_toffset, // target offset
+   input logic [`NUM_THREADS-1:0][`BHT_GHR_SIZE-1:0]            exu_mp_eghr, // execute ghr
+   input logic [`NUM_THREADS-1:0][`BHT_GHR_SIZE-1:0]            exu_mp_fghr,                    // Mispredict fghr
+   input logic [`NUM_THREADS-1:0][`BTB_ADDR_HI:`BTB_ADDR_LO]  exu_mp_index,         // Mispredict index
+   input logic [`NUM_THREADS-1:0][`BTB_BTAG_SIZE-1:0]           exu_mp_btag,                   // Mispredict btag
 
    input eh2_br_tlu_pkt_t                     dec_tlu_br0_wb_pkt, // slot0 update/error pkt
    input eh2_br_tlu_pkt_t                     dec_tlu_br1_wb_pkt, // slot1 update/error pkt
-   input logic [pt.BHT_GHR_SIZE-1:0]           dec_tlu_br0_fghr_wb, // fghr to bp
-   input logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] dec_tlu_br0_index_wb, // bp index
-   input logic [pt.BHT_GHR_SIZE-1:0]           dec_tlu_br1_fghr_wb, // fghr to bp
-   input logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] dec_tlu_br1_index_wb, // bp index
+   input logic [`BHT_GHR_SIZE-1:0]           dec_tlu_br0_fghr_wb, // fghr to bp
+   input logic [`BTB_ADDR_HI:`BTB_ADDR_LO] dec_tlu_br0_index_wb, // bp index
+   input logic [`BHT_GHR_SIZE-1:0]           dec_tlu_br1_fghr_wb, // fghr to bp
+   input logic [`BTB_ADDR_HI:`BTB_ADDR_LO] dec_tlu_br1_index_wb, // bp index
 
-   input [pt.NUM_THREADS-1:0] dec_tlu_i0_commit_cmt,
+   input [`NUM_THREADS-1:0] dec_tlu_i0_commit_cmt,
 
-   input logic [$clog2(pt.BTB_SIZE)-1:0] dec_fa_error_index, // Fully associt btb error index
+   input logic [$clog2(`BTB_SIZE)-1:0] dec_fa_error_index, // Fully associt btb error index
 
-   output logic [pt.NUM_THREADS-1:0] [15:0] ifu_i0_cinst,
-   output logic [pt.NUM_THREADS-1:0] [15:0] ifu_i1_cinst,
+   output logic [`NUM_THREADS-1:0] [15:0] ifu_i0_cinst,
+   output logic [`NUM_THREADS-1:0] [15:0] ifu_i1_cinst,
 
 
 /// Icache debug
@@ -268,9 +268,9 @@ import eh2_param_pkg::*;
 
 
 // Icache/ICCM errors
-   output logic [pt.NUM_THREADS-1:0]  ifu_miss_state_idle,          // I-side miss buffer empty
-   output logic [pt.NUM_THREADS-1:0]  ifu_ic_error_start,           // IC single bit error
-   output logic [pt.NUM_THREADS-1:0]  ifu_iccm_rd_ecc_single_err,   // ICCM single bit error
+   output logic [`NUM_THREADS-1:0]  ifu_miss_state_idle,          // I-side miss buffer empty
+   output logic [`NUM_THREADS-1:0]  ifu_ic_error_start,           // IC single bit error
+   output logic [`NUM_THREADS-1:0]  ifu_iccm_rd_ecc_single_err,   // ICCM single bit error
 
 
    input logic scan_mode
@@ -286,77 +286,77 @@ import eh2_param_pkg::*;
 
    logic [31:1] ifc_fetch_addr_bf, ifc_fetch_addr_f1, ifc_fetch_addr_f2;
 
-   logic [pt.NUM_THREADS-1:0]   ic_write_stall_thr;
+   logic [`NUM_THREADS-1:0]   ic_write_stall_thr;
    logic        ic_dma_active;
    logic        ifc_dma_access_ok;
    logic        ifc_iccm_access_f1;
    logic        ifc_region_acc_fault_f1;
    logic  [3:0] ic_access_fault_f2;
    logic  [1:0] ic_access_fault_type_f2;// Access fault type
-   logic [pt.NUM_THREADS-1:0]   ifu_ic_mb_empty_thr;
-   logic [pt.NUM_THREADS-1:0]   ic_crit_wd_rdy_thr;
+   logic [`NUM_THREADS-1:0]   ifu_ic_mb_empty_thr;
+   logic [`NUM_THREADS-1:0]   ic_crit_wd_rdy_thr;
    logic [3:0]   ic_fetch_val_f2;
    logic [63:0]  ic_data_f2;
    logic [63:0]  ifu_fetch_data;
    logic         ifc_fetch_req_bf, ifc_fetch_req_f1_raw, ifc_fetch_req_f1, ifc_fetch_req_f2;
    logic         iccm_rd_ecc_single_err;  // This fetch has an iccm single error.
    logic [3:0]   iccm_rd_ecc_double_err;  // This fetch has an iccm double error.
-   logic [pt.NUM_THREADS-1:0]         ifu_async_error_start;
+   logic [`NUM_THREADS-1:0]         ifu_async_error_start;
 
    logic ifu_fetch_tid;
    logic ic_hit_f2;
 
 
    // fetch control
-   logic [pt.NUM_THREADS-1:0] [31:1] fetch_addr_bf, fetch_addr_f1, fetch_addr_f2; // fetch address
-   logic [pt.NUM_THREADS-1:0] fetch_uncacheable_f1, fetch_req_bf, fetch_req_f1, fetch_req_f1_raw, fetch_req_f2,
+   logic [`NUM_THREADS-1:0] [31:1] fetch_addr_bf, fetch_addr_f1, fetch_addr_f2; // fetch address
+   logic [`NUM_THREADS-1:0] fetch_uncacheable_f1, fetch_req_bf, fetch_req_f1, fetch_req_f1_raw, fetch_req_f2,
                               iccm_access_f1, region_acc_fault_f1, dma_access_ok,
                               ifc_ready;
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] fetch_btb_rd_addr_f1; // btb read hash
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] fetch_btb_rd_addr_p1_f1; // btb read hash
+   logic [`NUM_THREADS-1:0] [`BTB_ADDR_HI:`BTB_ADDR_LO] fetch_btb_rd_addr_f1; // btb read hash
+   logic [`NUM_THREADS-1:0] [`BTB_ADDR_HI:`BTB_ADDR_LO] fetch_btb_rd_addr_p1_f1; // btb read hash
 
-   logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] ifc_fetch_btb_rd_addr_f1; // btb read hash
-   logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] ifc_fetch_btb_rd_addr_p1_f1; // btb read hash
+   logic [`BTB_ADDR_HI:`BTB_ADDR_LO] ifc_fetch_btb_rd_addr_f1; // btb read hash
+   logic [`BTB_ADDR_HI:`BTB_ADDR_LO] ifc_fetch_btb_rd_addr_p1_f1; // btb read hash
 
-   logic [pt.NUM_THREADS-1:0] fb_consume1;                                   // Consumed one buffer. To fetch control fetch for buffer mass balance
-   logic [pt.NUM_THREADS-1:0] fb_consume2;                                   // Consumed two buffers.To fetch control fetch for buffer mass balance
+   logic [`NUM_THREADS-1:0] fb_consume1;                                   // Consumed one buffer. To fetch control fetch for buffer mass balance
+   logic [`NUM_THREADS-1:0] fb_consume2;                                   // Consumed two buffers.To fetch control fetch for buffer mass balance
 
-logic [pt.NUM_THREADS-1:0] dec_tlu_i0_commit_cmt_thr;
+logic [`NUM_THREADS-1:0] dec_tlu_i0_commit_cmt_thr;
 logic  fetch_tid_f1 ;
-   logic [pt.NUM_THREADS-1:0] i0_valid;                                      // Instruction 0 is valid
-   logic [pt.NUM_THREADS-1:0] i1_valid;                                      // Instruction 1 is valid
-   logic [pt.NUM_THREADS-1:0] i0_icaf;                                       // Instruction 0 has access fault
-   logic [pt.NUM_THREADS-1:0] [1:0]  i0_icaf_type;                           // Instruction 0 access fault type
-   logic [pt.NUM_THREADS-1:0] i0_icaf_second;                                // Instruction 0 has access fault on second 2B of 4B inst
-   logic [pt.NUM_THREADS-1:0] i0_dbecc;                                      // Instruction 0 has double bit ecc error
-   logic [pt.NUM_THREADS-1:0] [31:0] i0_instr;                               // Instruction 0
-   logic [pt.NUM_THREADS-1:0] [31:0] i1_instr;                               // Instruction 1
-   logic [pt.NUM_THREADS-1:0] [31:1] i0_pc;                                  // Instruction 0 PC
-   logic [pt.NUM_THREADS-1:0] [31:1] i1_pc;                                  // Instruction 1 PC
-   logic [pt.NUM_THREADS-1:0] i0_pc4;
-   logic [pt.NUM_THREADS-1:0] i1_pc4;
-   eh2_predecode_pkt_t [pt.NUM_THREADS-1:0] i0_predecode;
-   eh2_predecode_pkt_t [pt.NUM_THREADS-1:0] i1_predecode;
-   eh2_br_pkt_t [pt.NUM_THREADS-1:0] i0_br_p;                                    // Branch packet for I0.
-   eh2_br_pkt_t [pt.NUM_THREADS-1:0] i1_br_p;                                    // Branch packet for I1.
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_TOFFSET_SIZE-1:0] i0_bp_toffset; // target offset
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_TOFFSET_SIZE-1:0] i1_bp_toffset; // target offset
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO]  i0_bp_index;  // BP index
-   logic [pt.NUM_THREADS-1:0] [pt.BHT_GHR_SIZE-1:0]            i0_bp_fghr;   // BP FGHR
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_BTAG_SIZE-1:0]           i0_bp_btag;   // BP tag
+   logic [`NUM_THREADS-1:0] i0_valid;                                      // Instruction 0 is valid
+   logic [`NUM_THREADS-1:0] i1_valid;                                      // Instruction 1 is valid
+   logic [`NUM_THREADS-1:0] i0_icaf;                                       // Instruction 0 has access fault
+   logic [`NUM_THREADS-1:0] [1:0]  i0_icaf_type;                           // Instruction 0 access fault type
+   logic [`NUM_THREADS-1:0] i0_icaf_second;                                // Instruction 0 has access fault on second 2B of 4B inst
+   logic [`NUM_THREADS-1:0] i0_dbecc;                                      // Instruction 0 has double bit ecc error
+   logic [`NUM_THREADS-1:0] [31:0] i0_instr;                               // Instruction 0
+   logic [`NUM_THREADS-1:0] [31:0] i1_instr;                               // Instruction 1
+   logic [`NUM_THREADS-1:0] [31:1] i0_pc;                                  // Instruction 0 PC
+   logic [`NUM_THREADS-1:0] [31:1] i1_pc;                                  // Instruction 1 PC
+   logic [`NUM_THREADS-1:0] i0_pc4;
+   logic [`NUM_THREADS-1:0] i1_pc4;
+   eh2_predecode_pkt_t [`NUM_THREADS-1:0] i0_predecode;
+   eh2_predecode_pkt_t [`NUM_THREADS-1:0] i1_predecode;
+   eh2_br_pkt_t [`NUM_THREADS-1:0] i0_br_p;                                    // Branch packet for I0.
+   eh2_br_pkt_t [`NUM_THREADS-1:0] i1_br_p;                                    // Branch packet for I1.
+   logic [`NUM_THREADS-1:0] [`BTB_TOFFSET_SIZE-1:0] i0_bp_toffset; // target offset
+   logic [`NUM_THREADS-1:0] [`BTB_TOFFSET_SIZE-1:0] i1_bp_toffset; // target offset
+   logic [`NUM_THREADS-1:0] [`BTB_ADDR_HI:`BTB_ADDR_LO]  i0_bp_index;  // BP index
+   logic [`NUM_THREADS-1:0] [`BHT_GHR_SIZE-1:0]            i0_bp_fghr;   // BP FGHR
+   logic [`NUM_THREADS-1:0] [`BTB_BTAG_SIZE-1:0]           i0_bp_btag;   // BP tag
 
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO]  i1_bp_index;  // BP index
-   logic [pt.NUM_THREADS-1:0] [pt.BHT_GHR_SIZE-1:0]            i1_bp_fghr;   // BP FGHR
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_BTAG_SIZE-1:0]           i1_bp_btag;   // BP tag
+   logic [`NUM_THREADS-1:0] [`BTB_ADDR_HI:`BTB_ADDR_LO]  i1_bp_index;  // BP index
+   logic [`NUM_THREADS-1:0] [`BHT_GHR_SIZE-1:0]            i1_bp_fghr;   // BP FGHR
+   logic [`NUM_THREADS-1:0] [`BTB_BTAG_SIZE-1:0]           i1_bp_btag;   // BP tag
 
-   logic [pt.NUM_THREADS-1:0] [$clog2(pt.BTB_SIZE)-1:0] i0_bp_fa_index, i1_bp_fa_index;
-   logic [3:0] [$clog2(pt.BTB_SIZE)-1:0]    ifu_bp_fa_index_f2;
+   logic [`NUM_THREADS-1:0] [$clog2(`BTB_SIZE)-1:0] i0_bp_fa_index, i1_bp_fa_index;
+   logic [3:0] [$clog2(`BTB_SIZE)-1:0]    ifu_bp_fa_index_f2;
 
 
-   logic [pt.NUM_THREADS-1:0] [1:0] pmu_instr_aligned;                       // number of inst aligned this cycle
-   logic [pt.NUM_THREADS-1:0]       pmu_align_stall;                         // aligner stalled this cycle
-   logic [pt.NUM_THREADS-1:0] [15:0] i0_cinst;                               // 16b compress inst for i0
-   logic [pt.NUM_THREADS-1:0] [15:0] i1_cinst;                               // 16b compress inst for i1
+   logic [`NUM_THREADS-1:0] [1:0] pmu_instr_aligned;                       // number of inst aligned this cycle
+   logic [`NUM_THREADS-1:0]       pmu_align_stall;                         // aligner stalled this cycle
+   logic [`NUM_THREADS-1:0] [15:0] i0_cinst;                               // 16b compress inst for i0
+   logic [`NUM_THREADS-1:0] [15:0] i1_cinst;                               // 16b compress inst for i1
    logic [3:0]  ifu_bp_way_f2; // way indication; right justified
    logic  ifu_bp_kill_next_f2; // kill next fetch; taken target found
    logic [31:1] ifu_bp_btb_target_f2; //  predicted target PC
@@ -364,15 +364,15 @@ logic  fetch_tid_f1 ;
 
    logic [3:0]  ifu_bp_hist1_f2; // history counters for all 4 potential branches; right justified
    logic [3:0]  ifu_bp_hist0_f2; // history counters for all 4 potential branches; right justified
-   logic [pt.BTB_TOFFSET_SIZE-1:0] ifu_bp_poffset_f2; // predicted target
+   logic [`BTB_TOFFSET_SIZE-1:0] ifu_bp_poffset_f2; // predicted target
    logic [3:0]  ifu_bp_ret_f2; // predicted ret ; right justified
    logic [3:0]  ifu_bp_pc4_f2; // pc4 indication; right justified
    logic [3:0]  ifu_bp_valid_f2; // branch valid, right justified
-   logic [pt.BHT_GHR_SIZE-1:0] ifu_bp_fghr_f2;
+   logic [`BHT_GHR_SIZE-1:0] ifu_bp_fghr_f2;
 
    logic btb_wr_stall, ifc_select_tid_bf;
 
-     for (genvar i=0; i<pt.NUM_THREADS; i++) begin : ifc
+     for (genvar i=0; i<`NUM_THREADS; i++) begin : ifc
 
         eh2_ifu_ifc_ctl #() ifc (.clk           (active_thread_l2clk[i]),
                                          .tid               (1'(i)),
@@ -413,10 +413,10 @@ logic  fetch_tid_f1 ;
    logic       dma_iccm_stall_any_f, ifc_both_ready_f1;
 
 
-   if (pt.NUM_THREADS == 2) begin: genmtifc
+   if (`NUM_THREADS == 2) begin: genmtifc
 
       // SRAM arbs in BF to set up to the SRAM address flop. This causes problems with perf and fairness though. Fix below.
-      if(pt.BTB_USE_SRAM) begin
+      if(`BTB_USE_SRAM) begin
         rvarbiter2 ifc_arbiter (
                                 .clk(active_clk),
                                 .ready(ifc_ready[1:0]),
@@ -448,7 +448,7 @@ logic  fetch_tid_f1 ;
                              );
          assign ifc_fetch_req_bf = '0;
          assign ifc_select_tid_bf = 1'b0;
-      end // else: !if(pt.BTB_USE_SRAM)
+      end // else: !if(`BTB_USE_SRAM)
    end
    else begin
       assign ifc_select_tid_f1 = 1'b0;
@@ -462,29 +462,29 @@ logic  fetch_tid_f1 ;
    assign ifc_fetch_req_f1 = fetch_req_f1[ifc_select_tid_f1];
    assign ifc_fetch_req_f1_raw = fetch_req_f1_raw[ifc_select_tid_f1];
 
-   assign ifc_fetch_btb_rd_addr_f1[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] = fetch_btb_rd_addr_f1[ifc_select_tid_f1];
-   assign ifc_fetch_btb_rd_addr_p1_f1[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] = fetch_btb_rd_addr_p1_f1[ifc_select_tid_f1];
+   assign ifc_fetch_btb_rd_addr_f1[`BTB_ADDR_HI:`BTB_ADDR_LO] = fetch_btb_rd_addr_f1[ifc_select_tid_f1];
+   assign ifc_fetch_btb_rd_addr_p1_f1[`BTB_ADDR_HI:`BTB_ADDR_LO] = fetch_btb_rd_addr_p1_f1[ifc_select_tid_f1];
 
    assign ifc_iccm_access_f1 = iccm_access_f1[ifc_select_tid_f1];
    assign ifc_region_acc_fault_f1 = region_acc_fault_f1[ifc_select_tid_f1];
 
    assign ifc_fetch_req_f2 = fetch_req_f2[ifu_fetch_tid];
 
-   assign ifc_dma_access_ok = &dma_access_ok[pt.NUM_THREADS-1:0];
+   assign ifc_dma_access_ok = &dma_access_ok[`NUM_THREADS-1:0];
 
 
    // SRAM BTB hookup
    logic btb_sram_rw;
-   logic [1:0] [pt.BTB_ADDR_HI:1]        btb_sram_rw_addr, btb_sram_rw_addr_f1;
+   logic [1:0] [`BTB_ADDR_HI:1]        btb_sram_rw_addr, btb_sram_rw_addr_f1;
 
    assign btb_wren = btb_sram_rw;
    assign btb_rden = ~btb_sram_rw;
 
-   assign btb_rw_addr[0][pt.BTB_ADDR_HI:1] = btb_sram_rw_addr[0];
-   assign btb_rw_addr[1][pt.BTB_ADDR_HI:1] = btb_sram_rw_addr[1];
+   assign btb_rw_addr[0][`BTB_ADDR_HI:1] = btb_sram_rw_addr[0];
+   assign btb_rw_addr[1][`BTB_ADDR_HI:1] = btb_sram_rw_addr[1];
 
-   assign btb_rw_addr_f1[0][pt.BTB_ADDR_HI:1] = btb_sram_rw_addr_f1[0];
-   assign btb_rw_addr_f1[1][pt.BTB_ADDR_HI:1] = btb_sram_rw_addr_f1[1];
+   assign btb_rw_addr_f1[0][`BTB_ADDR_HI:1] = btb_sram_rw_addr_f1[0];
+   assign btb_rw_addr_f1[1][`BTB_ADDR_HI:1] = btb_sram_rw_addr_f1[1];
 
    // branch predictor
    eh2_ifu_bp_ctl #() bp (.*);
@@ -500,15 +500,15 @@ logic  fetch_tid_f1 ;
 
 
 
-  for (genvar i=0; i<pt.NUM_THREADS; i++) begin : aln
+  for (genvar i=0; i<`NUM_THREADS; i++) begin : aln
 
      eh2_ifu_aln_ctl #() aln (.clk               (active_thread_l2clk[i]),
                                       .ifu_fetch_val           ((ifu_fetch_tid==1'(i))?ifu_fetch_val[3:0]:4'b0),
                                       .ifu_fetch_data          ((ifu_fetch_tid==1'(i))?ifu_fetch_data[63:0]:64'b0),
                                       .ifu_fetch_pc            (fetch_addr_f2[i][31:1]),
-                                      .ifu_bp_fghr_f2          ((ifu_fetch_tid==1'(i))?ifu_bp_fghr_f2[pt.BHT_GHR_SIZE-1:0]:{pt.BHT_GHR_SIZE{1'b0}}),
+                                      .ifu_bp_fghr_f2          ((ifu_fetch_tid==1'(i))?ifu_bp_fghr_f2[`BHT_GHR_SIZE-1:0]:{`BHT_GHR_SIZE{1'b0}}),
                                       .ifu_bp_btb_target_f2    ((ifu_fetch_tid==1'(i))?ifu_bp_btb_target_f2[31:1]:31'b0),
-                                      .ifu_bp_poffset_f2       ((ifu_fetch_tid==1'(i))?ifu_bp_poffset_f2[pt.BTB_TOFFSET_SIZE-1:0]:{pt.BTB_TOFFSET_SIZE{1'b0}}),
+                                      .ifu_bp_poffset_f2       ((ifu_fetch_tid==1'(i))?ifu_bp_poffset_f2[`BTB_TOFFSET_SIZE-1:0]:{`BTB_TOFFSET_SIZE{1'b0}}),
                                       .ifu_bp_hist0_f2         ((ifu_fetch_tid==1'(i))?ifu_bp_hist0_f2[3:0]:4'b0),
                                       .ifu_bp_hist1_f2         ((ifu_fetch_tid==1'(i))?ifu_bp_hist1_f2[3:0]:4'b0),
                                       .ifu_bp_pc4_f2           ((ifu_fetch_tid==1'(i))?ifu_bp_pc4_f2[3:0]:4'b0),
@@ -565,42 +565,42 @@ logic  fetch_tid_f1 ;
 
 
 
-      assign dec_tlu_i0_commit_cmt_thr[pt.NUM_THREADS-1:0] =   dec_tlu_i0_commit_cmt[pt.NUM_THREADS-1:0] ;
+      assign dec_tlu_i0_commit_cmt_thr[`NUM_THREADS-1:0] =   dec_tlu_i0_commit_cmt[`NUM_THREADS-1:0] ;
 
-      assign ifu_i0_valid [pt.NUM_THREADS-1:0] =     i0_valid[pt.NUM_THREADS-1:0];
-      assign ifu_i1_valid [pt.NUM_THREADS-1:0] =     i1_valid[pt.NUM_THREADS-1:0];
-      assign ifu_i0_icaf  [pt.NUM_THREADS-1:0] =     i0_icaf[pt.NUM_THREADS-1:0];
-      assign ifu_i0_icaf_type [pt.NUM_THREADS-1:0] = i0_icaf_type[pt.NUM_THREADS-1:0];
-      assign ifu_i0_icaf_second   [pt.NUM_THREADS-1:0] = i0_icaf_second[pt.NUM_THREADS-1:0];
-      assign ifu_i0_dbecc [pt.NUM_THREADS-1:0] =     i0_dbecc[pt.NUM_THREADS-1:0];
-      assign ifu_i0_instr [pt.NUM_THREADS-1:0] =     i0_instr[pt.NUM_THREADS-1:0];
-      assign ifu_i1_instr [pt.NUM_THREADS-1:0] =     i1_instr[pt.NUM_THREADS-1:0];
-      assign ifu_i0_pc    [pt.NUM_THREADS-1:0] =     i0_pc[pt.NUM_THREADS-1:0];
-      assign ifu_i1_pc    [pt.NUM_THREADS-1:0] =     i1_pc[pt.NUM_THREADS-1:0];
-      assign ifu_i0_pc4   [pt.NUM_THREADS-1:0] =     i0_pc4[pt.NUM_THREADS-1:0];
-      assign ifu_i1_pc4   [pt.NUM_THREADS-1:0] =     i1_pc4[pt.NUM_THREADS-1:0];
-      assign ifu_i0_predecode [pt.NUM_THREADS-1:0] = i0_predecode[pt.NUM_THREADS-1:0];
-      assign ifu_i1_predecode [pt.NUM_THREADS-1:0] = i1_predecode[pt.NUM_THREADS-1:0];
-      assign i0_brp [pt.NUM_THREADS-1:0] =           i0_br_p[pt.NUM_THREADS-1:0];
-      assign i1_brp [pt.NUM_THREADS-1:0] =           i1_br_p[pt.NUM_THREADS-1:0];
-      assign ifu_i0_bp_index [pt.NUM_THREADS-1:0] =  i0_bp_index[pt.NUM_THREADS-1:0];
-      assign ifu_i0_bp_fghr  [pt.NUM_THREADS-1:0] =  i0_bp_fghr[pt.NUM_THREADS-1:0];
-      assign ifu_i0_bp_btag  [pt.NUM_THREADS-1:0] =  i0_bp_btag[pt.NUM_THREADS-1:0];
-      assign ifu_i0_bp_toffset [pt.NUM_THREADS-1:0] =  i0_bp_toffset[pt.NUM_THREADS-1:0];
-      assign ifu_i1_bp_index [pt.NUM_THREADS-1:0] =  i1_bp_index[pt.NUM_THREADS-1:0];
-      assign ifu_i1_bp_fghr  [pt.NUM_THREADS-1:0] =  i1_bp_fghr[pt.NUM_THREADS-1:0];
-      assign ifu_i1_bp_btag  [pt.NUM_THREADS-1:0] =  i1_bp_btag[pt.NUM_THREADS-1:0];
-      assign ifu_i1_bp_toffset [pt.NUM_THREADS-1:0] =  i1_bp_toffset[pt.NUM_THREADS-1:0];
-      assign ifu_i0_cinst [pt.NUM_THREADS-1:0] =     i0_cinst[pt.NUM_THREADS-1:0];
-      assign ifu_i1_cinst [pt.NUM_THREADS-1:0] =     i1_cinst[pt.NUM_THREADS-1:0];
+      assign ifu_i0_valid [`NUM_THREADS-1:0] =     i0_valid[`NUM_THREADS-1:0];
+      assign ifu_i1_valid [`NUM_THREADS-1:0] =     i1_valid[`NUM_THREADS-1:0];
+      assign ifu_i0_icaf  [`NUM_THREADS-1:0] =     i0_icaf[`NUM_THREADS-1:0];
+      assign ifu_i0_icaf_type [`NUM_THREADS-1:0] = i0_icaf_type[`NUM_THREADS-1:0];
+      assign ifu_i0_icaf_second   [`NUM_THREADS-1:0] = i0_icaf_second[`NUM_THREADS-1:0];
+      assign ifu_i0_dbecc [`NUM_THREADS-1:0] =     i0_dbecc[`NUM_THREADS-1:0];
+      assign ifu_i0_instr [`NUM_THREADS-1:0] =     i0_instr[`NUM_THREADS-1:0];
+      assign ifu_i1_instr [`NUM_THREADS-1:0] =     i1_instr[`NUM_THREADS-1:0];
+      assign ifu_i0_pc    [`NUM_THREADS-1:0] =     i0_pc[`NUM_THREADS-1:0];
+      assign ifu_i1_pc    [`NUM_THREADS-1:0] =     i1_pc[`NUM_THREADS-1:0];
+      assign ifu_i0_pc4   [`NUM_THREADS-1:0] =     i0_pc4[`NUM_THREADS-1:0];
+      assign ifu_i1_pc4   [`NUM_THREADS-1:0] =     i1_pc4[`NUM_THREADS-1:0];
+      assign ifu_i0_predecode [`NUM_THREADS-1:0] = i0_predecode[`NUM_THREADS-1:0];
+      assign ifu_i1_predecode [`NUM_THREADS-1:0] = i1_predecode[`NUM_THREADS-1:0];
+      assign i0_brp [`NUM_THREADS-1:0] =           i0_br_p[`NUM_THREADS-1:0];
+      assign i1_brp [`NUM_THREADS-1:0] =           i1_br_p[`NUM_THREADS-1:0];
+      assign ifu_i0_bp_index [`NUM_THREADS-1:0] =  i0_bp_index[`NUM_THREADS-1:0];
+      assign ifu_i0_bp_fghr  [`NUM_THREADS-1:0] =  i0_bp_fghr[`NUM_THREADS-1:0];
+      assign ifu_i0_bp_btag  [`NUM_THREADS-1:0] =  i0_bp_btag[`NUM_THREADS-1:0];
+      assign ifu_i0_bp_toffset [`NUM_THREADS-1:0] =  i0_bp_toffset[`NUM_THREADS-1:0];
+      assign ifu_i1_bp_index [`NUM_THREADS-1:0] =  i1_bp_index[`NUM_THREADS-1:0];
+      assign ifu_i1_bp_fghr  [`NUM_THREADS-1:0] =  i1_bp_fghr[`NUM_THREADS-1:0];
+      assign ifu_i1_bp_btag  [`NUM_THREADS-1:0] =  i1_bp_btag[`NUM_THREADS-1:0];
+      assign ifu_i1_bp_toffset [`NUM_THREADS-1:0] =  i1_bp_toffset[`NUM_THREADS-1:0];
+      assign ifu_i0_cinst [`NUM_THREADS-1:0] =     i0_cinst[`NUM_THREADS-1:0];
+      assign ifu_i1_cinst [`NUM_THREADS-1:0] =     i1_cinst[`NUM_THREADS-1:0];
 
-     assign  ifu_i0_bp_fa_index[pt.NUM_THREADS-1:0] =  i0_bp_fa_index[pt.NUM_THREADS-1:0];
-     assign  ifu_i1_bp_fa_index[pt.NUM_THREADS-1:0] =  i1_bp_fa_index[pt.NUM_THREADS-1:0];
+     assign  ifu_i0_bp_fa_index[`NUM_THREADS-1:0] =  i0_bp_fa_index[`NUM_THREADS-1:0];
+     assign  ifu_i1_bp_fa_index[`NUM_THREADS-1:0] =  i1_bp_fa_index[`NUM_THREADS-1:0];
 
 
-   assign ifu_pmu_instr_aligned[pt.NUM_THREADS-1:0] = pmu_instr_aligned[pt.NUM_THREADS-1:0];
+   assign ifu_pmu_instr_aligned[`NUM_THREADS-1:0] = pmu_instr_aligned[`NUM_THREADS-1:0];
 
-   assign ifu_pmu_align_stall[pt.NUM_THREADS-1:0] = pmu_align_stall[pt.NUM_THREADS-1:0];
+   assign ifu_pmu_align_stall[`NUM_THREADS-1:0] = pmu_align_stall[`NUM_THREADS-1:0];
 
    assign fetch_tid_f1 = ifc_select_tid_f1;
 
@@ -634,16 +634,16 @@ logic  fetch_tid_f1 ;
    logic exu_mp_bank; // write bank; based on branch PC[3:2]
    logic [1:0] exu_mp_hist; // new history
    logic [11:0] exu_mp_tgt; // target offset
-   logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] exu_mp_addr; // BTB/BHT address
+   logic [`BTB_ADDR_HI:`BTB_ADDR_LO] exu_mp_addr; // BTB/BHT address
    logic [3:0] ic_rd_hit_f2;
    logic [1:0] tmp_bnk;
    logic [31:0] mppc_ns0, mppc0;
    logic [31:0] mppc_ns1, mppc1;
-   logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] btb_rd_addr_f2, btb_rd_addr_p1_f2;
-   logic [pt.BHT_ADDR_HI:pt.BHT_ADDR_LO] bht_rd_addr_f2, bht_rd_addr_p1_f2;
+   logic [`BTB_ADDR_HI:`BTB_ADDR_LO] btb_rd_addr_f2, btb_rd_addr_p1_f2;
+   logic [`BHT_ADDR_HI:`BHT_ADDR_LO] bht_rd_addr_f2, bht_rd_addr_p1_f2;
    logic                                 i;
 
-   eh2_btb_addr_hash #() f2hash(.pc(bp.ifc_fetch_addr_f2[pt.BTB_INDEX3_HI:pt.BTB_INDEX1_LO]), .hash(btb_rd_addr_f2[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO]));
+   eh2_btb_addr_hash #() f2hash(.pc(bp.ifc_fetch_addr_f2[`BTB_INDEX3_HI:`BTB_INDEX1_LO]), .hash(btb_rd_addr_f2[`BTB_ADDR_HI:`BTB_ADDR_LO]));
    logic use_p1;
    assign use_p1 = (bp.fetch_start_f2[1] & bp.vwayhit_f2[3]) | (bp.fetch_start_f2[2] & |bp.vwayhit_f2[3:2]) | (bp.fetch_start_f2[3] & |bp.vwayhit_f2[3:1]) ;
 
@@ -657,7 +657,7 @@ logic  fetch_tid_f1 ;
    assign i1_pc_wb[0] = 1'b0;
 
    rvdff #(62)  e4pc (.*, .clk(active_clk), .din({`DEC.dec_tlu_i0_pc_e4[31:1],`DEC.dec_tlu_i1_pc_e4[31:1]}), .dout({i0_pc_wb[31:1], i1_pc_wb[31:1]}));
-   rvdff #(2*(pt.BHT_ADDR_HI-pt.BHT_ADDR_LO+1))  bhtff (.*, .clk(active_clk), .din({bp.bht_rd_addr_f1, bp.bht_rd_addr_p1_f1}), .dout({bht_rd_addr_f2, bht_rd_addr_p1_f2}));
+   rvdff #(2*(`BHT_ADDR_HI-`BHT_ADDR_LO+1))  bhtff (.*, .clk(active_clk), .din({bp.bht_rd_addr_f1, bp.bht_rd_addr_p1_f1}), .dout({bht_rd_addr_f2, bht_rd_addr_p1_f2}));
 
    assign tmp_bnk[1:0] = encode4_2(bp.btb_sel_f2[3:0]);
    logic [31:1] flush_path_i0_wb,flush_path_i1_wb;
@@ -666,13 +666,13 @@ logic  fetch_tid_f1 ;
 
    always @(negedge clk) begin
       if(`DEC.tlu.tlumt[0].tlu.mcyclel[31:0] == 32'h0000_0010) begin
-         $display("BTB_CONFIG: %d",pt.BTB_ARRAY_DEPTH*4);
+         $display("BTB_CONFIG: %d",`BTB_ARRAY_DEPTH*4);
          `ifndef BP_NOGSHARE
-         $display("BHT_CONFIG: %d gshare: 1",pt.BHT_ARRAY_DEPTH*4);
+         $display("BHT_CONFIG: %d gshare: 1",`BHT_ARRAY_DEPTH*4);
          `else
-         $display("BHT_CONFIG: %d gshare: 0",pt.BHT_ARRAY_DEPTH*4);
+         $display("BHT_CONFIG: %d gshare: 0",`BHT_ARRAY_DEPTH*4);
          `endif
-         $display("RS_CONFIG: %d", pt.RET_STACK_SIZE);
+         $display("RS_CONFIG: %d", `RET_STACK_SIZE);
       end
 
 
@@ -683,16 +683,16 @@ logic  fetch_tid_f1 ;
 
       if(exu_flush_final[0] & ~(dec_tlu_br0_wb_pkt.br_error | dec_tlu_br0_wb_pkt.br_start_error | dec_tlu_br1_wb_pkt.br_error | dec_tlu_br1_wb_pkt.br_start_error) & (exu_mp_pkt[0].misp | exu_mp_pkt[0].ataken))
         $display("%7d BTB_MP[T0]  : index: %0h bank: %0h call: %b ret: %b ataken: %b hist: %h valid: %b tag: %h targ: %h eghr: %b pred: %b ghr_index: %h brpc: %h way: %h",
-                 `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha, exu_mp_index[0][pt.BTB_ADDR_HI:pt.BTB_ADDR_LO], exu_mp_pkt[0].bank, exu_mp_pkt[0].pcall, exu_mp_pkt[0].pret,
+                 `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha, exu_mp_index[0][`BTB_ADDR_HI:`BTB_ADDR_LO], exu_mp_pkt[0].bank, exu_mp_pkt[0].pcall, exu_mp_pkt[0].pret,
                  exu_mp_pkt[0].ataken, exu_mp_pkt[0].hist[1:0],
-                 exu_mp_pkt[0].misp, exu_mp_btag[0][pt.BTB_BTAG_SIZE-1:0], {exu_flush_path_final[0][31:1], 1'b0}, exu_mp_eghr[0][pt.BHT_GHR_SIZE-1:0], exu_mp_pkt[0].misp,
+                 exu_mp_pkt[0].misp, exu_mp_btag[0][`BTB_BTAG_SIZE-1:0], {exu_flush_path_final[0][31:1], 1'b0}, exu_mp_eghr[0][`BHT_GHR_SIZE-1:0], exu_mp_pkt[0].misp,
                  bp.mp_hashed[0], mppc0[31:0], exu_mp_pkt[0].way);
       for(int i = 0; i < 4; i++) begin
          if(ifu_bp_valid_f2[i] & ifc_fetch_req_f2)
            $display("%7d BTB_HIT[T%b] : index: %0h bank: %0h call: %b ret: %b taken: %b strength: %b tag: %h targ: %0h ghr: %4b ghr_index: %h way: %h",
-                    `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha, bp.ifc_select_tid_f2, btb_rd_addr_f2[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO],encode4_2(bp.btb_sel_f2[3:0]), bp.btb_rd_call_f2, bp.btb_rd_ret_f2,
-                    ifu_bp_hist1_f2[tmp_bnk], ifu_bp_hist0_f2[tmp_bnk], bp.fetch_rd_tag_f2[pt.BTB_BTAG_SIZE-1:0], {ifu_bp_btb_target_f2[31:1], 1'b0},
-                    bp.fghr[0][pt.BHT_GHR_SIZE-1:0], use_p1 ? bht_rd_addr_p1_f2 : bht_rd_addr_f2, ifu_bp_way_f2[tmp_bnk]);
+                    `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha, bp.ifc_select_tid_f2, btb_rd_addr_f2[`BTB_ADDR_HI:`BTB_ADDR_LO],encode4_2(bp.btb_sel_f2[3:0]), bp.btb_rd_call_f2, bp.btb_rd_ret_f2,
+                    ifu_bp_hist1_f2[tmp_bnk], ifu_bp_hist0_f2[tmp_bnk], bp.fetch_rd_tag_f2[`BTB_BTAG_SIZE-1:0], {ifu_bp_btb_target_f2[31:1], 1'b0},
+                    bp.fghr[0][`BHT_GHR_SIZE-1:0], use_p1 ? bht_rd_addr_p1_f2 : bht_rd_addr_f2, ifu_bp_way_f2[tmp_bnk]);
       end
 
 
@@ -703,26 +703,26 @@ logic  fetch_tid_f1 ;
 
          if(exu_flush_final[1] & ~(dec_tlu_br0_wb_pkt.br_error | dec_tlu_br0_wb_pkt.br_start_error | dec_tlu_br1_wb_pkt.br_error | dec_tlu_br1_wb_pkt.br_start_error) & (exu_mp_pkt[1].misp | exu_mp_pkt[1].ataken))
            $display("%7d BTB_MP[T1]  : index: %0h bank: %0h call: %b ret: %b ataken: %b hist: %h valid: %b tag: %h targ: %h eghr: %b pred: %b ghr_index: %h brpc: %h way: %h",
-                    `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha, exu_mp_index[1][pt.BTB_ADDR_HI:pt.BTB_ADDR_LO], exu_mp_pkt[1].bank, exu_mp_pkt[1].pcall, exu_mp_pkt[1].pret,
+                    `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha, exu_mp_index[1][`BTB_ADDR_HI:`BTB_ADDR_LO], exu_mp_pkt[1].bank, exu_mp_pkt[1].pcall, exu_mp_pkt[1].pret,
                     exu_mp_pkt[1].ataken, exu_mp_pkt[1].hist[1:0],
-                    exu_mp_pkt[1].misp, exu_mp_btag[1][pt.BTB_BTAG_SIZE-1:0], {exu_flush_path_final[1][31:1], 1'b0}, exu_mp_eghr[1][pt.BHT_GHR_SIZE-1:0], exu_mp_pkt[1].misp,
+                    exu_mp_pkt[1].misp, exu_mp_btag[1][`BTB_BTAG_SIZE-1:0], {exu_flush_path_final[1][31:1], 1'b0}, exu_mp_eghr[1][`BHT_GHR_SIZE-1:0], exu_mp_pkt[1].misp,
                     bp.mp_hashed[1], mppc1[31:0], exu_mp_pkt[1].way);
 
       if(dec_tlu_br0_wb_pkt.valid & ~(dec_tlu_br0_wb_pkt.br_error | dec_tlu_br0_wb_pkt.br_start_error))
         $display("%7d BTB_UPD0[T%b]: ghr_index: %0h bank: %0h hist: %h  way: %h brpc: %h",
-                 `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha,`DEC.tlu.i0tid_wb, bp.br0_hashed_wb[pt.BHT_ADDR_HI:pt.BHT_ADDR_LO],{dec_tlu_br0_wb_pkt.bank,dec_tlu_br0_wb_pkt.middle},
+                 `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha,`DEC.tlu.i0tid_wb, bp.br0_hashed_wb[`BHT_ADDR_HI:`BHT_ADDR_LO],{dec_tlu_br0_wb_pkt.bank,dec_tlu_br0_wb_pkt.middle},
                  dec_tlu_br0_wb_pkt.hist, dec_tlu_br0_wb_pkt.way, i0_pc_wb);
       if(dec_tlu_br1_wb_pkt.valid & ~(dec_tlu_br1_wb_pkt.br_error | dec_tlu_br1_wb_pkt.br_start_error))
         $display("%7d BTB_UPD1[T%b]: ghr_index: %0h bank: %0h hist: %h  way: %h brpc: %h",
-                 `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha,`DEC.tlu.i1tid_wb,bp.br1_hashed_wb[pt.BHT_ADDR_HI:pt.BHT_ADDR_LO],{dec_tlu_br1_wb_pkt.bank,dec_tlu_br1_wb_pkt.middle},
+                 `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha,`DEC.tlu.i1tid_wb,bp.br1_hashed_wb[`BHT_ADDR_HI:`BHT_ADDR_LO],{dec_tlu_br1_wb_pkt.bank,dec_tlu_br1_wb_pkt.middle},
                  dec_tlu_br1_wb_pkt.hist, dec_tlu_br1_wb_pkt.way, i1_pc_wb);
       if(dec_tlu_br0_wb_pkt.br_error | dec_tlu_br0_wb_pkt.br_start_error)
         $display("%7d BTB_ERR0[T%b]: index: %0h bank: %0h start: %b rfpc: %h way: %h",
-                 `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha,`DEC.tlu.i0tid_wb,dec_tlu_br0_index_wb[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO],dec_tlu_br0_wb_pkt.bank, dec_tlu_br0_wb_pkt.br_start_error,
+                 `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha,`DEC.tlu.i0tid_wb,dec_tlu_br0_index_wb[`BTB_ADDR_HI:`BTB_ADDR_LO],dec_tlu_br0_wb_pkt.bank, dec_tlu_br0_wb_pkt.br_start_error,
                  {flush_path_i0_wb, 1'b0}, dec_tlu_br0_wb_pkt.way);
       if(dec_tlu_br1_wb_pkt.br_error | dec_tlu_br1_wb_pkt.br_start_error)
         $display("%7d BTB_ERR1[T%b]: index: %0h bank: %0h start: %b rfpc: %h way: %h",
-                 `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha,`DEC.tlu.i1tid_wb,dec_tlu_br1_index_wb[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO],dec_tlu_br1_wb_pkt.bank, dec_tlu_br1_wb_pkt.br_start_error,
+                 `DEC.tlu.tlumt[0].tlu.mcyclel[31:0]+32'ha,`DEC.tlu.i1tid_wb,dec_tlu_br1_index_wb[`BTB_ADDR_HI:`BTB_ADDR_LO],dec_tlu_br1_wb_pkt.bank, dec_tlu_br1_wb_pkt.br_start_error,
                  {flush_path_i1_wb, 1'b0}, dec_tlu_br1_wb_pkt.way);
    end // always @ (negedge clk)
       function [1:0] encode4_2;

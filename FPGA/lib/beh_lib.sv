@@ -15,7 +15,6 @@
 
 // all flops call the rvdff flop
 
-`include "common_defines.vh"
 
 module rvdff #( parameter WIDTH=1 )
    (
@@ -943,12 +942,12 @@ endmodule // rvlsadder
 
 module rvbradder
  import eh2_pkg::*;
- import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
  (
     input [31:1] pc,
-    input [pt.BTB_TOFFSET_SIZE:1] offset,
+    input [`BTB_TOFFSET_SIZE:1] offset,
 
     output [31:1] dout
     );
@@ -956,21 +955,21 @@ module rvbradder
    logic          cout;
    logic          sign;
 
-   logic [31:pt.BTB_TOFFSET_SIZE+1]  pc_inc;
-   logic [31:pt.BTB_TOFFSET_SIZE+1]  pc_dec;
+   logic [31:`BTB_TOFFSET_SIZE+1]  pc_inc;
+   logic [31:`BTB_TOFFSET_SIZE+1]  pc_dec;
 
-   assign {cout,dout[pt.BTB_TOFFSET_SIZE:1]} = {1'b0,pc[pt.BTB_TOFFSET_SIZE:1]} + {1'b0,offset[pt.BTB_TOFFSET_SIZE:1]};
+   assign {cout,dout[`BTB_TOFFSET_SIZE:1]} = {1'b0,pc[`BTB_TOFFSET_SIZE:1]} + {1'b0,offset[`BTB_TOFFSET_SIZE:1]};
 
-   assign pc_inc[31:pt.BTB_TOFFSET_SIZE+1] = pc[31:pt.BTB_TOFFSET_SIZE+1] + 1;
+   assign pc_inc[31:`BTB_TOFFSET_SIZE+1] = pc[31:`BTB_TOFFSET_SIZE+1] + 1;
 
-   assign pc_dec[31:pt.BTB_TOFFSET_SIZE+1] = pc[31:pt.BTB_TOFFSET_SIZE+1] - 1;
+   assign pc_dec[31:`BTB_TOFFSET_SIZE+1] = pc[31:`BTB_TOFFSET_SIZE+1] - 1;
 
-   assign sign = offset[pt.BTB_TOFFSET_SIZE];
+   assign sign = offset[`BTB_TOFFSET_SIZE];
 
 
-   assign dout[31:pt.BTB_TOFFSET_SIZE+1] = ({31-pt.BTB_TOFFSET_SIZE{  sign ^  ~cout}} &      pc[31:pt.BTB_TOFFSET_SIZE+1]) |
-                                           ({31-pt.BTB_TOFFSET_SIZE{ ~sign &   cout}}  & pc_inc[31:pt.BTB_TOFFSET_SIZE+1]) |
-                                           ({31-pt.BTB_TOFFSET_SIZE{  sign &  ~cout}}  & pc_dec[31:pt.BTB_TOFFSET_SIZE+1]);
+   assign dout[31:`BTB_TOFFSET_SIZE+1] = ({31-`BTB_TOFFSET_SIZE{  sign ^  ~cout}} &      pc[31:`BTB_TOFFSET_SIZE+1]) |
+                                           ({31-`BTB_TOFFSET_SIZE{ ~sign &   cout}}  & pc_inc[31:`BTB_TOFFSET_SIZE+1]) |
+                                           ({31-`BTB_TOFFSET_SIZE{  sign &  ~cout}}  & pc_dec[31:`BTB_TOFFSET_SIZE+1]);
 
 
 endmodule // rvbradder
@@ -1216,7 +1215,7 @@ module rvecc_decode_64  (
 
  endmodule // rvecc_decode_64
 
-module `TEC_RV_ICG (
+module clockhdr (
    input logic SE, EN, CK,
    output Q
    );
@@ -1238,7 +1237,6 @@ module `TEC_RV_ICG (
 
 endmodule
 
-
 `ifndef RV_FPGA_OPTIMIZE
 module rvclkhdr
   (
@@ -1251,28 +1249,9 @@ module rvclkhdr
    logic   SE;
    assign       SE = 0;
 
-   `TEC_RV_ICG clkhdr ( .*, .EN(en), .CK(clk), .Q(l1clk));
+   clockhdr clkhdr ( .*, .EN(en), .CK(clk), .Q(l1clk));
 
 endmodule // rvclkhdr
-`else
-    module rvclkhdr
-      (
-       input  logic en,
-       input  logic clk,
-       input  logic scan_mode,
-       output logic l1clk
-       );
-    
-       logic   SE;
-       assign       SE = 0;
-    
-       `ifdef RV_FPGA_OPTIMIZE
-          assign l1clk = clk;
-       `else
-          `TEC_RV_ICG clkhdr ( .*, .EN(en), .CK(clk), .Q(l1clk));
-       `endif
-    
-    endmodule // rvclkhdr
 `endif
 
 module rvoclkhdr
@@ -1289,7 +1268,7 @@ module rvoclkhdr
 `ifdef RV_FPGA_OPTIMIZE
    assign l1clk = clk;
 `else
-   `TEC_RV_ICG clkhdr ( .*, .EN(en), .CK(clk), .Q(l1clk));
+   clockhdr clkhdr ( .*, .EN(en), .CK(clk), .Q(l1clk));
 `endif
 
 endmodule

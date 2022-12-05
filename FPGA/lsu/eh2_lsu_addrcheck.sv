@@ -24,8 +24,8 @@
 //********************************************************************************
 module eh2_lsu_addrcheck
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )(
    input logic              lsu_c2_dc2_clk,       // clock
    input logic              lsu_c2_dc3_clk,
@@ -84,18 +84,18 @@ import eh2_param_pkg::*;
    logic [3:0]  misaligned_fault_mscause_dc2;
    logic        non_dccm_access_ok;
 
-   if (pt.DCCM_ENABLE == 1) begin: Gen_dccm_enable
+   if (`DCCM_ENABLE == 1) begin: Gen_dccm_enable
       // Start address check
-      rvrangecheck #(.CCM_SADR(pt.DCCM_SADR),
-                     .CCM_SIZE(pt.DCCM_SIZE)) start_addr_dccm_rangecheck (
+      rvrangecheck #(.CCM_SADR(`DCCM_SADR),
+                     .CCM_SIZE(`DCCM_SIZE)) start_addr_dccm_rangecheck (
          .addr(start_addr_dc1[31:0]),
          .in_range(start_addr_in_dccm_dc1),
          .in_region(start_addr_in_dccm_region_dc1)
       );
 
       // End address check
-      rvrangecheck #(.CCM_SADR(pt.DCCM_SADR),
-                     .CCM_SIZE(pt.DCCM_SIZE)) end_addr_dccm_rangecheck (
+      rvrangecheck #(.CCM_SADR(`DCCM_SADR),
+                     .CCM_SIZE(`DCCM_SIZE)) end_addr_dccm_rangecheck (
          .addr(end_addr_dc1[31:0]),
          .in_range(end_addr_in_dccm_dc1),
          .in_region(end_addr_in_dccm_region_dc1)
@@ -108,8 +108,8 @@ import eh2_param_pkg::*;
    end
 
    // ICCM region check
-   if (pt.ICCM_ENABLE == 1) begin : check_iccm
-     assign addr_in_iccm =  (start_addr_dc2[31:28] == pt.ICCM_REGION);
+   if (`ICCM_ENABLE == 1) begin : check_iccm
+     assign addr_in_iccm =  (start_addr_dc2[31:28] == `ICCM_REGION);
    end
    else begin
      assign addr_in_iccm = 1'b0;
@@ -117,16 +117,16 @@ import eh2_param_pkg::*;
 
    // PIC memory check
    // Start address check
-   rvrangecheck #(.CCM_SADR(pt.PIC_BASE_ADDR),
-                  .CCM_SIZE(pt.PIC_SIZE)) start_addr_pic_rangecheck (
+   rvrangecheck #(.CCM_SADR(`PIC_BASE_ADDR),
+                  .CCM_SIZE(`PIC_SIZE)) start_addr_pic_rangecheck (
       .addr(start_addr_dc1[31:0]),
       .in_range(start_addr_in_pic_dc1),
       .in_region(start_addr_in_pic_region_dc1)
    );
 
    // End address check
-   rvrangecheck #(.CCM_SADR(pt.PIC_BASE_ADDR),
-                  .CCM_SIZE(pt.PIC_SIZE)) end_addr_pic_rangecheck (
+   rvrangecheck #(.CCM_SADR(`PIC_BASE_ADDR),
+                  .CCM_SIZE(`PIC_SIZE)) end_addr_pic_rangecheck (
       .addr(end_addr_dc1[31:0]),
       .in_range(end_addr_in_pic_dc1),
       .in_region(end_addr_in_pic_region_dc1)
@@ -134,10 +134,10 @@ import eh2_param_pkg::*;
 
    assign rs1_region_dc1[3:0] = rs1_dc1[31:28];
    assign start_addr_dccm_or_pic_dc2  = start_addr_in_dccm_region_dc2 | start_addr_in_pic_region_dc2;
-   assign base_reg_dccm_or_pic_dc1    = ((rs1_region_dc1[3:0] == pt.DCCM_REGION) & pt.DCCM_ENABLE) | (rs1_region_dc1[3:0] == pt.PIC_REGION);
+   assign base_reg_dccm_or_pic_dc1    = ((rs1_region_dc1[3:0] == `DCCM_REGION) & `DCCM_ENABLE) | (rs1_region_dc1[3:0] == `PIC_REGION);
 
-   assign addr_in_dccm_region_dc1 = (rs1_region_dc1[3:0] == pt.DCCM_REGION) & pt.DCCM_ENABLE;  // We don't need to look at final address since lsu will take an exception if final region is different
-   assign addr_in_pic_region_dc1  = (rs1_region_dc1[3:0] == pt.PIC_REGION);   // We don't need to look at final address since lsu will take an exception if final region is different
+   assign addr_in_dccm_region_dc1 = (rs1_region_dc1[3:0] == `DCCM_REGION) & `DCCM_ENABLE;  // We don't need to look at final address since lsu will take an exception if final region is different
+   assign addr_in_pic_region_dc1  = (rs1_region_dc1[3:0] == `PIC_REGION);   // We don't need to look at final address since lsu will take an exception if final region is different
    assign addr_in_dccm_dc1        = (start_addr_in_dccm_dc1 & end_addr_in_dccm_dc1);
    assign addr_in_pic_dc1         = (start_addr_in_pic_dc1 & end_addr_in_pic_dc1);
 
@@ -152,23 +152,23 @@ import eh2_param_pkg::*;
                               (lsu_pkt_dc2.half & (start_addr_dc2[0] == 1'b0)) |
                               lsu_pkt_dc2.by;
 
-   assign non_dccm_access_ok = (~(|{pt.DATA_ACCESS_ENABLE0,pt.DATA_ACCESS_ENABLE1,pt.DATA_ACCESS_ENABLE2,pt.DATA_ACCESS_ENABLE3,pt.DATA_ACCESS_ENABLE4,pt.DATA_ACCESS_ENABLE5,pt.DATA_ACCESS_ENABLE6,pt.DATA_ACCESS_ENABLE7})) |
-                               (((pt.DATA_ACCESS_ENABLE0 & ((start_addr_dc2[31:0] | pt.DATA_ACCESS_MASK0)) == (pt.DATA_ACCESS_ADDR0 | pt.DATA_ACCESS_MASK0)) |
-                                 (pt.DATA_ACCESS_ENABLE1 & ((start_addr_dc2[31:0] | pt.DATA_ACCESS_MASK1)) == (pt.DATA_ACCESS_ADDR1 | pt.DATA_ACCESS_MASK1)) |
-                                 (pt.DATA_ACCESS_ENABLE2 & ((start_addr_dc2[31:0] | pt.DATA_ACCESS_MASK2)) == (pt.DATA_ACCESS_ADDR2 | pt.DATA_ACCESS_MASK2)) |
-                                 (pt.DATA_ACCESS_ENABLE3 & ((start_addr_dc2[31:0] | pt.DATA_ACCESS_MASK3)) == (pt.DATA_ACCESS_ADDR3 | pt.DATA_ACCESS_MASK3)) |
-                                 (pt.DATA_ACCESS_ENABLE4 & ((start_addr_dc2[31:0] | pt.DATA_ACCESS_MASK4)) == (pt.DATA_ACCESS_ADDR4 | pt.DATA_ACCESS_MASK4)) |
-                                 (pt.DATA_ACCESS_ENABLE5 & ((start_addr_dc2[31:0] | pt.DATA_ACCESS_MASK5)) == (pt.DATA_ACCESS_ADDR5 | pt.DATA_ACCESS_MASK5)) |
-                                 (pt.DATA_ACCESS_ENABLE6 & ((start_addr_dc2[31:0] | pt.DATA_ACCESS_MASK6)) == (pt.DATA_ACCESS_ADDR6 | pt.DATA_ACCESS_MASK6)) |
-                                 (pt.DATA_ACCESS_ENABLE7 & ((start_addr_dc2[31:0] | pt.DATA_ACCESS_MASK7)) == (pt.DATA_ACCESS_ADDR7 | pt.DATA_ACCESS_MASK7)))   &
-                                ((pt.DATA_ACCESS_ENABLE0 & ((end_addr_dc2[31:0]   | pt.DATA_ACCESS_MASK0)) == (pt.DATA_ACCESS_ADDR0 | pt.DATA_ACCESS_MASK0)) |
-                                 (pt.DATA_ACCESS_ENABLE1 & ((end_addr_dc2[31:0]   | pt.DATA_ACCESS_MASK1)) == (pt.DATA_ACCESS_ADDR1 | pt.DATA_ACCESS_MASK1)) |
-                                 (pt.DATA_ACCESS_ENABLE2 & ((end_addr_dc2[31:0]   | pt.DATA_ACCESS_MASK2)) == (pt.DATA_ACCESS_ADDR2 | pt.DATA_ACCESS_MASK2)) |
-                                 (pt.DATA_ACCESS_ENABLE3 & ((end_addr_dc2[31:0]   | pt.DATA_ACCESS_MASK3)) == (pt.DATA_ACCESS_ADDR3 | pt.DATA_ACCESS_MASK3)) |
-                                 (pt.DATA_ACCESS_ENABLE4 & ((end_addr_dc2[31:0]   | pt.DATA_ACCESS_MASK4)) == (pt.DATA_ACCESS_ADDR4 | pt.DATA_ACCESS_MASK4)) |
-                                 (pt.DATA_ACCESS_ENABLE5 & ((end_addr_dc2[31:0]   | pt.DATA_ACCESS_MASK5)) == (pt.DATA_ACCESS_ADDR5 | pt.DATA_ACCESS_MASK5)) |
-                                 (pt.DATA_ACCESS_ENABLE6 & ((end_addr_dc2[31:0]   | pt.DATA_ACCESS_MASK6)) == (pt.DATA_ACCESS_ADDR6 | pt.DATA_ACCESS_MASK6)) |
-                                 (pt.DATA_ACCESS_ENABLE7 & ((end_addr_dc2[31:0]   | pt.DATA_ACCESS_MASK7)) == (pt.DATA_ACCESS_ADDR7 | pt.DATA_ACCESS_MASK7))));
+   assign non_dccm_access_ok = (~(|{`DATA_ACCESS_ENABLE0,`DATA_ACCESS_ENABLE1,`DATA_ACCESS_ENABLE2,`DATA_ACCESS_ENABLE3,`DATA_ACCESS_ENABLE4,`DATA_ACCESS_ENABLE5,`DATA_ACCESS_ENABLE6,`DATA_ACCESS_ENABLE7})) |
+                               (((`DATA_ACCESS_ENABLE0 & ((start_addr_dc2[31:0] | `DATA_ACCESS_MASK0)) == (`DATA_ACCESS_ADDR0 | `DATA_ACCESS_MASK0)) |
+                                 (`DATA_ACCESS_ENABLE1 & ((start_addr_dc2[31:0] | `DATA_ACCESS_MASK1)) == (`DATA_ACCESS_ADDR1 | `DATA_ACCESS_MASK1)) |
+                                 (`DATA_ACCESS_ENABLE2 & ((start_addr_dc2[31:0] | `DATA_ACCESS_MASK2)) == (`DATA_ACCESS_ADDR2 | `DATA_ACCESS_MASK2)) |
+                                 (`DATA_ACCESS_ENABLE3 & ((start_addr_dc2[31:0] | `DATA_ACCESS_MASK3)) == (`DATA_ACCESS_ADDR3 | `DATA_ACCESS_MASK3)) |
+                                 (`DATA_ACCESS_ENABLE4 & ((start_addr_dc2[31:0] | `DATA_ACCESS_MASK4)) == (`DATA_ACCESS_ADDR4 | `DATA_ACCESS_MASK4)) |
+                                 (`DATA_ACCESS_ENABLE5 & ((start_addr_dc2[31:0] | `DATA_ACCESS_MASK5)) == (`DATA_ACCESS_ADDR5 | `DATA_ACCESS_MASK5)) |
+                                 (`DATA_ACCESS_ENABLE6 & ((start_addr_dc2[31:0] | `DATA_ACCESS_MASK6)) == (`DATA_ACCESS_ADDR6 | `DATA_ACCESS_MASK6)) |
+                                 (`DATA_ACCESS_ENABLE7 & ((start_addr_dc2[31:0] | `DATA_ACCESS_MASK7)) == (`DATA_ACCESS_ADDR7 | `DATA_ACCESS_MASK7)))   &
+                                ((`DATA_ACCESS_ENABLE0 & ((end_addr_dc2[31:0]   | `DATA_ACCESS_MASK0)) == (`DATA_ACCESS_ADDR0 | `DATA_ACCESS_MASK0)) |
+                                 (`DATA_ACCESS_ENABLE1 & ((end_addr_dc2[31:0]   | `DATA_ACCESS_MASK1)) == (`DATA_ACCESS_ADDR1 | `DATA_ACCESS_MASK1)) |
+                                 (`DATA_ACCESS_ENABLE2 & ((end_addr_dc2[31:0]   | `DATA_ACCESS_MASK2)) == (`DATA_ACCESS_ADDR2 | `DATA_ACCESS_MASK2)) |
+                                 (`DATA_ACCESS_ENABLE3 & ((end_addr_dc2[31:0]   | `DATA_ACCESS_MASK3)) == (`DATA_ACCESS_ADDR3 | `DATA_ACCESS_MASK3)) |
+                                 (`DATA_ACCESS_ENABLE4 & ((end_addr_dc2[31:0]   | `DATA_ACCESS_MASK4)) == (`DATA_ACCESS_ADDR4 | `DATA_ACCESS_MASK4)) |
+                                 (`DATA_ACCESS_ENABLE5 & ((end_addr_dc2[31:0]   | `DATA_ACCESS_MASK5)) == (`DATA_ACCESS_ADDR5 | `DATA_ACCESS_MASK5)) |
+                                 (`DATA_ACCESS_ENABLE6 & ((end_addr_dc2[31:0]   | `DATA_ACCESS_MASK6)) == (`DATA_ACCESS_ADDR6 | `DATA_ACCESS_MASK6)) |
+                                 (`DATA_ACCESS_ENABLE7 & ((end_addr_dc2[31:0]   | `DATA_ACCESS_MASK7)) == (`DATA_ACCESS_ADDR7 | `DATA_ACCESS_MASK7))));
 
    // Access fault logic
    // 0. Unmapped local memory fault: Addr in dccm region but not in dccm offset OR Addr in picm region but not in picm offset OR DCCM -> PIC cross when DCCM/PIC in same region
@@ -182,7 +182,7 @@ import eh2_param_pkg::*;
    assign amo_access_fault_dc2      =  (lsu_pkt_dc2.atomic & (start_addr_dc2[1:0] != 2'b0))                     | // 7. AMO are not word aligned OR AMO address not in dccm region
                                        (lsu_pkt_dc2.valid & lsu_pkt_dc2.atomic & ~addr_in_dccm_dc2);
 
-   if (pt.DCCM_ENABLE & (pt.DCCM_REGION == pt.PIC_REGION)) begin
+   if (`DCCM_ENABLE & (`DCCM_REGION == `PIC_REGION)) begin
       assign unmapped_access_fault_dc2 = ((start_addr_in_dccm_region_dc2 & ~(start_addr_in_dccm_dc2 | start_addr_in_pic_dc2)) |   // 0. Addr in dccm/pic region but not in dccm/pic offset
                                         (end_addr_in_dccm_region_dc2 & ~(end_addr_in_dccm_dc2 | end_addr_in_pic_dc2))         |   // 0. Addr in dccm/pic region but not in dccm/pic offset
                                         (start_addr_in_dccm_dc2 & end_addr_in_pic_dc2)                                        |   // 0. DCCM -> PIC cross when DCCM/PIC in same region

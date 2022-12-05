@@ -25,53 +25,53 @@
 
 module eh2_dec_tlu_top
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
   (
    input logic clk,
    input logic free_clk,
    input logic active_clk,
    input logic free_l2clk,
-   input logic [pt.NUM_THREADS-1:0] active_thread_l2clk,
+   input logic [`NUM_THREADS-1:0] active_thread_l2clk,
    input logic rst_l,
    input logic scan_mode,
 
    input logic [31:1] rst_vec, // reset vector, from core pins
    input logic        nmi_int, // nmi pin
    input logic [31:1] nmi_vec, // nmi vector
-   input logic  [pt.NUM_THREADS-1:0] i_cpu_halt_req,    // Asynchronous Halt request to CPU
-   input logic  [pt.NUM_THREADS-1:0] i_cpu_run_req,     // Asynchronous Restart request to CPU
+   input logic  [`NUM_THREADS-1:0] i_cpu_halt_req,    // Asynchronous Halt request to CPU
+   input logic  [`NUM_THREADS-1:0] i_cpu_run_req,     // Asynchronous Restart request to CPU
 
    input logic lsu_fastint_stall_any,   // needed by lsu for 2nd pass of dma with ecc correction, stall next cycle
    output logic dec_tlu_core_empty,
 
    // perf counter inputs
-   input logic [pt.NUM_THREADS-1:0][1:0] dec_pmu_instr_decoded,  // perf mon - decoded inst count
-   input logic [pt.NUM_THREADS-1:0]    dec_pmu_decode_stall,     // perf mon - decode stall count
-   input logic [pt.NUM_THREADS-1:0]    dec_pmu_presync_stall,    // perf mon - presync stall count
-   input logic [pt.NUM_THREADS-1:0]    dec_pmu_postsync_stall,   // perf mon - postsync stall count
-   input logic [pt.NUM_THREADS-1:0][1:0] ifu_pmu_instr_aligned,  // perf mon - inst aligned count
-   input logic [pt.NUM_THREADS-1:0]      ifu_pmu_align_stall,    // perf mon - aligner stall count
-   input logic [pt.NUM_THREADS-1:0]  lsu_pmu_load_external_dc3,  // perf mon - load count
-   input logic [pt.NUM_THREADS-1:0]  lsu_pmu_store_external_dc3, // perf mon - store count
-   input logic [pt.NUM_THREADS-1:0]  lsu_pmu_bus_trxn,           // perf mon - bus transaction count
-   input logic [pt.NUM_THREADS-1:0]  lsu_pmu_bus_busy,           // perf mon - bus busy count
-   input logic [pt.NUM_THREADS-1:0]  lsu_pmu_bus_misaligned,     // perf mon - bus misalign count
-   input logic [pt.NUM_THREADS-1:0]  lsu_pmu_bus_error,          // perf mon - bus error count
-   input logic [pt.NUM_THREADS-1:0] ifu_pmu_ic_miss,               // IC miss event
-   input logic [pt.NUM_THREADS-1:0] ifu_pmu_ic_hit,                // IC hit event
-   input logic [pt.NUM_THREADS-1:0] ifu_pmu_bus_error,             // Bus error event
-   input logic [pt.NUM_THREADS-1:0] ifu_pmu_bus_busy,              // Bus busy event
-   input logic [pt.NUM_THREADS-1:0] ifu_pmu_bus_trxn,              // Bus transaction
-   input logic [pt.NUM_THREADS-1:0] ifu_pmu_fetch_stall, // perf mon - fetch stall count
+   input logic [`NUM_THREADS-1:0][1:0] dec_pmu_instr_decoded,  // perf mon - decoded inst count
+   input logic [`NUM_THREADS-1:0]    dec_pmu_decode_stall,     // perf mon - decode stall count
+   input logic [`NUM_THREADS-1:0]    dec_pmu_presync_stall,    // perf mon - presync stall count
+   input logic [`NUM_THREADS-1:0]    dec_pmu_postsync_stall,   // perf mon - postsync stall count
+   input logic [`NUM_THREADS-1:0][1:0] ifu_pmu_instr_aligned,  // perf mon - inst aligned count
+   input logic [`NUM_THREADS-1:0]      ifu_pmu_align_stall,    // perf mon - aligner stall count
+   input logic [`NUM_THREADS-1:0]  lsu_pmu_load_external_dc3,  // perf mon - load count
+   input logic [`NUM_THREADS-1:0]  lsu_pmu_store_external_dc3, // perf mon - store count
+   input logic [`NUM_THREADS-1:0]  lsu_pmu_bus_trxn,           // perf mon - bus transaction count
+   input logic [`NUM_THREADS-1:0]  lsu_pmu_bus_busy,           // perf mon - bus busy count
+   input logic [`NUM_THREADS-1:0]  lsu_pmu_bus_misaligned,     // perf mon - bus misalign count
+   input logic [`NUM_THREADS-1:0]  lsu_pmu_bus_error,          // perf mon - bus error count
+   input logic [`NUM_THREADS-1:0] ifu_pmu_ic_miss,               // IC miss event
+   input logic [`NUM_THREADS-1:0] ifu_pmu_ic_hit,                // IC hit event
+   input logic [`NUM_THREADS-1:0] ifu_pmu_bus_error,             // Bus error event
+   input logic [`NUM_THREADS-1:0] ifu_pmu_bus_busy,              // Bus busy event
+   input logic [`NUM_THREADS-1:0] ifu_pmu_bus_trxn,              // Bus transaction
+   input logic [`NUM_THREADS-1:0] ifu_pmu_fetch_stall, // perf mon - fetch stall count
    input logic       exu_pmu_i0_br_misp,     // pipe 0 branch misp
    input logic       exu_pmu_i0_br_ataken,   // pipe 0 branch actual taken
    input logic       exu_pmu_i0_pc4,         // pipe 0 4 byte branch
    input logic       exu_pmu_i1_br_misp,     // pipe 1 branch misp
    input logic       exu_pmu_i1_br_ataken,   // pipe 1 branch actual taken
    input logic       exu_pmu_i1_pc4,         // pipe 1 4 byte branch
-   input logic       [pt.NUM_THREADS-1:0] lsu_store_stall_any,    // SB or WB is full, stall decode
+   input logic       [`NUM_THREADS-1:0] lsu_store_stall_any,    // SB or WB is full, stall decode
    input logic       dma_dccm_stall_any,     // DMA stall of lsu
    input logic       dma_iccm_stall_any,     // DMA stall of ifu
    input logic       dma_pmu_dccm_read,          // DMA DCCM read
@@ -89,10 +89,10 @@ import eh2_param_pkg::*;
    input eh2_trap_pkt_t dec_tlu_packet_e4, // exceptions known at decode (contains info for both pipes)
    input eh2_lsu_error_pkt_t lsu_error_pkt_dc3, // lsu precise exception/error packet
 
-   input logic [pt.NUM_THREADS-1:0] dec_pause_state, // Pause counter not zero
-   input logic [pt.NUM_THREADS-1:0] lsu_imprecise_error_store_any,      // store bus error
-   input logic [pt.NUM_THREADS-1:0] lsu_imprecise_error_load_any,      // store bus error
-   input logic [pt.NUM_THREADS-1:0][31:0]  lsu_imprecise_error_addr_any,   // LSU imprecise bus error address
+   input logic [`NUM_THREADS-1:0] dec_pause_state, // Pause counter not zero
+   input logic [`NUM_THREADS-1:0] lsu_imprecise_error_store_any,      // store bus error
+   input logic [`NUM_THREADS-1:0] lsu_imprecise_error_load_any,      // store bus error
+   input logic [`NUM_THREADS-1:0][31:0]  lsu_imprecise_error_addr_any,   // LSU imprecise bus error address
 
    input logic dec_i0_tid_d, // pipe0 tid at decode
 
@@ -104,16 +104,16 @@ import eh2_param_pkg::*;
    input logic [31:0] dec_i0_csr_wrdata_wb,   // csr write data at wb
    input logic        dec_i0_csr_is_mcpc_e4,     // csr address is to MCPC
 
-   input logic [pt.NUM_THREADS-1:0] dec_csr_stall_int_ff, // csr is mie/mstatus
+   input logic [`NUM_THREADS-1:0] dec_csr_stall_int_ff, // csr is mie/mstatus
    input logic dec_csr_nmideleg_e4, // csr is mnmipdel
 
    input logic dec_tlu_i0_valid_e4, // pipe 0 op at e4 is valid
    input logic dec_tlu_i1_valid_e4, // pipe 1 op at e4 is valid
 
-   input logic [pt.NUM_THREADS-1:0] [31:1] exu_npc_e4, // for NPC tracking
+   input logic [`NUM_THREADS-1:0] [31:1] exu_npc_e4, // for NPC tracking
 
-   input logic [pt.NUM_THREADS-1:0] exu_i0_flush_lower_e4,       // pipe 0 branch mp flush
-   input logic [pt.NUM_THREADS-1:0] exu_i1_flush_lower_e4,       // pipe 1 branch mp flush
+   input logic [`NUM_THREADS-1:0] exu_i0_flush_lower_e4,       // pipe 0 branch mp flush
+   input logic [`NUM_THREADS-1:0] exu_i1_flush_lower_e4,       // pipe 1 branch mp flush
    input logic [31:1] exu_i0_flush_path_e4, // pipe 0 correct path for mp, merge with lower path
    input logic [31:1] exu_i1_flush_path_e4, // pipe 1 correct path for mp, merge with lower path
 
@@ -121,11 +121,11 @@ import eh2_param_pkg::*;
    input logic [31:1] dec_tlu_i1_pc_e4, // for PC/NPC tracking
 
 
-   input logic [pt.NUM_THREADS-1:0] [31:0] dec_illegal_inst, // For mtval
+   input logic [`NUM_THREADS-1:0] [31:0] dec_illegal_inst, // For mtval
    input logic        dec_i0_decode_d,  // decode valid, used for clean icache diagnostics
 
    // branch info from pipe0 for errors or counter updates
-   input logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] exu_i0_br_index_e4, // index
+   input logic [`BTB_ADDR_HI:`BTB_ADDR_LO] exu_i0_br_index_e4, // index
    input logic [1:0]  exu_i0_br_hist_e4, // history
    input logic        exu_i0_br_bank_e4, // bank
    input logic        exu_i0_br_error_e4, // error
@@ -133,10 +133,10 @@ import eh2_param_pkg::*;
    input logic        exu_i0_br_valid_e4, // valid
    input logic        exu_i0_br_mp_e4, // mispredict
    input logic        exu_i0_br_middle_e4, // middle of bank
-   input logic [pt.BHT_GHR_SIZE-1:0] exu_i0_br_fghr_e4, // FGHR when predicted
+   input logic [`BHT_GHR_SIZE-1:0] exu_i0_br_fghr_e4, // FGHR when predicted
 
    // branch info from pipe1 for errors or counter updates
-   input logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] exu_i1_br_index_e4, // index
+   input logic [`BTB_ADDR_HI:`BTB_ADDR_LO] exu_i1_br_index_e4, // index
    input logic [1:0]  exu_i1_br_hist_e4, // history
    input logic        exu_i1_br_bank_e4, // bank
    input logic        exu_i1_br_error_e4, // error
@@ -144,74 +144,74 @@ import eh2_param_pkg::*;
    input logic        exu_i1_br_valid_e4, // valid
    input logic        exu_i1_br_mp_e4, // mispredict
    input logic        exu_i1_br_middle_e4, // middle of bank
-   input logic [pt.BHT_GHR_SIZE-1:0]  exu_i1_br_fghr_e4, // FGHR when predicted
+   input logic [`BHT_GHR_SIZE-1:0]  exu_i1_br_fghr_e4, // FGHR when predicted
 
    input logic        exu_i1_br_way_e4, // way hit or repl
    input logic        exu_i0_br_way_e4, // way hit or repl
 
-   input  logic [pt.NUM_THREADS-1:0] dbg_halt_req, // DM requests a halt
-   input  logic [pt.NUM_THREADS-1:0] dbg_resume_req, // DM requests a resume
-   input  logic [pt.NUM_THREADS-1:0] ifu_miss_state_idle, // I-side miss buffer empty
-   input  logic [pt.NUM_THREADS-1:0] lsu_idle_any, // lsu is idle
+   input  logic [`NUM_THREADS-1:0] dbg_halt_req, // DM requests a halt
+   input  logic [`NUM_THREADS-1:0] dbg_resume_req, // DM requests a resume
+   input  logic [`NUM_THREADS-1:0] ifu_miss_state_idle, // I-side miss buffer empty
+   input  logic [`NUM_THREADS-1:0] lsu_idle_any, // lsu is idle
    input  logic                      dec_div_active, // oop divide is active
    input  logic                      dec_div_tid,    // oop divide tid
 
-   input logic  [pt.NUM_THREADS-1:0] ifu_ic_error_start,     // IC single bit error
-   input logic  [pt.NUM_THREADS-1:0] ifu_iccm_rd_ecc_single_err, // ICCM single bit error
+   input logic  [`NUM_THREADS-1:0] ifu_ic_error_start,     // IC single bit error
+   input logic  [`NUM_THREADS-1:0] ifu_iccm_rd_ecc_single_err, // ICCM single bit error
 
    input logic [70:0] ifu_ic_debug_rd_data, // diagnostic icache read data
    input logic ifu_ic_debug_rd_data_valid, // diagnostic icache read data valid
 
-   input logic [pt.NUM_THREADS-1:0] [7:0] pic_claimid, // pic claimid for csr
-   input logic [pt.NUM_THREADS-1:0] [3:0] pic_pl, // pic priv level for csr
-   input logic [pt.NUM_THREADS-1:0]       mhwakeup, // high priority external int, wakeup if halted
+   input logic [`NUM_THREADS-1:0] [7:0] pic_claimid, // pic claimid for csr
+   input logic [`NUM_THREADS-1:0] [3:0] pic_pl, // pic priv level for csr
+   input logic [`NUM_THREADS-1:0]       mhwakeup, // high priority external int, wakeup if halted
 
-   input logic [pt.NUM_THREADS-1:0] mexintpend, // external interrupt pending
-   input logic [pt.NUM_THREADS-1:0] timer_int, // timer interrupt pending
-   input logic [pt.NUM_THREADS-1:0] soft_int,                             // Software interrupt pending (from pin)
+   input logic [`NUM_THREADS-1:0] mexintpend, // external interrupt pending
+   input logic [`NUM_THREADS-1:0] timer_int, // timer interrupt pending
+   input logic [`NUM_THREADS-1:0] soft_int,                             // Software interrupt pending (from pin)
 
    input logic [31:4]     core_id, // Core ID
 
    // external MPC halt/run interface
-   input logic [pt.NUM_THREADS-1:0] mpc_debug_halt_req, // Async halt request
-   input logic [pt.NUM_THREADS-1:0] mpc_debug_run_req, // Async run request
-   input logic [pt.NUM_THREADS-1:0] mpc_reset_run_req, // Run/halt after reset
+   input logic [`NUM_THREADS-1:0] mpc_debug_halt_req, // Async halt request
+   input logic [`NUM_THREADS-1:0] mpc_debug_run_req, // Async run request
+   input logic [`NUM_THREADS-1:0] mpc_reset_run_req, // Run/halt after reset
 
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_dbg_halted, // Core is halted and ready for debug command
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_debug_mode, // Core is in debug mode
+   output logic [`NUM_THREADS-1:0] dec_tlu_dbg_halted, // Core is halted and ready for debug command
+   output logic [`NUM_THREADS-1:0] dec_tlu_debug_mode, // Core is in debug mode
    output logic dec_dbg_cmd_done, // abstract command done
    output logic dec_dbg_cmd_fail, // abstract command failed
    output logic dec_dbg_cmd_tid,  // Tid for debug abstract command response
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_resume_ack, // Resume acknowledge
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_debug_stall, // stall decode while waiting on core to empty
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_mpc_halted_only, // Core is halted only due to MPC
-   output eh2_trigger_pkt_t [pt.NUM_THREADS-1:0] [3:0] trigger_pkt_any, // trigger info for trigger blocks
+   output logic [`NUM_THREADS-1:0] dec_tlu_resume_ack, // Resume acknowledge
+   output logic [`NUM_THREADS-1:0] dec_tlu_debug_stall, // stall decode while waiting on core to empty
+   output logic [`NUM_THREADS-1:0] dec_tlu_mpc_halted_only, // Core is halted only due to MPC
+   output eh2_trigger_pkt_t [`NUM_THREADS-1:0] [3:0] trigger_pkt_any, // trigger info for trigger blocks
 
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_mhartstart, // thread 1 hartstart
-   output logic [pt.NUM_THREADS-1:0] o_cpu_halt_status, // PMU interface, halted
-   output logic [pt.NUM_THREADS-1:0] o_cpu_halt_ack, // halt req ack
-   output logic [pt.NUM_THREADS-1:0] o_cpu_run_ack, // run req ack
-   output logic [pt.NUM_THREADS-1:0] o_debug_mode_status, // Core to the PMU that core is in debug mode. When core is in debug mode, the PMU should refrain from sendng a halt or run request
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_force_halt, // forcing debug halt
+   output logic [`NUM_THREADS-1:0] dec_tlu_mhartstart, // thread 1 hartstart
+   output logic [`NUM_THREADS-1:0] o_cpu_halt_status, // PMU interface, halted
+   output logic [`NUM_THREADS-1:0] o_cpu_halt_ack, // halt req ack
+   output logic [`NUM_THREADS-1:0] o_cpu_run_ack, // run req ack
+   output logic [`NUM_THREADS-1:0] o_debug_mode_status, // Core to the PMU that core is in debug mode. When core is in debug mode, the PMU should refrain from sendng a halt or run request
+   output logic [`NUM_THREADS-1:0] dec_tlu_force_halt, // forcing debug halt
 
    output eh2_cache_debug_pkt_t dec_tlu_ic_diag_pkt, // packet of DICAWICS, DICAD0/1, DICAGO info for icache diagnostics
 
    output logic [31:2] dec_tlu_meihap, // meihap for fast int
 
    // external MPC halt/run interface
-   output logic [pt.NUM_THREADS-1:0] mpc_debug_halt_ack, // Halt ack
-   output logic [pt.NUM_THREADS-1:0] mpc_debug_run_ack, // Run ack
-   output logic [pt.NUM_THREADS-1:0] debug_brkpt_status, // debug breakpoint
+   output logic [`NUM_THREADS-1:0] mpc_debug_halt_ack, // Halt ack
+   output logic [`NUM_THREADS-1:0] mpc_debug_run_ack, // Run ack
+   output logic [`NUM_THREADS-1:0] debug_brkpt_status, // debug breakpoint
 
-   output logic [pt.NUM_THREADS-1:0] [3:0] dec_tlu_meicurpl, // to PIC
-   output logic [pt.NUM_THREADS-1:0] [3:0] dec_tlu_meipt, // to PIC
+   output logic [`NUM_THREADS-1:0] [3:0] dec_tlu_meicurpl, // to PIC
+   output logic [`NUM_THREADS-1:0] [3:0] dec_tlu_meipt, // to PIC
 
    output eh2_br_tlu_pkt_t dec_tlu_br0_wb_pkt, // branch pkt to bp
    output eh2_br_tlu_pkt_t dec_tlu_br1_wb_pkt, // branch pkt to bp
-   output logic [pt.BHT_GHR_SIZE-1:0] dec_tlu_br0_fghr_wb, // fghr to bp
-   output logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] dec_tlu_br0_index_wb, // bp index
-   output logic [pt.BHT_GHR_SIZE-1:0] dec_tlu_br1_fghr_wb, // fghr to bp
-   output logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] dec_tlu_br1_index_wb, // bp index
+   output logic [`BHT_GHR_SIZE-1:0] dec_tlu_br0_fghr_wb, // fghr to bp
+   output logic [`BTB_ADDR_HI:`BTB_ADDR_LO] dec_tlu_br0_index_wb, // bp index
+   output logic [`BHT_GHR_SIZE-1:0] dec_tlu_br1_fghr_wb, // fghr to bp
+   output logic [`BTB_ADDR_HI:`BTB_ADDR_LO] dec_tlu_br1_index_wb, // bp index
 
    output logic [31:0] dec_i0_csr_rddata_d,      // csr read data at d
    output logic dec_i0_csr_legal_d,              // csr indicates legal operation
@@ -221,40 +221,40 @@ import eh2_param_pkg::*;
    output logic dec_tlu_i1_kill_writeb_wb,    // I1 is flushed, don't writeback any results to arch state
 
 
-   output logic [pt.NUM_THREADS-1:0] [31:1] dec_tlu_flush_path_wb,  // flush pc
-   output logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_lower_wb, // commit has a flush (exception, int, mispredict at e4)
-   output logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_mp_wb, // commit has a flush (mispredict at e4)
-   output logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_lower_wb1, // commit has a flush (exception, int, mispredict at e4)
-   output logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_noredir_wb , // Tell fetch to idle on this flush
-   output logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_leak_one_wb, // single step
-   output logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_err_wb, // iside perr/ecc rfpc
-   output logic [pt.NUM_THREADS-1:0]        dec_tlu_flush_extint, // fast ext int started
-   output logic [pt.NUM_THREADS-1:0]        dec_tlu_fence_i_wb,     // flush is a fence_i rfnpc, flush icache
+   output logic [`NUM_THREADS-1:0] [31:1] dec_tlu_flush_path_wb,  // flush pc
+   output logic [`NUM_THREADS-1:0]        dec_tlu_flush_lower_wb, // commit has a flush (exception, int, mispredict at e4)
+   output logic [`NUM_THREADS-1:0]        dec_tlu_flush_mp_wb, // commit has a flush (mispredict at e4)
+   output logic [`NUM_THREADS-1:0]        dec_tlu_flush_lower_wb1, // commit has a flush (exception, int, mispredict at e4)
+   output logic [`NUM_THREADS-1:0]        dec_tlu_flush_noredir_wb , // Tell fetch to idle on this flush
+   output logic [`NUM_THREADS-1:0]        dec_tlu_flush_leak_one_wb, // single step
+   output logic [`NUM_THREADS-1:0]        dec_tlu_flush_err_wb, // iside perr/ecc rfpc
+   output logic [`NUM_THREADS-1:0]        dec_tlu_flush_extint, // fast ext int started
+   output logic [`NUM_THREADS-1:0]        dec_tlu_fence_i_wb,     // flush is a fence_i rfnpc, flush icache
 
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_presync_d,            // CSR read needs to be presync'd
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_postsync_d,           // CSR needs to be presync'd
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_i0_commit_cmt,        // goes to IFU for commit 1 instruction in the FSM
+   output logic [`NUM_THREADS-1:0] dec_tlu_presync_d,            // CSR read needs to be presync'd
+   output logic [`NUM_THREADS-1:0] dec_tlu_postsync_d,           // CSR needs to be presync'd
+   output logic [`NUM_THREADS-1:0] dec_tlu_i0_commit_cmt,        // goes to IFU for commit 1 instruction in the FSM
    output logic [31:0] dec_tlu_mrac_ff,        // CSR for memory region control
 
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_wr_pause_wb,           // CSR write to pause reg is at WB.
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_flush_pause_wb,        // Flush is due to pause
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_lr_reset_wb, // Reset the reservation on certain events
+   output logic [`NUM_THREADS-1:0] dec_tlu_wr_pause_wb,           // CSR write to pause reg is at WB.
+   output logic [`NUM_THREADS-1:0] dec_tlu_flush_pause_wb,        // Flush is due to pause
+   output logic [`NUM_THREADS-1:0] dec_tlu_lr_reset_wb, // Reset the reservation on certain events
 
    // trace interface.
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_i0_valid_wb1,  // pipe 0 valid
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_i1_valid_wb1,  // pipe 1 valid
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_i0_exc_valid_wb1, // pipe 0 exception valid
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_i1_exc_valid_wb1, // pipe 1 exception valid
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_int_valid_wb1, // pipe 0 int valid
-   output logic [pt.NUM_THREADS-1:0] [4:0] dec_tlu_exc_cause_wb1, // exception or int cause
-   output logic [pt.NUM_THREADS-1:0] [31:0] dec_tlu_mtval_wb1, // MTVAL value
+   output logic [`NUM_THREADS-1:0] dec_tlu_i0_valid_wb1,  // pipe 0 valid
+   output logic [`NUM_THREADS-1:0] dec_tlu_i1_valid_wb1,  // pipe 1 valid
+   output logic [`NUM_THREADS-1:0] dec_tlu_i0_exc_valid_wb1, // pipe 0 exception valid
+   output logic [`NUM_THREADS-1:0] dec_tlu_i1_exc_valid_wb1, // pipe 1 exception valid
+   output logic [`NUM_THREADS-1:0] dec_tlu_int_valid_wb1, // pipe 0 int valid
+   output logic [`NUM_THREADS-1:0] [4:0] dec_tlu_exc_cause_wb1, // exception or int cause
+   output logic [`NUM_THREADS-1:0] [31:0] dec_tlu_mtval_wb1, // MTVAL value
 
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt0, // toggles when pipe0 perf counter 0 has an event inc
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt1, // toggles when pipe0 perf counter 1 has an event inc
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt2, // toggles when pipe0 perf counter 2 has an event inc
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt3, // toggles when pipe0 perf counter 3 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt0, // toggles when pipe0 perf counter 0 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt1, // toggles when pipe0 perf counter 1 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt2, // toggles when pipe0 perf counter 2 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt3, // toggles when pipe0 perf counter 3 has an event inc
 
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_btb_write_kill, // Kill writes while working on forward progress after a branch error
+   output logic [`NUM_THREADS-1:0] dec_tlu_btb_write_kill, // Kill writes while working on forward progress after a branch error
 
    // feature disable from mfdc
    output logic  dec_tlu_external_ldfwd_disable, // disable external load forwarding
@@ -282,10 +282,10 @@ import eh2_param_pkg::*;
    );
 
 
-   eh2_cache_debug_pkt_t [pt.NUM_THREADS-1:0] dec_tlu_ic_diag_pkt_thr;
+   eh2_cache_debug_pkt_t [`NUM_THREADS-1:0] dec_tlu_ic_diag_pkt_thr;
    logic nmi_int_sync, nmi_int_sync_raw;
    logic                      tlu_select_tid, tlu_select_tid_f, tlu_select_tid_f2, i0tid_wb, i1tid_wb, dec_i0_csr_tid_halted;
-   logic [pt.NUM_THREADS-1:0] tlu_i0_valid_wb1, tlu_i1_valid_wb1, tlu_i0_exc_valid_wb1, tlu_i1_exc_valid_wb1, tlu_int_valid_wb1,
+   logic [`NUM_THREADS-1:0] tlu_i0_valid_wb1, tlu_i1_valid_wb1, tlu_i0_exc_valid_wb1, tlu_i1_exc_valid_wb1, tlu_int_valid_wb1,
                               debug_brkpt_status_thr, mpc_debug_halt_ack_thr, mpc_debug_run_ack_thr, o_cpu_run_ack_thr,
                               o_cpu_halt_ack_thr, o_debug_mode_status_thr, br0_error_e4_thr,
                               br1_error_e4_thr, br0_start_error_e4_thr, br1_start_error_e4_thr, br0_mp_e4_thr,
@@ -298,9 +298,9 @@ import eh2_param_pkg::*;
                               dec_dbg_cmd_fail_thr, dec_tlu_debug_mode_thr, dec_tlu_resume_ack_thr, tlu_fast_ext_int_ready;
    logic dec_tlu_br0_error_e4, dec_tlu_br0_start_error_e4, dec_tlu_br0_v_e4;
    logic dec_tlu_br1_error_e4, dec_tlu_br1_start_error_e4, dec_tlu_br1_v_e4;
-   logic [pt.NUM_THREADS-1:0] [4:0] tlu_exc_cause_wb1;
-   logic [pt.NUM_THREADS-1:0] [31:0] tlu_mtval_wb1, csr_rddata_d;
-   logic [pt.NUM_THREADS-1:0] [31:2] dec_tlu_meihap_thr;
+   logic [`NUM_THREADS-1:0] [4:0] tlu_exc_cause_wb1;
+   logic [`NUM_THREADS-1:0] [31:0] tlu_mtval_wb1, csr_rddata_d;
+   logic [`NUM_THREADS-1:0] [31:2] dec_tlu_meihap_thr;
 
    logic        wr_mcgc_wb, wr_mfdc_wb, wr_mrac_wb, wr_mfdht_wb,
                 wr_micect_wb, wr_miccmect_wb, miccmect_cout_nc,
@@ -317,7 +317,7 @@ import eh2_param_pkg::*;
    logic        mice_ce_req, miccme_ce_req, mdccme_ce_req;
    logic [1:1]  mhartstart_ns;
    logic [1:0]  mnmipdel_ns, mnmipdel, mhartstart;
-   logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] dec_tlu_br0_addr_e4, dec_tlu_br1_addr_e4;
+   logic [`BTB_ADDR_HI:`BTB_ADDR_LO] dec_tlu_br0_addr_e4, dec_tlu_br1_addr_e4;
    logic        dec_tlu_br0_bank_e4, dec_tlu_br1_bank_e4;
    logic         lsu_single_ecc_error_wb_ns;
    logic [31:27] csr_sat;
@@ -325,10 +325,10 @@ import eh2_param_pkg::*;
    logic       tlu_i0_presync_d, tlu_i0_postsync_d, lsu_single_ecc_error_wb;
    logic       bp_i0_e4_en, bp_i1_e4_en;
 
-   assign dec_tlu_debug_mode[pt.NUM_THREADS-1:0] = dec_tlu_debug_mode_thr[pt.NUM_THREADS-1:0];
-   assign dec_tlu_dbg_halted[pt.NUM_THREADS-1:0] = dec_tlu_dbg_halted_thr[pt.NUM_THREADS-1:0];
-   assign dec_tlu_mpc_halted_only[pt.NUM_THREADS-1:0] = tlu_mpc_halted_only_thr[pt.NUM_THREADS-1:0];
-   assign dec_tlu_resume_ack[pt.NUM_THREADS-1:0] = dec_tlu_resume_ack_thr[pt.NUM_THREADS-1:0];
+   assign dec_tlu_debug_mode[`NUM_THREADS-1:0] = dec_tlu_debug_mode_thr[`NUM_THREADS-1:0];
+   assign dec_tlu_dbg_halted[`NUM_THREADS-1:0] = dec_tlu_dbg_halted_thr[`NUM_THREADS-1:0];
+   assign dec_tlu_mpc_halted_only[`NUM_THREADS-1:0] = tlu_mpc_halted_only_thr[`NUM_THREADS-1:0];
+   assign dec_tlu_resume_ack[`NUM_THREADS-1:0] = dec_tlu_resume_ack_thr[`NUM_THREADS-1:0];
 
    eh2_csr_tlu_pkt_t tlu_i0_csr_pkt_d;
 
@@ -349,30 +349,30 @@ import eh2_param_pkg::*;
    assign dec_tlu_mhartstart[0] = mhartstart[0];
 
    // convert pipe signals to thread signals. SMT-ready
-if(pt.NUM_THREADS > 1) begin : pipe2thr
-   assign br0_error_e4_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_i0_br_error_e4);
-   assign br1_error_e4_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, exu_i1_br_error_e4);
-   assign br0_mp_e4_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_i0_br_mp_e4);
-   assign br0_start_error_e4_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_i0_br_start_error_e4);
-   assign br1_start_error_e4_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, exu_i1_br_start_error_e4);
-   assign pmu_i0_br_misp_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_pmu_i0_br_misp);
-   assign pmu_i0_br_ataken_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_pmu_i0_br_ataken);
-   assign pmu_i0_pc4_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_pmu_i0_pc4);
-   assign pmu_i1_br_misp_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, exu_pmu_i1_br_misp);
-   assign pmu_i1_br_ataken_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, exu_pmu_i1_br_ataken);
-   assign pmu_i1_pc4_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, exu_pmu_i1_pc4);
-   assign dec_tlu_br0_error_e4_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, dec_tlu_br0_error_e4);
-   assign dec_tlu_br1_error_e4_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, dec_tlu_br1_error_e4);
-   assign dec_tlu_br0_start_error_e4_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, dec_tlu_br0_start_error_e4);
-   assign dec_tlu_br1_start_error_e4_thr[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, dec_tlu_br1_start_error_e4);
+if(`NUM_THREADS > 1) begin : pipe2thr
+   assign br0_error_e4_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_i0_br_error_e4);
+   assign br1_error_e4_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, exu_i1_br_error_e4);
+   assign br0_mp_e4_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_i0_br_mp_e4);
+   assign br0_start_error_e4_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_i0_br_start_error_e4);
+   assign br1_start_error_e4_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, exu_i1_br_start_error_e4);
+   assign pmu_i0_br_misp_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_pmu_i0_br_misp);
+   assign pmu_i0_br_ataken_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_pmu_i0_br_ataken);
+   assign pmu_i0_pc4_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, exu_pmu_i0_pc4);
+   assign pmu_i1_br_misp_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, exu_pmu_i1_br_misp);
+   assign pmu_i1_br_ataken_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, exu_pmu_i1_br_ataken);
+   assign pmu_i1_pc4_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, exu_pmu_i1_pc4);
+   assign dec_tlu_br0_error_e4_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, dec_tlu_br0_error_e4);
+   assign dec_tlu_br1_error_e4_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, dec_tlu_br1_error_e4);
+   assign dec_tlu_br0_start_error_e4_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i0tid, dec_tlu_br0_start_error_e4);
+   assign dec_tlu_br1_start_error_e4_thr[`NUM_THREADS-1:0] = pipe_to_thr(dec_tlu_packet_e4.i1tid, dec_tlu_br1_start_error_e4);
 
 
-   assign dec_tlu_presync_d[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_i0_tid_d, tlu_i0_presync_d);
-   assign dec_tlu_postsync_d[pt.NUM_THREADS-1:0] = pipe_to_thr(dec_i0_tid_d, tlu_i0_postsync_d);
+   assign dec_tlu_presync_d[`NUM_THREADS-1:0] = pipe_to_thr(dec_i0_tid_d, tlu_i0_presync_d);
+   assign dec_tlu_postsync_d[`NUM_THREADS-1:0] = pipe_to_thr(dec_i0_tid_d, tlu_i0_postsync_d);
 
    assign dec_tlu_mhartstart[1] = mhartstart[1];
 
-   if(pt.FAST_INTERRUPT_REDIRECT)
+   if(`FAST_INTERRUPT_REDIRECT)
      rvarbiter2 fastint_arbiter (
                                      .clk(free_clk),
                                      .ready(tlu_fast_ext_int_ready[1:0]),
@@ -387,25 +387,25 @@ if(pt.NUM_THREADS > 1) begin : pipe2thr
 end
 else begin
    assign tlu_select_tid = 1'b0;
-   assign br0_error_e4_thr[pt.NUM_THREADS-1:0] = exu_i0_br_error_e4;
-   assign br1_error_e4_thr[pt.NUM_THREADS-1:0] = exu_i1_br_error_e4;
-   assign br0_mp_e4_thr[pt.NUM_THREADS-1:0] = exu_i0_br_mp_e4;
-   assign br0_start_error_e4_thr[pt.NUM_THREADS-1:0] = exu_i0_br_start_error_e4;
-   assign br1_start_error_e4_thr[pt.NUM_THREADS-1:0] = exu_i1_br_start_error_e4;
-   assign pmu_i0_br_misp_thr[pt.NUM_THREADS-1:0] = exu_pmu_i0_br_misp;
-   assign pmu_i0_br_ataken_thr[pt.NUM_THREADS-1:0] = exu_pmu_i0_br_ataken;
-   assign pmu_i0_pc4_thr[pt.NUM_THREADS-1:0] = exu_pmu_i0_pc4;
-   assign pmu_i1_br_misp_thr[pt.NUM_THREADS-1:0] = exu_pmu_i1_br_misp;
-   assign pmu_i1_br_ataken_thr[pt.NUM_THREADS-1:0] = exu_pmu_i1_br_ataken;
-   assign pmu_i1_pc4_thr[pt.NUM_THREADS-1:0] = exu_pmu_i1_pc4;
-   assign dec_tlu_br0_error_e4_thr[pt.NUM_THREADS-1:0] = dec_tlu_br0_error_e4;
-   assign dec_tlu_br1_error_e4_thr[pt.NUM_THREADS-1:0] = dec_tlu_br1_error_e4;
-   assign dec_tlu_br0_start_error_e4_thr[pt.NUM_THREADS-1:0] = dec_tlu_br0_start_error_e4;
-   assign dec_tlu_br1_start_error_e4_thr[pt.NUM_THREADS-1:0] = dec_tlu_br1_start_error_e4;
+   assign br0_error_e4_thr[`NUM_THREADS-1:0] = exu_i0_br_error_e4;
+   assign br1_error_e4_thr[`NUM_THREADS-1:0] = exu_i1_br_error_e4;
+   assign br0_mp_e4_thr[`NUM_THREADS-1:0] = exu_i0_br_mp_e4;
+   assign br0_start_error_e4_thr[`NUM_THREADS-1:0] = exu_i0_br_start_error_e4;
+   assign br1_start_error_e4_thr[`NUM_THREADS-1:0] = exu_i1_br_start_error_e4;
+   assign pmu_i0_br_misp_thr[`NUM_THREADS-1:0] = exu_pmu_i0_br_misp;
+   assign pmu_i0_br_ataken_thr[`NUM_THREADS-1:0] = exu_pmu_i0_br_ataken;
+   assign pmu_i0_pc4_thr[`NUM_THREADS-1:0] = exu_pmu_i0_pc4;
+   assign pmu_i1_br_misp_thr[`NUM_THREADS-1:0] = exu_pmu_i1_br_misp;
+   assign pmu_i1_br_ataken_thr[`NUM_THREADS-1:0] = exu_pmu_i1_br_ataken;
+   assign pmu_i1_pc4_thr[`NUM_THREADS-1:0] = exu_pmu_i1_pc4;
+   assign dec_tlu_br0_error_e4_thr[`NUM_THREADS-1:0] = dec_tlu_br0_error_e4;
+   assign dec_tlu_br1_error_e4_thr[`NUM_THREADS-1:0] = dec_tlu_br1_error_e4;
+   assign dec_tlu_br0_start_error_e4_thr[`NUM_THREADS-1:0] = dec_tlu_br0_start_error_e4;
+   assign dec_tlu_br1_start_error_e4_thr[`NUM_THREADS-1:0] = dec_tlu_br1_start_error_e4;
 
-   assign dec_tlu_presync_d[pt.NUM_THREADS-1:0] = tlu_i0_presync_d;
-   assign dec_tlu_postsync_d[pt.NUM_THREADS-1:0] = tlu_i0_postsync_d;
-end // else: !if(pt.NUM_THREADS > 1)
+   assign dec_tlu_presync_d[`NUM_THREADS-1:0] = tlu_i0_presync_d;
+   assign dec_tlu_postsync_d[`NUM_THREADS-1:0] = tlu_i0_postsync_d;
+end // else: !if(`NUM_THREADS > 1)
 
 
    function [1:0] pipe_to_thr;
@@ -428,7 +428,7 @@ end // else: !if(pt.NUM_THREADS > 1)
    // ================================================================================
    // TID CSRs, Int, PC/NPC, Flush, FW HALT, Pause, Internal timers
    // ================================================================================
-     for (genvar i=0; i<pt.NUM_THREADS; i++) begin : tlumt
+     for (genvar i=0; i<`NUM_THREADS; i++) begin : tlumt
         eh2_dec_tlu_ctl #() tlu (//inputs
                                          .clk           (active_thread_l2clk[i]),
                                          .mytid               (1'(i)),
@@ -560,18 +560,18 @@ end // else: !if(pt.NUM_THREADS > 1)
    assign dec_tlu_ic_diag_pkt = dec_tlu_ic_diag_pkt_thr[dec_i0_tid_d_f];
 
    // tid specific signals to pipe specific conversion
-   assign dec_tlu_i0_kill_writeb_wb = |tlu_i0_kill_writeb_wb_thr[pt.NUM_THREADS-1:0];
-   assign dec_tlu_i1_kill_writeb_wb = |tlu_i1_kill_writeb_wb_thr[pt.NUM_THREADS-1:0];
-   assign dec_tlu_i0_commit_cmt[pt.NUM_THREADS-1:0] = tlu_i0_commit_cmt_thr[pt.NUM_THREADS-1:0];
+   assign dec_tlu_i0_kill_writeb_wb = |tlu_i0_kill_writeb_wb_thr[`NUM_THREADS-1:0];
+   assign dec_tlu_i1_kill_writeb_wb = |tlu_i1_kill_writeb_wb_thr[`NUM_THREADS-1:0];
+   assign dec_tlu_i0_commit_cmt[`NUM_THREADS-1:0] = tlu_i0_commit_cmt_thr[`NUM_THREADS-1:0];
 
 
-   assign dec_tlu_core_empty = &dec_tlu_core_empty_thr[pt.NUM_THREADS-1:0];
+   assign dec_tlu_core_empty = &dec_tlu_core_empty_thr[`NUM_THREADS-1:0];
 
    assign dec_dbg_cmd_tid = ~dec_dbg_cmd_done_thr[0];
-   assign dec_dbg_cmd_done = |dec_dbg_cmd_done_thr[pt.NUM_THREADS-1:0];
-   assign dec_dbg_cmd_fail = |dec_dbg_cmd_fail_thr[pt.NUM_THREADS-1:0];
-   assign ic_perr_wb_all = |ic_perr_wb_thr[pt.NUM_THREADS-1:0];
-   assign iccm_sbecc_wb_all = |iccm_sbecc_wb_thr[pt.NUM_THREADS-1:0];
+   assign dec_dbg_cmd_done = |dec_dbg_cmd_done_thr[`NUM_THREADS-1:0];
+   assign dec_dbg_cmd_fail = |dec_dbg_cmd_fail_thr[`NUM_THREADS-1:0];
+   assign ic_perr_wb_all = |ic_perr_wb_thr[`NUM_THREADS-1:0];
+   assign iccm_sbecc_wb_all = |iccm_sbecc_wb_thr[`NUM_THREADS-1:0];
 
 
    // ================================================================================
@@ -579,9 +579,9 @@ end // else: !if(pt.NUM_THREADS > 1)
    // ================================================================================
    // Branch prediction updating
 
-   assign dec_tlu_br0_addr_e4[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] = exu_i0_br_index_e4[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO];
+   assign dec_tlu_br0_addr_e4[`BTB_ADDR_HI:`BTB_ADDR_LO] = exu_i0_br_index_e4[`BTB_ADDR_HI:`BTB_ADDR_LO];
    assign dec_tlu_br0_bank_e4 = exu_i0_br_bank_e4;
-   assign dec_tlu_br1_addr_e4[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] = exu_i1_br_index_e4[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO];
+   assign dec_tlu_br1_addr_e4[`BTB_ADDR_HI:`BTB_ADDR_LO] = exu_i1_br_index_e4[`BTB_ADDR_HI:`BTB_ADDR_LO];
    assign dec_tlu_br1_bank_e4 = exu_i1_br_bank_e4;
 
    // go ahead and repair the branch error on other flushes, doesn't have to be the rfpc flush
@@ -613,9 +613,9 @@ end // else: !if(pt.NUM_THREADS > 1)
    assign bp_i1_e4_en = |({dec_tlu_br1_error_e4, dec_tlu_br1_start_error_e4, dec_tlu_br1_v_e4} ^
                           {dec_tlu_br1_wb_pkt.br_error, dec_tlu_br1_wb_pkt.br_start_error, dec_tlu_br1_wb_pkt.valid});
 
-   rvdffe #(8+pt.BHT_GHR_SIZE+$bits(dec_tlu_br0_addr_e4[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO])) bp_i0wb_ff (.*, .en(bp_i0_e4_en),
-                            .din({exu_i0_br_fghr_e4[pt.BHT_GHR_SIZE-1:0],
-                                  dec_tlu_br0_addr_e4[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO],
+   rvdffe #(8+`BHT_GHR_SIZE+$bits(dec_tlu_br0_addr_e4[`BTB_ADDR_HI:`BTB_ADDR_LO])) bp_i0wb_ff (.*, .en(bp_i0_e4_en),
+                            .din({exu_i0_br_fghr_e4[`BHT_GHR_SIZE-1:0],
+                                  dec_tlu_br0_addr_e4[`BTB_ADDR_HI:`BTB_ADDR_LO],
                                   exu_i0_br_hist_e4[1:0],
                                   dec_tlu_br0_error_e4,
                                   dec_tlu_br0_start_error_e4,
@@ -624,8 +624,8 @@ end // else: !if(pt.NUM_THREADS > 1)
                                   exu_i0_br_way_e4,
                                   exu_i0_br_middle_e4
                                   }),
-                           .dout({dec_tlu_br0_fghr_wb[pt.BHT_GHR_SIZE-1:0],
-                                  dec_tlu_br0_index_wb[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO],
+                           .dout({dec_tlu_br0_fghr_wb[`BHT_GHR_SIZE-1:0],
+                                  dec_tlu_br0_index_wb[`BTB_ADDR_HI:`BTB_ADDR_LO],
                                   dec_tlu_br0_wb_pkt.hist[1:0],
                                   dec_tlu_br0_wb_pkt.br_error,
                                   dec_tlu_br0_wb_pkt.br_start_error,
@@ -634,9 +634,9 @@ end // else: !if(pt.NUM_THREADS > 1)
                                   dec_tlu_br0_wb_pkt.way,
                                   dec_tlu_br0_wb_pkt.middle
                                   }));
-   rvdffe #(8+pt.BHT_GHR_SIZE+$bits(dec_tlu_br1_addr_e4[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO])) bp_i1wb_ff (.*, .en(bp_i1_e4_en),
-                            .din({exu_i1_br_fghr_e4[pt.BHT_GHR_SIZE-1:0],
-                                  dec_tlu_br1_addr_e4[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO],
+   rvdffe #(8+`BHT_GHR_SIZE+$bits(dec_tlu_br1_addr_e4[`BTB_ADDR_HI:`BTB_ADDR_LO])) bp_i1wb_ff (.*, .en(bp_i1_e4_en),
+                            .din({exu_i1_br_fghr_e4[`BHT_GHR_SIZE-1:0],
+                                  dec_tlu_br1_addr_e4[`BTB_ADDR_HI:`BTB_ADDR_LO],
                                   exu_i1_br_hist_e4[1:0],
                                   dec_tlu_br1_error_e4,
                                   dec_tlu_br1_start_error_e4,
@@ -645,8 +645,8 @@ end // else: !if(pt.NUM_THREADS > 1)
                                   exu_i1_br_way_e4,
                                   exu_i1_br_middle_e4
                                   }),
-                           .dout({dec_tlu_br1_fghr_wb[pt.BHT_GHR_SIZE-1:0],
-                                  dec_tlu_br1_index_wb[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO],
+                           .dout({dec_tlu_br1_fghr_wb[`BHT_GHR_SIZE-1:0],
+                                  dec_tlu_br1_index_wb[`BTB_ADDR_HI:`BTB_ADDR_LO],
                                   dec_tlu_br1_wb_pkt.hist[1:0],
                                   dec_tlu_br1_wb_pkt.br_error,
                                   dec_tlu_br1_wb_pkt.br_start_error,
@@ -721,7 +721,7 @@ end // else: !if(pt.NUM_THREADS > 1)
 
 
    // flip poweron value of bit 6 for AXI build
-   if (pt.BUILD_AXI4 == 1) begin
+   if (`BUILD_AXI4 == 1) begin
          assign mfdc_ns[11:0] = {~dec_i0_csr_wrdata_wb[18:16], dec_i0_csr_wrdata_wb[12], dec_i0_csr_wrdata_wb[11:8], ~dec_i0_csr_wrdata_wb[6],
                                  dec_i0_csr_wrdata_wb[3:2], dec_i0_csr_wrdata_wb[0]};
          assign mfdc[18:0] = {~mfdc_int[11:9], 3'b0, mfdc_int[8], mfdc_int[7:4], 1'b0, ~mfdc_int[3], 2'b0,
@@ -843,7 +843,7 @@ end // else: !if(pt.NUM_THREADS > 1)
 
    assign wr_mhartstart_wb = dec_i0_csr_wen_wb_mod_thr[i0tid_wb] & (dec_i0_csr_wraddr_wb[11:0] == MHARTSTART);
 
-   if (pt.NUM_THREADS > 1)
+   if (`NUM_THREADS > 1)
      assign mhartstart_ns[1] =  wr_mhartstart_wb ? (dec_i0_csr_wrdata_wb[1] | mhartstart[1]) : mhartstart[1];
    else
      assign mhartstart_ns[1] =  'b0;
@@ -860,7 +860,7 @@ end // else: !if(pt.NUM_THREADS > 1)
 
    assign wr_mnmipdel_wb = dec_i0_csr_wen_wb_mod_thr[i0tid_wb] & (dec_i0_csr_wraddr_wb[11:0] == MNMIPDEL);
 
-   if(pt.NUM_THREADS == 1)
+   if(`NUM_THREADS == 1)
      assign ignore_mnmipdel_wr = 1'b1;
    else
      assign ignore_mnmipdel_wr = &(~dec_i0_csr_wrdata_wb[1:0]);
@@ -872,7 +872,7 @@ end // else: !if(pt.NUM_THREADS > 1)
 
 
    // Thread mux, if required
-   if (pt.NUM_THREADS > 1) begin: tlutop
+   if (`NUM_THREADS > 1) begin: tlutop
       assign thread_csr_data_d[31:0] = ( ({32{~dec_i0_tid_d}} & csr_rddata_d[0]) |
                                          ({32{ dec_i0_tid_d}} & csr_rddata_d[1]) );
       assign mhartnums[1:0] = 2'b10;
@@ -885,7 +885,7 @@ end // else: !if(pt.NUM_THREADS > 1)
 
    // Final CSR mux
    assign dec_i0_csr_rddata_d[31:0] = ( // global csrs
-                                     ({32{tlu_i0_csr_pkt_d.csr_misa}}       & ((pt.ATOMIC_ENABLE==0)?32'h40001104:32'h40001105)) |
+                                     ({32{tlu_i0_csr_pkt_d.csr_misa}}       & ((`ATOMIC_ENABLE==0)?32'h40001104:32'h40001105)) |
                                      ({32{tlu_i0_csr_pkt_d.csr_mvendorid}}  & 32'h00000045) |
                                      ({32{tlu_i0_csr_pkt_d.csr_marchid}}    & 32'h00000011) |
                                      ({32{tlu_i0_csr_pkt_d.csr_mimpid}}     & 32'h3) |

@@ -28,8 +28,8 @@
 
 module eh2_lsu_dccm_ctl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
   (
 
@@ -81,13 +81,13 @@ import eh2_param_pkg::*;
    input logic [31:0]                      end_addr_dc5,
 
    input logic                             stbuf_reqvld_any,          // write enable
-   input logic [pt.LSU_SB_BITS-1:0]        stbuf_addr_any,            // stbuf address (aligned)
+   input logic [`LSU_SB_BITS-1:0]        stbuf_addr_any,            // stbuf address (aligned)
 
-   input logic [pt.DCCM_DATA_WIDTH-1:0]   stbuf_data_any,            // the read out from stbuf
-   input logic [pt.DCCM_DATA_WIDTH-1:0]   stbuf_fwddata_hi_dc3,      // stbuf fowarding to load
-   input logic [pt.DCCM_DATA_WIDTH-1:0]   stbuf_fwddata_lo_dc3,      // stbuf fowarding to load
-   input logic [pt.DCCM_BYTE_WIDTH-1:0]   stbuf_fwdbyteen_hi_dc3,    // stbuf fowarding to load
-   input logic [pt.DCCM_BYTE_WIDTH-1:0]   stbuf_fwdbyteen_lo_dc3,    // stbuf fowarding to load
+   input logic [`DCCM_DATA_WIDTH-1:0]   stbuf_data_any,            // the read out from stbuf
+   input logic [`DCCM_DATA_WIDTH-1:0]   stbuf_fwddata_hi_dc3,      // stbuf fowarding to load
+   input logic [`DCCM_DATA_WIDTH-1:0]   stbuf_fwddata_lo_dc3,      // stbuf fowarding to load
+   input logic [`DCCM_BYTE_WIDTH-1:0]   stbuf_fwdbyteen_hi_dc3,    // stbuf fowarding to load
+   input logic [`DCCM_BYTE_WIDTH-1:0]   stbuf_fwdbyteen_lo_dc3,    // stbuf fowarding to load
    input logic                            picm_fwd_en_dc2,
    input logic [31:0]                     picm_fwd_data_dc2,
 
@@ -101,18 +101,18 @@ import eh2_param_pkg::*;
    input logic                            single_ecc_error_lo_dc4,   // Single bit ECC error on lo data
    input logic                            single_ecc_error_hi_dc5,   // Single bit ECC error on hi data
    input logic                            single_ecc_error_lo_dc5,   // Single bit ECC error on lo data
-   input logic [pt.DCCM_DATA_WIDTH-1:0]   sec_data_hi_dc3,
-   input logic [pt.DCCM_DATA_WIDTH-1:0]   sec_data_lo_dc3,
+   input logic [`DCCM_DATA_WIDTH-1:0]   sec_data_hi_dc3,
+   input logic [`DCCM_DATA_WIDTH-1:0]   sec_data_lo_dc3,
 
-   input logic [pt.DCCM_DATA_WIDTH-1:0]   store_ecc_data_hi_dc3,   // store data
-   input logic [pt.DCCM_DATA_WIDTH-1:0]   store_ecc_data_lo_dc3,   // store data
+   input logic [`DCCM_DATA_WIDTH-1:0]   store_ecc_data_hi_dc3,   // store data
+   input logic [`DCCM_DATA_WIDTH-1:0]   store_ecc_data_lo_dc3,   // store data
    input logic [31:0]                     amo_data_dc3,
-   output logic [pt.DCCM_DATA_WIDTH-1:0]  dccm_data_hi_dc3,          // data from the dccm
-   output logic [pt.DCCM_DATA_WIDTH-1:0]  dccm_data_lo_dc3,          // data from the dccm
-   output logic [pt.DCCM_DATA_WIDTH-1:0]  dccm_datafn_hi_dc5,        // data from the dccm
-   output logic [pt.DCCM_DATA_WIDTH-1:0]  dccm_datafn_lo_dc5,        // data from the dccm
-   output logic [pt.DCCM_ECC_WIDTH-1:0]   dccm_data_ecc_hi_dc3,      // data from the dccm + ecc
-   output logic [pt.DCCM_ECC_WIDTH-1:0]   dccm_data_ecc_lo_dc3,
+   output logic [`DCCM_DATA_WIDTH-1:0]  dccm_data_hi_dc3,          // data from the dccm
+   output logic [`DCCM_DATA_WIDTH-1:0]  dccm_data_lo_dc3,          // data from the dccm
+   output logic [`DCCM_DATA_WIDTH-1:0]  dccm_datafn_hi_dc5,        // data from the dccm
+   output logic [`DCCM_DATA_WIDTH-1:0]  dccm_datafn_lo_dc5,        // data from the dccm
+   output logic [`DCCM_ECC_WIDTH-1:0]   dccm_data_ecc_hi_dc3,      // data from the dccm + ecc
+   output logic [`DCCM_ECC_WIDTH-1:0]   dccm_data_ecc_lo_dc3,
    output logic [63:0]                    store_data_ext_dc3, store_data_ext_dc4, store_data_ext_dc5,   // goes to the stbuf/busbuf for load-store fwdding
    output logic                           disable_ecc_check_lo_dc3,
    output logic                           disable_ecc_check_hi_dc3,
@@ -122,11 +122,11 @@ import eh2_param_pkg::*;
    output logic                           ld_single_ecc_error_lo_dc5_ff,
    output logic                           ld_single_ecc_error_hi_dc5_ff,
 
-   output logic [pt.DCCM_DATA_WIDTH-1:0]  sec_data_hi_dc5,          // load single error corrected hi data
-   output logic [pt.DCCM_DATA_WIDTH-1:0]  sec_data_lo_dc5,          // load single error corrected lo data
+   output logic [`DCCM_DATA_WIDTH-1:0]  sec_data_hi_dc5,          // load single error corrected hi data
+   output logic [`DCCM_DATA_WIDTH-1:0]  sec_data_lo_dc5,          // load single error corrected lo data
 
-   output logic [pt.DCCM_DATA_WIDTH-1:0]  lsu_dccm_data_dc3,        // right justified, ie load byte will have data at 7:0
-   output logic [pt.DCCM_DATA_WIDTH-1:0]  lsu_dccm_data_corr_dc3,   // right justified, ie load byte will have data at 7:0
+   output logic [`DCCM_DATA_WIDTH-1:0]  lsu_dccm_data_dc3,        // right justified, ie load byte will have data at 7:0
+   output logic [`DCCM_DATA_WIDTH-1:0]  lsu_dccm_data_corr_dc3,   // right justified, ie load byte will have data at 7:0
    output logic [31:0]                    picm_mask_data_dc3,        // pic data to stbuf
    output logic [31:0]                    picm_rd_data_dc3,          // pic read data in dc3
    output logic                           lsu_stbuf_commit_any,      // stbuf wins the dccm port or is to pic
@@ -140,13 +140,13 @@ import eh2_param_pkg::*;
    // DCCM ports
    output logic                           dccm_wren,                // dccm interface -- write
    output logic                           dccm_rden,                // dccm interface -- write
-   output logic [pt.DCCM_BITS-1:0]        dccm_wr_addr_lo,          // dccm interface -- wr addr for lo bankd
-   output logic [pt.DCCM_BITS-1:0]        dccm_wr_addr_hi,          // dccm interface -- wr addr for hi bankd
-   output logic [pt.DCCM_BITS-1:0]        dccm_rd_addr_lo,          // dccm interface -- read address for lo bank
-   output logic [pt.DCCM_BITS-1:0]        dccm_rd_addr_hi,          // dccm interface -- read address for hi bank
+   output logic [`DCCM_BITS-1:0]        dccm_wr_addr_lo,          // dccm interface -- wr addr for lo bankd
+   output logic [`DCCM_BITS-1:0]        dccm_wr_addr_hi,          // dccm interface -- wr addr for hi bankd
+   output logic [`DCCM_BITS-1:0]        dccm_rd_addr_lo,          // dccm interface -- read address for lo bank
+   output logic [`DCCM_BITS-1:0]        dccm_rd_addr_hi,          // dccm interface -- read address for hi bank
 
-   input logic [pt.DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_lo,          // dccm read data back from the dccm
-   input logic [pt.DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_hi,          // dccm read data back from the dccm
+   input logic [`DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_lo,          // dccm read data back from the dccm
+   input logic [`DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_hi,          // dccm read data back from the dccm
 
    // PIC ports
    output logic                            picm_wren_notdma,          // write to pic
@@ -162,11 +162,11 @@ import eh2_param_pkg::*;
    input logic                             scan_mode           // scan mode
 );
 
-   localparam DCCM_WIDTH_BITS = $clog2(pt.DCCM_BYTE_WIDTH);
+   localparam DCCM_WIDTH_BITS = $clog2(`DCCM_BYTE_WIDTH);
 
    logic                        lsu_dccm_rden_dc1, lsu_dccm_rden_dc2, disable_ecc_check_lo_dc2, disable_ecc_check_hi_dc2;
    logic                        lsu_dccm_wren_dc1, lsu_dccm_wren_spec_dc1;
-   logic [pt.DCCM_DATA_WIDTH-1:0]  store_data_hi_dc4, store_data_lo_dc4, dccm_data_lo_dc4_in, dccm_data_hi_dc4_in, dccm_data_lo_dc5_in, dccm_data_hi_dc5_in, store_data_lo_dc5, store_data_hi_dc5;
+   logic [`DCCM_DATA_WIDTH-1:0]  store_data_hi_dc4, store_data_lo_dc4, dccm_data_lo_dc4_in, dccm_data_hi_dc4_in, dccm_data_lo_dc5_in, dccm_data_hi_dc5_in, store_data_lo_dc5, store_data_hi_dc5;
    logic [63:0]  dccm_dout_dc3, dccm_corr_dout_dc3;
    logic [63:0]  stbuf_fwddata_dc3;
    logic [7:0]   stbuf_fwdbyteen_dc3;
@@ -182,7 +182,7 @@ import eh2_param_pkg::*;
    logic         ld_single_ecc_error_dc4;
    logic         lsu_double_ecc_error_dc5_ff;
    logic         lsu_stbuf_ecc_block;
-   logic [pt.DCCM_BITS-1:0] ld_sec_addr_lo_dc5_ff, ld_sec_addr_hi_dc5_ff;
+   logic [`DCCM_BITS-1:0] ld_sec_addr_lo_dc5_ff, ld_sec_addr_hi_dc5_ff;
 
    logic [7:0]   ldst_byteen_dc2, ldst_byteen_dc3, ldst_byteen_dc4, ldst_byteen_dc5;
    logic [7:0]   ldst_byteen_ext_dc2, ldst_byteen_ext_dc3, ldst_byteen_ext_dc4, ldst_byteen_ext_dc5;
@@ -207,25 +207,25 @@ import eh2_param_pkg::*;
    assign {lsu_dccm_data_dc3_nc[63:32], lsu_dccm_data_dc3[31:0]} = lsu_rdata_dc3[63:0] >> 8*lsu_addr_dc3[1:0];
    assign {lsu_dccm_data_corr_dc3_nc[63:32], lsu_dccm_data_corr_dc3[31:0]} = lsu_rdata_corr_dc3[63:0] >> 8*lsu_addr_dc3[1:0];
 
-   assign dccm_dout_dc3[63:0]      = {dccm_data_hi_dc3[pt.DCCM_DATA_WIDTH-1:0], dccm_data_lo_dc3[pt.DCCM_DATA_WIDTH-1:0]};
-   assign dccm_corr_dout_dc3[63:0] = {sec_data_hi_dc3[pt.DCCM_DATA_WIDTH-1:0], sec_data_lo_dc3[pt.DCCM_DATA_WIDTH-1:0]};
-   assign stbuf_fwddata_dc3[63:0]  = {stbuf_fwddata_hi_dc3[pt.DCCM_DATA_WIDTH-1:0], stbuf_fwddata_lo_dc3[pt.DCCM_DATA_WIDTH-1:0]};
-   assign stbuf_fwdbyteen_dc3[7:0] = {stbuf_fwdbyteen_hi_dc3[pt.DCCM_BYTE_WIDTH-1:0], stbuf_fwdbyteen_lo_dc3[pt.DCCM_BYTE_WIDTH-1:0]};
+   assign dccm_dout_dc3[63:0]      = {dccm_data_hi_dc3[`DCCM_DATA_WIDTH-1:0], dccm_data_lo_dc3[`DCCM_DATA_WIDTH-1:0]};
+   assign dccm_corr_dout_dc3[63:0] = {sec_data_hi_dc3[`DCCM_DATA_WIDTH-1:0], sec_data_lo_dc3[`DCCM_DATA_WIDTH-1:0]};
+   assign stbuf_fwddata_dc3[63:0]  = {stbuf_fwddata_hi_dc3[`DCCM_DATA_WIDTH-1:0], stbuf_fwddata_lo_dc3[`DCCM_DATA_WIDTH-1:0]};
+   assign stbuf_fwdbyteen_dc3[7:0] = {stbuf_fwdbyteen_hi_dc3[`DCCM_BYTE_WIDTH-1:0], stbuf_fwdbyteen_lo_dc3[`DCCM_BYTE_WIDTH-1:0]};
 
    for (genvar i=0; i<8; i++) begin: GenLoop
       assign lsu_rdata_dc3[(8*i)+7:8*i] = stbuf_fwdbyteen_dc3[i] ? stbuf_fwddata_dc3[(8*i)+7:8*i] : dccm_dout_dc3[(8*i)+7:8*i];
       assign lsu_rdata_corr_dc3[(8*i)+7:8*i] = stbuf_fwdbyteen_dc3[i] ? stbuf_fwddata_dc3[(8*i)+7:8*i] : dccm_corr_dout_dc3[(8*i)+7:8*i];
    end
 
-   assign kill_ecc_corr_lo_dc5 = (((lsu_addr_dc1[pt.DCCM_BITS-1:2] == lsu_addr_dc5[pt.DCCM_BITS-1:2]) | (end_addr_dc1[pt.DCCM_BITS-1:2] == lsu_addr_dc5[pt.DCCM_BITS-1:2])) & lsu_pkt_dc1.valid & lsu_pkt_dc1.store & lsu_pkt_dc1.dma & addr_in_dccm_dc1) |
-                                 (((lsu_addr_dc2[pt.DCCM_BITS-1:2] == lsu_addr_dc5[pt.DCCM_BITS-1:2]) | (end_addr_dc2[pt.DCCM_BITS-1:2] == lsu_addr_dc5[pt.DCCM_BITS-1:2])) & lsu_pkt_dc2.valid & lsu_pkt_dc2.store & lsu_pkt_dc2.dma & addr_in_dccm_dc2) |
-                                 (((lsu_addr_dc3[pt.DCCM_BITS-1:2] == lsu_addr_dc5[pt.DCCM_BITS-1:2]) | (end_addr_dc3[pt.DCCM_BITS-1:2] == lsu_addr_dc5[pt.DCCM_BITS-1:2])) & lsu_pkt_dc3.valid & lsu_pkt_dc3.store & lsu_pkt_dc3.dma & addr_in_dccm_dc3) |
-                                 (((lsu_addr_dc4[pt.DCCM_BITS-1:2] == lsu_addr_dc5[pt.DCCM_BITS-1:2]) | (end_addr_dc4[pt.DCCM_BITS-1:2] == lsu_addr_dc5[pt.DCCM_BITS-1:2])) & lsu_pkt_dc4.valid & lsu_pkt_dc4.store & lsu_pkt_dc4.dma & addr_in_dccm_dc4);
+   assign kill_ecc_corr_lo_dc5 = (((lsu_addr_dc1[`DCCM_BITS-1:2] == lsu_addr_dc5[`DCCM_BITS-1:2]) | (end_addr_dc1[`DCCM_BITS-1:2] == lsu_addr_dc5[`DCCM_BITS-1:2])) & lsu_pkt_dc1.valid & lsu_pkt_dc1.store & lsu_pkt_dc1.dma & addr_in_dccm_dc1) |
+                                 (((lsu_addr_dc2[`DCCM_BITS-1:2] == lsu_addr_dc5[`DCCM_BITS-1:2]) | (end_addr_dc2[`DCCM_BITS-1:2] == lsu_addr_dc5[`DCCM_BITS-1:2])) & lsu_pkt_dc2.valid & lsu_pkt_dc2.store & lsu_pkt_dc2.dma & addr_in_dccm_dc2) |
+                                 (((lsu_addr_dc3[`DCCM_BITS-1:2] == lsu_addr_dc5[`DCCM_BITS-1:2]) | (end_addr_dc3[`DCCM_BITS-1:2] == lsu_addr_dc5[`DCCM_BITS-1:2])) & lsu_pkt_dc3.valid & lsu_pkt_dc3.store & lsu_pkt_dc3.dma & addr_in_dccm_dc3) |
+                                 (((lsu_addr_dc4[`DCCM_BITS-1:2] == lsu_addr_dc5[`DCCM_BITS-1:2]) | (end_addr_dc4[`DCCM_BITS-1:2] == lsu_addr_dc5[`DCCM_BITS-1:2])) & lsu_pkt_dc4.valid & lsu_pkt_dc4.store & lsu_pkt_dc4.dma & addr_in_dccm_dc4);
 
-   assign kill_ecc_corr_hi_dc5 = (((lsu_addr_dc1[pt.DCCM_BITS-1:2] == end_addr_dc5[pt.DCCM_BITS-1:2]) | (end_addr_dc1[pt.DCCM_BITS-1:2] == end_addr_dc5[pt.DCCM_BITS-1:2])) & lsu_pkt_dc1.valid & lsu_pkt_dc1.store & lsu_pkt_dc1.dma & addr_in_dccm_dc1) |
-                                 (((lsu_addr_dc2[pt.DCCM_BITS-1:2] == end_addr_dc5[pt.DCCM_BITS-1:2]) | (end_addr_dc2[pt.DCCM_BITS-1:2] == end_addr_dc5[pt.DCCM_BITS-1:2])) & lsu_pkt_dc2.valid & lsu_pkt_dc2.store & lsu_pkt_dc2.dma & addr_in_dccm_dc2) |
-                                 (((lsu_addr_dc3[pt.DCCM_BITS-1:2] == end_addr_dc5[pt.DCCM_BITS-1:2]) | (end_addr_dc3[pt.DCCM_BITS-1:2] == end_addr_dc5[pt.DCCM_BITS-1:2])) & lsu_pkt_dc3.valid & lsu_pkt_dc3.store & lsu_pkt_dc3.dma & addr_in_dccm_dc3) |
-                                 (((lsu_addr_dc4[pt.DCCM_BITS-1:2] == end_addr_dc5[pt.DCCM_BITS-1:2]) | (end_addr_dc4[pt.DCCM_BITS-1:2] == end_addr_dc5[pt.DCCM_BITS-1:2])) & lsu_pkt_dc4.valid & lsu_pkt_dc4.store & lsu_pkt_dc4.dma & addr_in_dccm_dc4);
+   assign kill_ecc_corr_hi_dc5 = (((lsu_addr_dc1[`DCCM_BITS-1:2] == end_addr_dc5[`DCCM_BITS-1:2]) | (end_addr_dc1[`DCCM_BITS-1:2] == end_addr_dc5[`DCCM_BITS-1:2])) & lsu_pkt_dc1.valid & lsu_pkt_dc1.store & lsu_pkt_dc1.dma & addr_in_dccm_dc1) |
+                                 (((lsu_addr_dc2[`DCCM_BITS-1:2] == end_addr_dc5[`DCCM_BITS-1:2]) | (end_addr_dc2[`DCCM_BITS-1:2] == end_addr_dc5[`DCCM_BITS-1:2])) & lsu_pkt_dc2.valid & lsu_pkt_dc2.store & lsu_pkt_dc2.dma & addr_in_dccm_dc2) |
+                                 (((lsu_addr_dc3[`DCCM_BITS-1:2] == end_addr_dc5[`DCCM_BITS-1:2]) | (end_addr_dc3[`DCCM_BITS-1:2] == end_addr_dc5[`DCCM_BITS-1:2])) & lsu_pkt_dc3.valid & lsu_pkt_dc3.store & lsu_pkt_dc3.dma & addr_in_dccm_dc3) |
+                                 (((lsu_addr_dc4[`DCCM_BITS-1:2] == end_addr_dc5[`DCCM_BITS-1:2]) | (end_addr_dc4[`DCCM_BITS-1:2] == end_addr_dc5[`DCCM_BITS-1:2])) & lsu_pkt_dc4.valid & lsu_pkt_dc4.store & lsu_pkt_dc4.dma & addr_in_dccm_dc4);
 
    assign ld_single_ecc_error_lo_dc5 = (lsu_commit_dc5 | lsu_pkt_dc5.dma) & (lsu_pkt_dc5.load | lsu_pkt_dc5.lr) & single_ecc_error_lo_dc5 & ~lsu_raw_fwd_lo_dc5;
    assign ld_single_ecc_error_hi_dc5 = (lsu_commit_dc5 | lsu_pkt_dc5.dma) & (lsu_pkt_dc5.load | lsu_pkt_dc5.lr) & single_ecc_error_hi_dc5 & ~lsu_raw_fwd_hi_dc5;
@@ -237,15 +237,15 @@ import eh2_param_pkg::*;
 
    assign ld_single_ecc_error_dc5_ff = (ld_single_ecc_error_lo_dc5_ff | ld_single_ecc_error_hi_dc5_ff) & ~lsu_double_ecc_error_dc5_ff;
 
-   assign sec_data_hi_dc5[pt.DCCM_DATA_WIDTH-1:0] = store_data_hi_dc5[pt.DCCM_DATA_WIDTH-1:0];
-   assign sec_data_lo_dc5[pt.DCCM_DATA_WIDTH-1:0] = store_data_lo_dc5[pt.DCCM_DATA_WIDTH-1:0];
+   assign sec_data_hi_dc5[`DCCM_DATA_WIDTH-1:0] = store_data_hi_dc5[`DCCM_DATA_WIDTH-1:0];
+   assign sec_data_lo_dc5[`DCCM_DATA_WIDTH-1:0] = store_data_lo_dc5[`DCCM_DATA_WIDTH-1:0];
 
    // This is needed to avoid losing store on false sharing within a word.
    assign lsu_stbuf_ecc_block = ld_single_ecc_error_dc3 | ld_single_ecc_error_dc4 | ld_single_ecc_error_dc5;
    assign lsu_stbuf_commit_any = stbuf_reqvld_any & ~lsu_stbuf_ecc_block &
                                  ((~(lsu_dccm_rden_dc1 | lsu_dccm_wren_spec_dc1 | ld_single_ecc_error_dc5_ff)) |
-                                  (lsu_dccm_rden_dc1 & (~((stbuf_addr_any[DCCM_WIDTH_BITS+:pt.DCCM_BANK_BITS] == lsu_addr_dc1[DCCM_WIDTH_BITS+:pt.DCCM_BANK_BITS]) |
-                                                              (stbuf_addr_any[DCCM_WIDTH_BITS+:pt.DCCM_BANK_BITS] == end_addr_dc1[DCCM_WIDTH_BITS+:pt.DCCM_BANK_BITS])))));
+                                  (lsu_dccm_rden_dc1 & (~((stbuf_addr_any[DCCM_WIDTH_BITS+:`DCCM_BANK_BITS] == lsu_addr_dc1[DCCM_WIDTH_BITS+:`DCCM_BANK_BITS]) |
+                                                              (stbuf_addr_any[DCCM_WIDTH_BITS+:`DCCM_BANK_BITS] == end_addr_dc1[DCCM_WIDTH_BITS+:`DCCM_BANK_BITS])))));
 
    // No need to read for aligned word/dword stores since ECC will come by new data completely
    // read enable is speculative for timing reasons
@@ -259,12 +259,12 @@ import eh2_param_pkg::*;
    // DCCM inputs
    assign dccm_wren                             = lsu_stbuf_commit_any | ld_single_ecc_error_dc5_ff | lsu_dccm_wren_dc1;
    assign dccm_rden                             = lsu_dccm_rden_dc1;
-   assign dccm_wr_addr_lo[pt.DCCM_BITS-1:0]     = lsu_dccm_wren_spec_dc1 ? lsu_addr_dc1[pt.DCCM_BITS-1:0] :
-                                                  (ld_single_ecc_error_dc5_ff ? (ld_single_ecc_error_lo_dc5_ff ? ld_sec_addr_lo_dc5_ff[pt.DCCM_BITS-1:0] : ld_sec_addr_hi_dc5_ff[pt.DCCM_BITS-1:0]) : stbuf_addr_any[pt.DCCM_BITS-1:0]);
-   assign dccm_wr_addr_hi[pt.DCCM_BITS-1:0]     = lsu_dccm_wren_spec_dc1 ? end_addr_dc1[pt.DCCM_BITS-1:0] :
-                                                  (ld_single_ecc_error_dc5_ff ? (ld_single_ecc_error_hi_dc5_ff ? ld_sec_addr_hi_dc5_ff[pt.DCCM_BITS-1:0] : ld_sec_addr_lo_dc5_ff[pt.DCCM_BITS-1:0]) : stbuf_addr_any[pt.DCCM_BITS-1:0]);
-   assign dccm_rd_addr_lo[pt.DCCM_BITS-1:0]     = lsu_addr_dc1[pt.DCCM_BITS-1:0];
-   assign dccm_rd_addr_hi[pt.DCCM_BITS-1:0]     = end_addr_dc1[pt.DCCM_BITS-1:0];
+   assign dccm_wr_addr_lo[`DCCM_BITS-1:0]     = lsu_dccm_wren_spec_dc1 ? lsu_addr_dc1[`DCCM_BITS-1:0] :
+                                                  (ld_single_ecc_error_dc5_ff ? (ld_single_ecc_error_lo_dc5_ff ? ld_sec_addr_lo_dc5_ff[`DCCM_BITS-1:0] : ld_sec_addr_hi_dc5_ff[`DCCM_BITS-1:0]) : stbuf_addr_any[`DCCM_BITS-1:0]);
+   assign dccm_wr_addr_hi[`DCCM_BITS-1:0]     = lsu_dccm_wren_spec_dc1 ? end_addr_dc1[`DCCM_BITS-1:0] :
+                                                  (ld_single_ecc_error_dc5_ff ? (ld_single_ecc_error_hi_dc5_ff ? ld_sec_addr_hi_dc5_ff[`DCCM_BITS-1:0] : ld_sec_addr_lo_dc5_ff[`DCCM_BITS-1:0]) : stbuf_addr_any[`DCCM_BITS-1:0]);
+   assign dccm_rd_addr_lo[`DCCM_BITS-1:0]     = lsu_addr_dc1[`DCCM_BITS-1:0];
+   assign dccm_rd_addr_hi[`DCCM_BITS-1:0]     = end_addr_dc1[`DCCM_BITS-1:0];
 
    // DCCM outputs
     assign ldst_byteen_dc2[7:0] = ({8{lsu_pkt_dc2.by}}    & 8'b0000_0001) |
@@ -292,24 +292,24 @@ import eh2_param_pkg::*;
    assign ldst_byteen_ext_dc4[7:0] = ldst_byteen_dc4[7:0] << lsu_addr_dc4[1:0];
    assign ldst_byteen_ext_dc5[7:0] = ldst_byteen_dc5[7:0] << lsu_addr_dc5[1:0];
 
-   assign dccm_wr_bypass_c1_c2_lo   = (stbuf_addr_any[pt.DCCM_BITS-1:2] == lsu_addr_dc2[pt.DCCM_BITS-1:2]) & addr_in_dccm_dc2;
-   assign dccm_wr_bypass_c1_c2_hi   = (stbuf_addr_any[pt.DCCM_BITS-1:2] == end_addr_dc2[pt.DCCM_BITS-1:2]) & addr_in_dccm_dc2 & ~lsu_pkt_dc2.sc;   // SC always aligned and upper 32 bits are used for ECC corrected data
+   assign dccm_wr_bypass_c1_c2_lo   = (stbuf_addr_any[`DCCM_BITS-1:2] == lsu_addr_dc2[`DCCM_BITS-1:2]) & addr_in_dccm_dc2;
+   assign dccm_wr_bypass_c1_c2_hi   = (stbuf_addr_any[`DCCM_BITS-1:2] == end_addr_dc2[`DCCM_BITS-1:2]) & addr_in_dccm_dc2 & ~lsu_pkt_dc2.sc;   // SC always aligned and upper 32 bits are used for ECC corrected data
 
-   assign dccm_wr_bypass_c1_c3_lo   = (stbuf_addr_any[pt.DCCM_BITS-1:2] == lsu_addr_dc3[pt.DCCM_BITS-1:2]) & addr_in_dccm_dc3;
-   assign dccm_wr_bypass_c1_c3_hi   = (stbuf_addr_any[pt.DCCM_BITS-1:2] == end_addr_dc3[pt.DCCM_BITS-1:2]) & addr_in_dccm_dc3 & ~lsu_pkt_dc3.sc;   // SC always aligned and upper 32 bits are used for ECC corrected data
+   assign dccm_wr_bypass_c1_c3_lo   = (stbuf_addr_any[`DCCM_BITS-1:2] == lsu_addr_dc3[`DCCM_BITS-1:2]) & addr_in_dccm_dc3;
+   assign dccm_wr_bypass_c1_c3_hi   = (stbuf_addr_any[`DCCM_BITS-1:2] == end_addr_dc3[`DCCM_BITS-1:2]) & addr_in_dccm_dc3 & ~lsu_pkt_dc3.sc;   // SC always aligned and upper 32 bits are used for ECC corrected data
 
-   assign dccm_wr_bypass_c1_c4_lo   = (stbuf_addr_any[pt.DCCM_BITS-1:2] == lsu_addr_dc4[pt.DCCM_BITS-1:2]) & addr_in_dccm_dc4;
-   assign dccm_wr_bypass_c1_c4_hi   = (stbuf_addr_any[pt.DCCM_BITS-1:2] == end_addr_dc4[pt.DCCM_BITS-1:2]) & addr_in_dccm_dc4 & ~lsu_pkt_dc4.sc;   // SC always aligned and upper 32 bits are used for ECC corrected data
+   assign dccm_wr_bypass_c1_c4_lo   = (stbuf_addr_any[`DCCM_BITS-1:2] == lsu_addr_dc4[`DCCM_BITS-1:2]) & addr_in_dccm_dc4;
+   assign dccm_wr_bypass_c1_c4_hi   = (stbuf_addr_any[`DCCM_BITS-1:2] == end_addr_dc4[`DCCM_BITS-1:2]) & addr_in_dccm_dc4 & ~lsu_pkt_dc4.sc;   // SC always aligned and upper 32 bits are used for ECC corrected data
 
-   assign dccm_wr_bypass_c1_c5_lo   = (stbuf_addr_any[pt.DCCM_BITS-1:2] == lsu_addr_dc5[pt.DCCM_BITS-1:2]) & addr_in_dccm_dc5;
-   assign dccm_wr_bypass_c1_c5_hi   = (stbuf_addr_any[pt.DCCM_BITS-1:2] == end_addr_dc5[pt.DCCM_BITS-1:2]) & addr_in_dccm_dc5 & ~lsu_pkt_dc5.sc;   // SC always aligned and upper 32 bits are used for ECC corrected data
+   assign dccm_wr_bypass_c1_c5_lo   = (stbuf_addr_any[`DCCM_BITS-1:2] == lsu_addr_dc5[`DCCM_BITS-1:2]) & addr_in_dccm_dc5;
+   assign dccm_wr_bypass_c1_c5_hi   = (stbuf_addr_any[`DCCM_BITS-1:2] == end_addr_dc5[`DCCM_BITS-1:2]) & addr_in_dccm_dc5 & ~lsu_pkt_dc5.sc;   // SC always aligned and upper 32 bits are used for ECC corrected data
 
    // For SC conditional, hi data is used for ecc corrected data since in case of sc fail we just need to write corrected data.
    assign store_data_lo_dc3[31:0]= (lsu_pkt_dc3.atomic & ~lsu_pkt_dc3.lr & ~lsu_pkt_dc3.sc) ? amo_data_dc3[31:0] : store_ecc_data_lo_dc3[31:0];
    assign store_data_hi_dc3[31:0]= (lsu_pkt_dc3.atomic & ~lsu_pkt_dc3.lr & ~lsu_pkt_dc3.sc) ? amo_data_dc3[31:0] : (lsu_pkt_dc3.atomic & lsu_pkt_dc3.sc) ? sec_data_lo_dc3[31:0] : store_ecc_data_hi_dc3[31:0];
 
    // Timing fix for EH2_plus1. DCCM read data comes out in 2 cycles
-   if (pt.LOAD_TO_USE_PLUS1 == 1) begin: GenL2U_1
+   if (`LOAD_TO_USE_PLUS1 == 1) begin: GenL2U_1
       logic lsu_stbuf_commit_any_Q;
       logic dccm_wr_bypass_c1_c2_lo_Q, dccm_wr_bypass_c1_c2_hi_Q;
       logic [31:0] stbuf_data_any_Q;
@@ -324,8 +324,8 @@ import eh2_param_pkg::*;
                                                                           (lsu_stbuf_commit_any_Q & dccm_wr_bypass_c1_c2_hi_Q & ~ldst_byteen_ext_dc3[i+4]) ? stbuf_data_any_Q[(8*i)+7:(8*i)] : store_data_hi_dc3[(8*i)+7:(8*i)];
       end
 
-      assign dccm_data_ecc_lo_dc3[pt.DCCM_ECC_WIDTH-1:0] = dccm_rd_data_lo[pt.DCCM_FDATA_WIDTH-1:pt.DCCM_DATA_WIDTH];
-      assign dccm_data_ecc_hi_dc3[pt.DCCM_ECC_WIDTH-1:0] = dccm_rd_data_hi[pt.DCCM_FDATA_WIDTH-1:pt.DCCM_DATA_WIDTH];
+      assign dccm_data_ecc_lo_dc3[`DCCM_ECC_WIDTH-1:0] = dccm_rd_data_lo[`DCCM_FDATA_WIDTH-1:`DCCM_DATA_WIDTH];
+      assign dccm_data_ecc_hi_dc3[`DCCM_ECC_WIDTH-1:0] = dccm_rd_data_hi[`DCCM_FDATA_WIDTH-1:`DCCM_DATA_WIDTH];
 
       rvdff #(1) stbuf_commit_ff (.din(lsu_stbuf_commit_any), .dout(lsu_stbuf_commit_any_Q), .clk(lsu_c2_dc3_clk), .*);
       rvdff #(1) dccm_wr_bypass_c1_c2_loff (.din(dccm_wr_bypass_c1_c2_lo), .dout(dccm_wr_bypass_c1_c2_lo_Q), .clk(lsu_c2_dc3_clk), .*);
@@ -333,8 +333,8 @@ import eh2_param_pkg::*;
       rvdffe #(32) stbuf_data_anyff (.din(stbuf_data_any[31:0]), .dout(stbuf_data_any_Q[31:0]), .en(lsu_stbuf_commit_any | clk_override), .*);
 
    end else begin: GenL2U_0
-      logic [pt.DCCM_DATA_WIDTH-1:0]  dccm_data_hi_dc2, dccm_data_lo_dc2;
-      logic [pt.DCCM_ECC_WIDTH-1:0]   dccm_data_ecc_hi_dc2, dccm_data_ecc_lo_dc2;
+      logic [`DCCM_DATA_WIDTH-1:0]  dccm_data_hi_dc2, dccm_data_lo_dc2;
+      logic [`DCCM_ECC_WIDTH-1:0]   dccm_data_ecc_hi_dc2, dccm_data_ecc_lo_dc2;
 
       for (genvar i=0; i<4; i++) begin: Gen_dccm_data
          assign dccm_data_lo_dc2[(8*i)+7:(8*i)]     = (lsu_stbuf_commit_any &  lsu_pkt_dc2.store & dccm_wr_bypass_c1_c2_lo & ~ldst_byteen_ext_dc2[i])   ? stbuf_data_any[(8*i)+7:(8*i)] : dccm_rd_data_lo[(8*i)+7:(8*i)]; // for ld choose dccm_out
@@ -344,16 +344,16 @@ import eh2_param_pkg::*;
          assign dccm_data_hi_dc4_in[(8*i)+7:(8*i)]  = (lsu_stbuf_commit_any &  dccm_wr_bypass_c1_c3_hi & ~ldst_byteen_ext_dc3[i+4]) ? stbuf_data_any[(8*i)+7:(8*i)] : store_data_hi_dc3[(8*i)+7:(8*i)];
       end
 
-      assign dccm_data_ecc_lo_dc2[pt.DCCM_ECC_WIDTH-1:0] = dccm_rd_data_lo[pt.DCCM_FDATA_WIDTH-1:pt.DCCM_DATA_WIDTH];
-      assign dccm_data_ecc_hi_dc2[pt.DCCM_ECC_WIDTH-1:0] = dccm_rd_data_hi[pt.DCCM_FDATA_WIDTH-1:pt.DCCM_DATA_WIDTH];
+      assign dccm_data_ecc_lo_dc2[`DCCM_ECC_WIDTH-1:0] = dccm_rd_data_lo[`DCCM_FDATA_WIDTH-1:`DCCM_DATA_WIDTH];
+      assign dccm_data_ecc_hi_dc2[`DCCM_ECC_WIDTH-1:0] = dccm_rd_data_hi[`DCCM_FDATA_WIDTH-1:`DCCM_DATA_WIDTH];
 
       assign dccm_data_lo_dc3_clken = (lsu_pkt_dc2.valid & addr_in_dccm_dc2) | clk_override;
       assign dccm_data_hi_dc3_clken = (dccm_data_lo_dc3_clken & ldst_dual_dc2) | clk_override;
 
-      rvdffe #(pt.DCCM_DATA_WIDTH + pt.DCCM_ECC_WIDTH) dccm_data_hi_dc3ff (.din({dccm_data_hi_dc2[pt.DCCM_DATA_WIDTH-1:0],dccm_data_ecc_hi_dc2[pt.DCCM_ECC_WIDTH-1:0]}),
-                                                                           .dout({dccm_data_hi_dc3[pt.DCCM_DATA_WIDTH-1:0],dccm_data_ecc_hi_dc3[pt.DCCM_ECC_WIDTH-1:0]}), .en(dccm_data_hi_dc3_clken), .*);
-      rvdffe #(pt.DCCM_DATA_WIDTH + pt.DCCM_ECC_WIDTH) dccm_data_lo_dc3ff (.din({dccm_data_lo_dc2[pt.DCCM_DATA_WIDTH-1:0],dccm_data_ecc_lo_dc2[pt.DCCM_ECC_WIDTH-1:0]}),
-                                                                           .dout({dccm_data_lo_dc3[pt.DCCM_DATA_WIDTH-1:0],dccm_data_ecc_lo_dc3[pt.DCCM_ECC_WIDTH-1:0]}), .en(dccm_data_lo_dc3_clken), .*);
+      rvdffe #(`DCCM_DATA_WIDTH + `DCCM_ECC_WIDTH) dccm_data_hi_dc3ff (.din({dccm_data_hi_dc2[`DCCM_DATA_WIDTH-1:0],dccm_data_ecc_hi_dc2[`DCCM_ECC_WIDTH-1:0]}),
+                                                                           .dout({dccm_data_hi_dc3[`DCCM_DATA_WIDTH-1:0],dccm_data_ecc_hi_dc3[`DCCM_ECC_WIDTH-1:0]}), .en(dccm_data_hi_dc3_clken), .*);
+      rvdffe #(`DCCM_DATA_WIDTH + `DCCM_ECC_WIDTH) dccm_data_lo_dc3ff (.din({dccm_data_lo_dc2[`DCCM_DATA_WIDTH-1:0],dccm_data_ecc_lo_dc2[`DCCM_ECC_WIDTH-1:0]}),
+                                                                           .dout({dccm_data_lo_dc3[`DCCM_DATA_WIDTH-1:0],dccm_data_ecc_lo_dc3[`DCCM_ECC_WIDTH-1:0]}), .en(dccm_data_lo_dc3_clken), .*);
 
    end
 
@@ -399,13 +399,13 @@ import eh2_param_pkg::*;
    assign dccm_data_lo_dc5_clken = (lsu_pkt_dc4.valid & (lsu_pkt_dc4.store | ld_single_ecc_error_dc4)) | clk_override;
    assign dccm_data_hi_dc5_clken = (dccm_data_lo_dc5_clken & (ldst_dual_dc4 | lsu_pkt_dc4.atomic)) | clk_override;
 
-   rvdffe #(pt.DCCM_DATA_WIDTH) dccm_data_hi_dc4ff (.*, .din(dccm_data_hi_dc4_in[pt.DCCM_DATA_WIDTH-1:0]), .dout(store_data_hi_dc4[pt.DCCM_DATA_WIDTH-1:0]), .en(dccm_data_hi_dc4_clken));
-   rvdffe #(pt.DCCM_DATA_WIDTH) dccm_data_lo_dc4ff (.*, .din(dccm_data_lo_dc4_in[pt.DCCM_DATA_WIDTH-1:0]), .dout(store_data_lo_dc4[pt.DCCM_DATA_WIDTH-1:0]), .en(dccm_data_lo_dc4_clken));
+   rvdffe #(`DCCM_DATA_WIDTH) dccm_data_hi_dc4ff (.*, .din(dccm_data_hi_dc4_in[`DCCM_DATA_WIDTH-1:0]), .dout(store_data_hi_dc4[`DCCM_DATA_WIDTH-1:0]), .en(dccm_data_hi_dc4_clken));
+   rvdffe #(`DCCM_DATA_WIDTH) dccm_data_lo_dc4ff (.*, .din(dccm_data_lo_dc4_in[`DCCM_DATA_WIDTH-1:0]), .dout(store_data_lo_dc4[`DCCM_DATA_WIDTH-1:0]), .en(dccm_data_lo_dc4_clken));
 
-   rvdffe #(pt.DCCM_DATA_WIDTH) dccm_data_hi_dc5ff (.*, .din(dccm_data_hi_dc5_in[pt.DCCM_DATA_WIDTH-1:0]), .dout(store_data_hi_dc5[pt.DCCM_DATA_WIDTH-1:0]), .en(dccm_data_hi_dc5_clken));
-   rvdffe #(pt.DCCM_DATA_WIDTH) dccm_data_lo_dc5ff (.*, .din(dccm_data_lo_dc5_in[pt.DCCM_DATA_WIDTH-1:0]), .dout(store_data_lo_dc5[pt.DCCM_DATA_WIDTH-1:0]), .en(dccm_data_lo_dc5_clken));
+   rvdffe #(`DCCM_DATA_WIDTH) dccm_data_hi_dc5ff (.*, .din(dccm_data_hi_dc5_in[`DCCM_DATA_WIDTH-1:0]), .dout(store_data_hi_dc5[`DCCM_DATA_WIDTH-1:0]), .en(dccm_data_hi_dc5_clken));
+   rvdffe #(`DCCM_DATA_WIDTH) dccm_data_lo_dc5ff (.*, .din(dccm_data_lo_dc5_in[`DCCM_DATA_WIDTH-1:0]), .dout(store_data_lo_dc5[`DCCM_DATA_WIDTH-1:0]), .en(dccm_data_lo_dc5_clken));
 
-   if (pt.DCCM_ENABLE == 1) begin: Gen_dccm_enable
+   if (`DCCM_ENABLE == 1) begin: Gen_dccm_enable
       rvdff #(1) dccm_rden_dc2ff (.*, .din(lsu_dccm_rden_dc1), .dout(lsu_dccm_rden_dc2), .clk(lsu_c2_dc2_clk));
       rvdff #(1) dccm_rden_dc3ff (.*, .din(lsu_dccm_rden_dc2), .dout(lsu_dccm_rden_dc3), .clk(lsu_c2_dc3_clk));
 
@@ -417,8 +417,8 @@ import eh2_param_pkg::*;
       rvdff #(1) lsu_double_ecc_error_dc5ff     (.*, .din(lsu_double_ecc_error_dc5),   .dout(lsu_double_ecc_error_dc5_ff),   .clk(lsu_free_c2_clk));
       rvdff #(1) ld_single_ecc_error_hi_dc5ff   (.*, .din(ld_single_ecc_error_hi_dc5_ns), .dout(ld_single_ecc_error_hi_dc5_ff), .clk(lsu_free_c2_clk));
       rvdff #(1) ld_single_ecc_error_lo_dc5ff   (.*, .din(ld_single_ecc_error_lo_dc5_ns), .dout(ld_single_ecc_error_lo_dc5_ff), .clk(lsu_free_c2_clk));
-      rvdffe #(pt.DCCM_BITS) ld_sec_addr_hi_rff (.*, .din(end_addr_dc5[pt.DCCM_BITS-1:0]), .dout(ld_sec_addr_hi_dc5_ff[pt.DCCM_BITS-1:0]), .en(ld_single_ecc_error_dc5 | clk_override), .clk(clk));
-      rvdffe #(pt.DCCM_BITS) ld_sec_addr_lo_rff (.*, .din(lsu_addr_dc5[pt.DCCM_BITS-1:0]), .dout(ld_sec_addr_lo_dc5_ff[pt.DCCM_BITS-1:0]), .en(ld_single_ecc_error_dc5 | clk_override), .clk(clk));
+      rvdffe #(`DCCM_BITS) ld_sec_addr_hi_rff (.*, .din(end_addr_dc5[`DCCM_BITS-1:0]), .dout(ld_sec_addr_hi_dc5_ff[`DCCM_BITS-1:0]), .en(ld_single_ecc_error_dc5 | clk_override), .clk(clk));
+      rvdffe #(`DCCM_BITS) ld_sec_addr_lo_rff (.*, .din(lsu_addr_dc5[`DCCM_BITS-1:0]), .dout(ld_sec_addr_lo_dc5_ff[`DCCM_BITS-1:0]), .en(ld_single_ecc_error_dc5 | clk_override), .clk(clk));
 
    end else begin: Gen_dccm_disable
       assign lsu_dccm_rden_dc2 = '0;
@@ -429,14 +429,14 @@ import eh2_param_pkg::*;
       assign lsu_double_ecc_error_dc5_ff = '0;
       assign ld_single_ecc_error_lo_dc5_ff = '0;
       assign ld_single_ecc_error_hi_dc5_ff = '0;
-      assign ld_sec_addr_lo_dc5_ff[pt.DCCM_BITS-1:0] = '0;
-      assign ld_sec_addr_hi_dc5_ff[pt.DCCM_BITS-1:0] = '0;
+      assign ld_sec_addr_lo_dc5_ff[`DCCM_BITS-1:0] = '0;
+      assign ld_sec_addr_hi_dc5_ff[`DCCM_BITS-1:0] = '0;
    end
 
-/*`ifdef RV_ASSERT_ON
+`ifdef RV_ASSERT_ON
 
    assert_dccm_rden_wren_onehot: assert #0 ($onehot0({lsu_dccm_wren_spec_dc1, lsu_dccm_rden_dc1}));
 
-`endif*/
+`endif
 
 endmodule

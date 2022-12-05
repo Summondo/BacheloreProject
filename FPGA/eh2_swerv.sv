@@ -19,14 +19,18 @@
 // Function: Top level SWERV core file
 // Comments:
 //
-//***
-//*****************************************************************************
-
-import eh2_param_pkg::*;
+//********************************************************************************
 module eh2_swerv
 import eh2_pkg::*;
-import eh2_param_pkg::*;
+`include "eh2_param.vh"
+`include "pd_defines.vh"
 #(
+parameter POSIT_LEN   = `POSIT_LEN,
+parameter ES          = `ES,
+parameter REGIME_BW   = `REGIME_BW,
+parameter POSIT       = `POSIT,
+parameter FRACTION_BW = POSIT_LEN - ES - 1 - (2*POSIT)
+
 ) (
    input logic                  clk,
    input logic                  rst_l,
@@ -39,60 +43,60 @@ import eh2_param_pkg::*;
    output logic                 active_l2clk,
    output logic                 free_l2clk,
 
-   output logic [pt.NUM_THREADS-1:0] [63:0] trace_rv_i_insn_ip,
-   output logic [pt.NUM_THREADS-1:0] [63:0] trace_rv_i_address_ip,
-   output logic [pt.NUM_THREADS-1:0] [1:0]  trace_rv_i_valid_ip,
-   output logic [pt.NUM_THREADS-1:0] [1:0]  trace_rv_i_exception_ip,
-   output logic [pt.NUM_THREADS-1:0] [4:0]  trace_rv_i_ecause_ip,
-   output logic [pt.NUM_THREADS-1:0] [1:0]  trace_rv_i_interrupt_ip,
-   output logic [pt.NUM_THREADS-1:0] [31:0] trace_rv_i_tval_ip,
+   output logic [`NUM_THREADS-1:0] [63:0] trace_rv_i_insn_ip,
+   output logic [`NUM_THREADS-1:0] [63:0] trace_rv_i_address_ip,
+   output logic [`NUM_THREADS-1:0] [1:0]  trace_rv_i_valid_ip,
+   output logic [`NUM_THREADS-1:0] [1:0]  trace_rv_i_exception_ip,
+   output logic [`NUM_THREADS-1:0] [4:0]  trace_rv_i_ecause_ip,
+   output logic [`NUM_THREADS-1:0] [1:0]  trace_rv_i_interrupt_ip,
+   output logic [`NUM_THREADS-1:0] [31:0] trace_rv_i_tval_ip,
 
    output logic                 dccm_clk_override,
    output logic                 icm_clk_override,
    output logic                 dec_tlu_core_ecc_disable,
    output logic                 btb_clk_override,
 
-   output logic [pt.NUM_THREADS-1:0] dec_tlu_mhartstart, // running harts
+   output logic [`NUM_THREADS-1:0] dec_tlu_mhartstart, // running harts
 
    // external halt/run interface
-   input logic  [pt.NUM_THREADS-1:0] i_cpu_halt_req,    // Asynchronous Halt request to CPU
-   input logic  [pt.NUM_THREADS-1:0] i_cpu_run_req,     // Asynchronous Restart request to CPU
-   output logic [pt.NUM_THREADS-1:0] o_cpu_halt_status, // PMU interface, halted
-   output logic [pt.NUM_THREADS-1:0] o_cpu_halt_ack,    // Core Acknowledge to Halt request
-   output logic [pt.NUM_THREADS-1:0] o_cpu_run_ack,     // Core Acknowledge to run request
-   output logic [pt.NUM_THREADS-1:0] o_debug_mode_status, // Core to the PMU that core is in debug mode. When core is in debug mode, the PMU should refrain from sendng a halt or run request
+   input logic  [`NUM_THREADS-1:0] i_cpu_halt_req,    // Asynchronous Halt request to CPU
+   input logic  [`NUM_THREADS-1:0] i_cpu_run_req,     // Asynchronous Restart request to CPU
+   output logic [`NUM_THREADS-1:0] o_cpu_halt_status, // PMU interface, halted
+   output logic [`NUM_THREADS-1:0] o_cpu_halt_ack,    // Core Acknowledge to Halt request
+   output logic [`NUM_THREADS-1:0] o_cpu_run_ack,     // Core Acknowledge to run request
+   output logic [`NUM_THREADS-1:0] o_debug_mode_status, // Core to the PMU that core is in debug mode. When core is in debug mode, the PMU should refrain from sendng a halt or run request
 
    input logic [31:4]     core_id, // Core ID
 
    // external MPC halt/run interface
-   input logic  [pt.NUM_THREADS-1:0] mpc_debug_halt_req, // Async halt request
-   input logic  [pt.NUM_THREADS-1:0] mpc_debug_run_req, // Async run request
-   input logic  [pt.NUM_THREADS-1:0] mpc_reset_run_req, // Run/halt after reset
-   output logic [pt.NUM_THREADS-1:0] mpc_debug_halt_ack, // Halt ack
-   output logic [pt.NUM_THREADS-1:0] mpc_debug_run_ack, // Run ack
-   output logic [pt.NUM_THREADS-1:0] debug_brkpt_status, // debug breakpoint
+   input logic  [`NUM_THREADS-1:0] mpc_debug_halt_req, // Async halt request
+   input logic  [`NUM_THREADS-1:0] mpc_debug_run_req, // Async run request
+   input logic  [`NUM_THREADS-1:0] mpc_reset_run_req, // Run/halt after reset
+   output logic [`NUM_THREADS-1:0] mpc_debug_halt_ack, // Halt ack
+   output logic [`NUM_THREADS-1:0] mpc_debug_run_ack, // Run ack
+   output logic [`NUM_THREADS-1:0] debug_brkpt_status, // debug breakpoint
 
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt0, // toggles when pipe0 perf counter 0 has an event inc
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt1, // toggles when pipe0 perf counter 1 has an event inc
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt2, // toggles when pipe0 perf counter 2 has an event inc
-   output logic [pt.NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt3, // toggles when pipe0 perf counter 3 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt0, // toggles when pipe0 perf counter 0 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt1, // toggles when pipe0 perf counter 1 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt2, // toggles when pipe0 perf counter 2 has an event inc
+   output logic [`NUM_THREADS-1:0] [1:0] dec_tlu_perfcnt3, // toggles when pipe0 perf counter 3 has an event inc
 
    // DCCM ports
    output logic                           dccm_wren,
    output logic                           dccm_rden,
-   output logic [pt.DCCM_BITS-1:0]        dccm_wr_addr_lo,
-   output logic [pt.DCCM_BITS-1:0]        dccm_wr_addr_hi,
-   output logic [pt.DCCM_BITS-1:0]        dccm_rd_addr_lo,
-   output logic [pt.DCCM_BITS-1:0]        dccm_rd_addr_hi,
-   output logic [pt.DCCM_FDATA_WIDTH-1:0] dccm_wr_data_lo,
-   output logic [pt.DCCM_FDATA_WIDTH-1:0] dccm_wr_data_hi,
+   output logic [`DCCM_BITS-1:0]        dccm_wr_addr_lo,
+   output logic [`DCCM_BITS-1:0]        dccm_wr_addr_hi,
+   output logic [`DCCM_BITS-1:0]        dccm_rd_addr_lo,
+   output logic [`DCCM_BITS-1:0]        dccm_rd_addr_hi,
+   output logic [`DCCM_FDATA_WIDTH-1:0] dccm_wr_data_lo,
+   output logic [`DCCM_FDATA_WIDTH-1:0] dccm_wr_data_hi,
 
-   input logic [pt.DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_lo,
-   input logic [pt.DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_hi,
+   input logic [`DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_lo,
+   input logic [`DCCM_FDATA_WIDTH-1:0]  dccm_rd_data_hi,
 
    // ICCM ports
-   output logic [pt.ICCM_BITS-1:1]  iccm_rw_addr,
-   output logic [pt.NUM_THREADS-1:0]iccm_buf_correct_ecc_thr,            // ICCM is doing a single bit error correct cycle
+   output logic [`ICCM_BITS-1:1]  iccm_rw_addr,
+   output logic [`NUM_THREADS-1:0]iccm_buf_correct_ecc_thr,            // ICCM is doing a single bit error correct cycle
    output logic                     iccm_correction_state,               // We are under a correction - This is needed to guard replacements when hit
    output logic                     iccm_stop_fetch,                     // The fetch needs to be ignored for replacement hit purposes
    output logic                     iccm_corr_scnd_fetch,                // dont match on middle bank when under correction
@@ -107,55 +111,55 @@ import eh2_param_pkg::*;
 
    // ICache , ITAG  ports
    output logic [31:1]           ic_rw_addr,
-   output logic [pt.ICACHE_NUM_WAYS-1:0]            ic_tag_valid,
-   output logic [pt.ICACHE_NUM_WAYS-1:0]          ic_wr_en  ,         // Which way to write
+   output logic [`ICACHE_NUM_WAYS-1:0]            ic_tag_valid,
+   output logic [`ICACHE_NUM_WAYS-1:0]          ic_wr_en  ,         // Which way to write
    output logic                  ic_rd_en,
 
-   output logic [pt.ICACHE_BANKS_WAY-1:0] [70:0]               ic_wr_data,           // Data to fill to the Icache. With ECC
+   output logic [`ICACHE_BANKS_WAY-1:0] [70:0]               ic_wr_data,           // Data to fill to the Icache. With ECC
    input  logic [63:0]               ic_rd_data ,          // Data read from Icache. 2x64bits + parity bits. F2 stage. With ECC
    input  logic [70:0]               ic_debug_rd_data ,    // Data read from Icache. 2x64bits + parity bits. F2 stage. With ECC
    input  logic [25:0]               ictag_debug_rd_data,  // Debug icache tag.
    output logic [70:0]               ic_debug_wr_data,     // Debug wr cache.
 
-   input  logic [pt.ICACHE_BANKS_WAY-1:0] ic_eccerr,    //
-   input  logic [pt.ICACHE_BANKS_WAY-1:0] ic_parerr,
+   input  logic [`ICACHE_BANKS_WAY-1:0] ic_eccerr,    //
+   input  logic [`ICACHE_BANKS_WAY-1:0] ic_parerr,
 
 
    output logic [63:0]               ic_premux_data,     // Premux data to be muxed with each way of the Icache.
    output logic                      ic_sel_premux_data, // Select premux data
 
 
-   output logic [pt.ICACHE_INDEX_HI:3]            ic_debug_addr,      // Read/Write addresss to the Icache.
+   output logic [`ICACHE_INDEX_HI:3]            ic_debug_addr,      // Read/Write addresss to the Icache.
    output logic                      ic_debug_rd_en,     // Icache debug rd
    output logic                      ic_debug_wr_en,     // Icache debug wr
    output logic                      ic_debug_tag_array, // Debug tag array
-   output logic [pt.ICACHE_NUM_WAYS-1:0]          ic_debug_way,       // Debug way. Rd or Wr.
+   output logic [`ICACHE_NUM_WAYS-1:0]          ic_debug_way,       // Debug way. Rd or Wr.
 
 
-   input  logic [pt.ICACHE_NUM_WAYS-1:0]            ic_rd_hit,
+   input  logic [`ICACHE_NUM_WAYS-1:0]            ic_rd_hit,
    input  logic                  ic_tag_perr,        // Icache Tag parity error
 
 // BTB ports
    input eh2_btb_sram_pkt btb_sram_pkt,
 
-   input logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0]      btb_vbank0_rd_data_f1,
-   input logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0]      btb_vbank1_rd_data_f1,
-   input logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0]      btb_vbank2_rd_data_f1,
-   input logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0]      btb_vbank3_rd_data_f1,
+   input logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0]      btb_vbank0_rd_data_f1,
+   input logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0]      btb_vbank1_rd_data_f1,
+   input logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0]      btb_vbank2_rd_data_f1,
+   input logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0]      btb_vbank3_rd_data_f1,
 
    output logic                         btb_wren,
    output logic                         btb_rden,
-   output logic [1:0] [pt.BTB_ADDR_HI:1] btb_rw_addr,  // per bank
-   output logic [1:0] [pt.BTB_ADDR_HI:1] btb_rw_addr_f1,  // per bank
-   output logic [pt.BTB_TOFFSET_SIZE+pt.BTB_BTAG_SIZE+5-1:0]         btb_sram_wr_data,
-   output logic [1:0] [pt.BTB_BTAG_SIZE-1:0] btb_sram_rd_tag_f1,
+   output logic [1:0] [`BTB_ADDR_HI:1] btb_rw_addr,  // per bank
+   output logic [1:0] [`BTB_ADDR_HI:1] btb_rw_addr_f1,  // per bank
+   output logic [`BTB_TOFFSET_SIZE+`BTB_BTAG_SIZE+5-1:0]         btb_sram_wr_data,
+   output logic [1:0] [`BTB_BTAG_SIZE-1:0] btb_sram_rd_tag_f1,
 
 
    //-------------------------- LSU AXI signals--------------------------
    // AXI Write Channels
    output logic                            lsu_axi_awvalid,
    input  logic                            lsu_axi_awready,
-   output logic [pt.LSU_BUS_TAG-1:0]       lsu_axi_awid,
+   output logic [`LSU_BUS_TAG-1:0]       lsu_axi_awid,
    output logic [31:0]                     lsu_axi_awaddr,
    output logic [3:0]                      lsu_axi_awregion,
    output logic [7:0]                      lsu_axi_awlen,
@@ -175,12 +179,12 @@ import eh2_param_pkg::*;
    input  logic                            lsu_axi_bvalid,
    output logic                            lsu_axi_bready,
    input  logic [1:0]                      lsu_axi_bresp,
-   input  logic [pt.LSU_BUS_TAG-1:0]       lsu_axi_bid,
+   input  logic [`LSU_BUS_TAG-1:0]       lsu_axi_bid,
 
    // AXI Read Channels
    output logic                            lsu_axi_arvalid,
    input  logic                            lsu_axi_arready,
-   output logic [pt.LSU_BUS_TAG-1:0]       lsu_axi_arid,
+   output logic [`LSU_BUS_TAG-1:0]       lsu_axi_arid,
    output logic [31:0]                     lsu_axi_araddr,
    output logic [3:0]                      lsu_axi_arregion,
    output logic [7:0]                      lsu_axi_arlen,
@@ -193,7 +197,7 @@ import eh2_param_pkg::*;
 
    input  logic                            lsu_axi_rvalid,
    output logic                            lsu_axi_rready,
-   input  logic [pt.LSU_BUS_TAG-1:0]       lsu_axi_rid,
+   input  logic [`LSU_BUS_TAG-1:0]       lsu_axi_rid,
    input  logic [63:0]                     lsu_axi_rdata,
    input  logic [1:0]                      lsu_axi_rresp,
    input  logic                            lsu_axi_rlast,
@@ -202,7 +206,7 @@ import eh2_param_pkg::*;
    // AXI Write Channels
    output logic                            ifu_axi_awvalid,
    input  logic                            ifu_axi_awready,
-   output logic [pt.IFU_BUS_TAG-1:0]       ifu_axi_awid,
+   output logic [`IFU_BUS_TAG-1:0]       ifu_axi_awid,
    output logic [31:0]                     ifu_axi_awaddr,
    output logic [3:0]                      ifu_axi_awregion,
    output logic [7:0]                      ifu_axi_awlen,
@@ -222,12 +226,12 @@ import eh2_param_pkg::*;
    input  logic                            ifu_axi_bvalid,
    output logic                            ifu_axi_bready,
    input  logic [1:0]                      ifu_axi_bresp,
-   input  logic [pt.IFU_BUS_TAG-1:0]       ifu_axi_bid,
+   input  logic [`IFU_BUS_TAG-1:0]       ifu_axi_bid,
 
    // AXI Read Channels
    output logic                            ifu_axi_arvalid,
    input  logic                            ifu_axi_arready,
-   output logic [pt.IFU_BUS_TAG-1:0]       ifu_axi_arid,
+   output logic [`IFU_BUS_TAG-1:0]       ifu_axi_arid,
    output logic [31:0]                     ifu_axi_araddr,
    output logic [3:0]                      ifu_axi_arregion,
    output logic [7:0]                      ifu_axi_arlen,
@@ -240,7 +244,7 @@ import eh2_param_pkg::*;
 
    input  logic                            ifu_axi_rvalid,
    output logic                            ifu_axi_rready,
-   input  logic [pt.IFU_BUS_TAG-1:0]       ifu_axi_rid,
+   input  logic [`IFU_BUS_TAG-1:0]       ifu_axi_rid,
    input  logic [63:0]                     ifu_axi_rdata,
    input  logic [1:0]                      ifu_axi_rresp,
    input  logic                            ifu_axi_rlast,
@@ -249,7 +253,7 @@ import eh2_param_pkg::*;
    // AXI Write Channels
    output logic                            sb_axi_awvalid,
    input  logic                            sb_axi_awready,
-   output logic [pt.SB_BUS_TAG-1:0]        sb_axi_awid,
+   output logic [`SB_BUS_TAG-1:0]        sb_axi_awid,
    output logic [31:0]                     sb_axi_awaddr,
    output logic [3:0]                      sb_axi_awregion,
    output logic [7:0]                      sb_axi_awlen,
@@ -269,12 +273,12 @@ import eh2_param_pkg::*;
    input  logic                            sb_axi_bvalid,
    output logic                            sb_axi_bready,
    input  logic [1:0]                      sb_axi_bresp,
-   input  logic [pt.SB_BUS_TAG-1:0]        sb_axi_bid,
+   input  logic [`SB_BUS_TAG-1:0]        sb_axi_bid,
 
    // AXI Read Channels
    output logic                            sb_axi_arvalid,
    input  logic                            sb_axi_arready,
-   output logic [pt.SB_BUS_TAG-1:0]        sb_axi_arid,
+   output logic [`SB_BUS_TAG-1:0]        sb_axi_arid,
    output logic [31:0]                     sb_axi_araddr,
    output logic [3:0]                      sb_axi_arregion,
    output logic [7:0]                      sb_axi_arlen,
@@ -287,7 +291,7 @@ import eh2_param_pkg::*;
 
    input  logic                            sb_axi_rvalid,
    output logic                            sb_axi_rready,
-   input  logic [pt.SB_BUS_TAG-1:0]        sb_axi_rid,
+   input  logic [`SB_BUS_TAG-1:0]        sb_axi_rid,
    input  logic [63:0]                     sb_axi_rdata,
    input  logic [1:0]                      sb_axi_rresp,
    input  logic                            sb_axi_rlast,
@@ -296,7 +300,7 @@ import eh2_param_pkg::*;
    // AXI Write Channels
    input  logic                         dma_axi_awvalid,
    output logic                         dma_axi_awready,
-   input  logic [pt.DMA_BUS_TAG-1:0]    dma_axi_awid,
+   input  logic [`DMA_BUS_TAG-1:0]    dma_axi_awid,
    input  logic [31:0]                  dma_axi_awaddr,
    input  logic [2:0]                   dma_axi_awsize,
    input  logic [2:0]                   dma_axi_awprot,
@@ -313,12 +317,12 @@ import eh2_param_pkg::*;
    output logic                         dma_axi_bvalid,
    input  logic                         dma_axi_bready,
    output logic [1:0]                   dma_axi_bresp,
-   output logic [pt.DMA_BUS_TAG-1:0]    dma_axi_bid,
+   output logic [`DMA_BUS_TAG-1:0]    dma_axi_bid,
 
    // AXI Read Channels
    input  logic                         dma_axi_arvalid,
    output logic                         dma_axi_arready,
-   input  logic [pt.DMA_BUS_TAG-1:0]    dma_axi_arid,
+   input  logic [`DMA_BUS_TAG-1:0]    dma_axi_arid,
    input  logic [31:0]                  dma_axi_araddr,
    input  logic [2:0]                   dma_axi_arsize,
    input  logic [2:0]                   dma_axi_arprot,
@@ -327,7 +331,7 @@ import eh2_param_pkg::*;
 
    output logic                         dma_axi_rvalid,
    input  logic                         dma_axi_rready,
-   output logic [pt.DMA_BUS_TAG-1:0]    dma_axi_rid,
+   output logic [`DMA_BUS_TAG-1:0]    dma_axi_rid,
    output logic [63:0]                  dma_axi_rdata,
    output logic [1:0]                   dma_axi_rresp,
    output logic                         dma_axi_rlast,
@@ -401,9 +405,9 @@ import eh2_param_pkg::*;
    input logic [31:0]            dmi_reg_wdata,             // write data
    output logic [31:0]           dmi_reg_rdata,             // read data
 
-   input logic [pt.PIC_TOTAL_INT:1] extintsrc_req,
-   input logic [pt.NUM_THREADS-1:0] timer_int,              // Timer interrupt pending (from pin)
-   input logic [pt.NUM_THREADS-1:0] soft_int,               // Software interrupt pending (from pin)
+   input logic [`PIC_TOTAL_INT:1] extintsrc_req,
+   input logic [`NUM_THREADS-1:0] timer_int,              // Timer interrupt pending (from pin)
+   input logic [`NUM_THREADS-1:0] soft_int,               // Software interrupt pending (from pin)
    input logic                      scan_mode
 );
 
@@ -416,10 +420,10 @@ import eh2_param_pkg::*;
    logic                         lsu_axi_bvalid_ahb;
    logic                         lsu_axi_bready_ahb;
    logic [1:0]                   lsu_axi_bresp_ahb;
-   logic [pt.LSU_BUS_TAG-1:0]    lsu_axi_bid_ahb;
+   logic [`LSU_BUS_TAG-1:0]    lsu_axi_bid_ahb;
    logic                         lsu_axi_arready_ahb;
    logic                         lsu_axi_rvalid_ahb;
-   logic [pt.LSU_BUS_TAG-1:0]    lsu_axi_rid_ahb;
+   logic [`LSU_BUS_TAG-1:0]    lsu_axi_rid_ahb;
    logic [63:0]                  lsu_axi_rdata_ahb;
    logic [1:0]                   lsu_axi_rresp_ahb;
    logic                         lsu_axi_rlast_ahb;
@@ -429,10 +433,10 @@ import eh2_param_pkg::*;
    logic                         lsu_axi_bvalid_int;
    logic                         lsu_axi_bready_int;
    logic [1:0]                   lsu_axi_bresp_int;
-   logic [pt.LSU_BUS_TAG-1:0]    lsu_axi_bid_int;
+   logic [`LSU_BUS_TAG-1:0]    lsu_axi_bid_int;
    logic                         lsu_axi_arready_int;
    logic                         lsu_axi_rvalid_int;
-   logic [pt.LSU_BUS_TAG-1:0]    lsu_axi_rid_int;
+   logic [`LSU_BUS_TAG-1:0]    lsu_axi_rid_int;
    logic [63:0]                  lsu_axi_rdata_int;
    logic [1:0]                   lsu_axi_rresp_int;
    logic                         lsu_axi_rlast_int;
@@ -442,10 +446,10 @@ import eh2_param_pkg::*;
    logic                         ifu_axi_bvalid_ahb;
    logic                         ifu_axi_bready_ahb;
    logic [1:0]                   ifu_axi_bresp_ahb;
-   logic [pt.IFU_BUS_TAG-1:0]    ifu_axi_bid_ahb;
+   logic [`IFU_BUS_TAG-1:0]    ifu_axi_bid_ahb;
    logic                         ifu_axi_arready_ahb;
    logic                         ifu_axi_rvalid_ahb;
-   logic [pt.IFU_BUS_TAG-1:0]    ifu_axi_rid_ahb;
+   logic [`IFU_BUS_TAG-1:0]    ifu_axi_rid_ahb;
    logic [63:0]                  ifu_axi_rdata_ahb;
    logic [1:0]                   ifu_axi_rresp_ahb;
    logic                         ifu_axi_rlast_ahb;
@@ -455,10 +459,10 @@ import eh2_param_pkg::*;
    logic                         ifu_axi_bvalid_int;
    logic                         ifu_axi_bready_int;
    logic [1:0]                   ifu_axi_bresp_int;
-   logic [pt.IFU_BUS_TAG-1:0]    ifu_axi_bid_int;
+   logic [`IFU_BUS_TAG-1:0]    ifu_axi_bid_int;
    logic                         ifu_axi_arready_int;
    logic                         ifu_axi_rvalid_int;
-   logic [pt.IFU_BUS_TAG-1:0]    ifu_axi_rid_int;
+   logic [`IFU_BUS_TAG-1:0]    ifu_axi_rid_int;
    logic [63:0]                  ifu_axi_rdata_int;
    logic [1:0]                   ifu_axi_rresp_int;
    logic                         ifu_axi_rlast_int;
@@ -468,10 +472,10 @@ import eh2_param_pkg::*;
    logic                         sb_axi_bvalid_ahb;
    logic                         sb_axi_bready_ahb;
    logic [1:0]                   sb_axi_bresp_ahb;
-   logic [pt.SB_BUS_TAG-1:0]     sb_axi_bid_ahb;
+   logic [`SB_BUS_TAG-1:0]     sb_axi_bid_ahb;
    logic                         sb_axi_arready_ahb;
    logic                         sb_axi_rvalid_ahb;
-   logic [pt.SB_BUS_TAG-1:0]     sb_axi_rid_ahb;
+   logic [`SB_BUS_TAG-1:0]     sb_axi_rid_ahb;
    logic [63:0]                  sb_axi_rdata_ahb;
    logic [1:0]                   sb_axi_rresp_ahb;
    logic                         sb_axi_rlast_ahb;
@@ -481,16 +485,16 @@ import eh2_param_pkg::*;
    logic                         sb_axi_bvalid_int;
    logic                         sb_axi_bready_int;
    logic [1:0]                   sb_axi_bresp_int;
-   logic [pt.SB_BUS_TAG-1:0]     sb_axi_bid_int;
+   logic [`SB_BUS_TAG-1:0]     sb_axi_bid_int;
    logic                         sb_axi_arready_int;
    logic                         sb_axi_rvalid_int;
-   logic [pt.SB_BUS_TAG-1:0]     sb_axi_rid_int;
+   logic [`SB_BUS_TAG-1:0]     sb_axi_rid_int;
    logic [63:0]                  sb_axi_rdata_int;
    logic [1:0]                   sb_axi_rresp_int;
    logic                         sb_axi_rlast_int;
 
    logic                         dma_axi_awvalid_ahb;
-   logic [pt.DMA_BUS_TAG-1:0]    dma_axi_awid_ahb;
+   logic [`DMA_BUS_TAG-1:0]    dma_axi_awid_ahb;
    logic [31:0]                  dma_axi_awaddr_ahb;
    logic [2:0]                   dma_axi_awsize_ahb;
    logic [2:0]                   dma_axi_awprot_ahb;
@@ -502,7 +506,7 @@ import eh2_param_pkg::*;
    logic                         dma_axi_wlast_ahb;
    logic                         dma_axi_bready_ahb;
    logic                         dma_axi_arvalid_ahb;
-   logic [pt.DMA_BUS_TAG-1:0]    dma_axi_arid_ahb;
+   logic [`DMA_BUS_TAG-1:0]    dma_axi_arid_ahb;
    logic [31:0]                  dma_axi_araddr_ahb;
    logic [2:0]                   dma_axi_arsize_ahb;
    logic [2:0]                   dma_axi_arprot_ahb;
@@ -511,7 +515,7 @@ import eh2_param_pkg::*;
    logic                         dma_axi_rready_ahb;
 
    logic                         dma_axi_awvalid_int;
-   logic [pt.DMA_BUS_TAG-1:0]    dma_axi_awid_int;
+   logic [`DMA_BUS_TAG-1:0]    dma_axi_awid_int;
    logic [31:0]                  dma_axi_awaddr_int;
    logic [2:0]                   dma_axi_awsize_int;
    logic [2:0]                   dma_axi_awprot_int;
@@ -523,7 +527,7 @@ import eh2_param_pkg::*;
    logic                         dma_axi_wlast_int;
    logic                         dma_axi_bready_int;
    logic                         dma_axi_arvalid_int;
-   logic [pt.DMA_BUS_TAG-1:0]    dma_axi_arid_int;
+   logic [`DMA_BUS_TAG-1:0]    dma_axi_arid_int;
    logic [31:0]                  dma_axi_araddr_int;
    logic [2:0]                   dma_axi_arsize_int;
    logic [2:0]                   dma_axi_arprot_int;
@@ -535,24 +539,40 @@ import eh2_param_pkg::*;
    //
    //----------------------------------------------------------------------
 
-   logic [pt.NUM_THREADS-1:0][1:0] ifu_pmu_instr_aligned;
-   logic [pt.NUM_THREADS-1:0]      ifu_pmu_align_stall;
+   logic [`NUM_THREADS-1:0][1:0] ifu_pmu_instr_aligned;
+   logic [`NUM_THREADS-1:0]      ifu_pmu_align_stall;
 
-   logic [pt.NUM_THREADS-1:0]  ifu_miss_state_idle;          // I-side miss buffer empty
-   logic [pt.NUM_THREADS-1:0]  ifu_ic_error_start;           // IC single bit error
-   logic [pt.NUM_THREADS-1:0]  ifu_iccm_rd_ecc_single_err;   // ICCM single bit error
+   logic [`NUM_THREADS-1:0]  ifu_miss_state_idle;          // I-side miss buffer empty
+   logic [`NUM_THREADS-1:0]  ifu_ic_error_start;           // IC single bit error
+   logic [`NUM_THREADS-1:0]  ifu_iccm_rd_ecc_single_err;   // ICCM single bit error
 
 // Icache debug
    logic [70:0]                  ifu_ic_debug_rd_data;
 
    logic ifu_ic_debug_rd_data_valid; // diagnostic icache read data valid
    eh2_cache_debug_pkt_t dec_tlu_ic_diag_pkt; // packet of DICAWICS, DICAD0/1, DICAGO info for icache diagnostics
-   logic [pt.NUM_THREADS-1:0] dec_tlu_i0_commit_cmt;
+   logic [`NUM_THREADS-1:0] dec_tlu_i0_commit_cmt;
 
    logic  [31:0] gpr_i0_rs1_d;
    logic  [31:0] gpr_i0_rs2_d;
    logic  [31:0] gpr_i1_rs1_d;
    logic  [31:0] gpr_i1_rs2_d;
+
+   logic                            posit_rs1_sgn;
+   logic  [REGIME_BW-1:0]           posit_rs1_reg;
+   logic  [ES-1:0]                  posit_rs1_exp;
+   logic  [FRACTION_BW-1:0]         posit_rs1_fra;
+   logic                            is_special_rs1;
+
+   logic                            posit_rs2_sgn;
+   logic  [REGIME_BW-1:0]           posit_rs2_reg;
+   logic  [ES-1:0]                  posit_rs2_exp;
+   logic  [FRACTION_BW-1:0]         posit_rs2_fra;
+   logic                            is_special_rs2;
+
+
+   logic                            is_oflw_or_uflw;
+   logic                            is_zero;
 
    logic [31:0] i0_rs1_bypass_data_d;
    logic [31:0] i0_rs2_bypass_data_d;
@@ -561,20 +581,20 @@ import eh2_param_pkg::*;
    logic [31:0] exu_i0_result_e1, exu_i1_result_e1;
    logic [31:1] exu_i0_pc_e1;
    logic [31:1] exu_i1_pc_e1;  // from the primary alu's
-   logic [pt.NUM_THREADS-1:0] [31:1] exu_npc_e4;
+   logic [`NUM_THREADS-1:0] [31:1] exu_npc_e4;
 
    eh2_alu_pkt_t  i0_ap, i1_ap;
 
    // Trigger signals
-   eh2_trigger_pkt_t [pt.NUM_THREADS-1:0][3:0]     trigger_pkt_any;
+   eh2_trigger_pkt_t [`NUM_THREADS-1:0][3:0]     trigger_pkt_any;
    logic [3:0]             lsu_trigger_match_dc4;
-   logic [pt.NUM_THREADS-1:0] dec_ib3_valid_d, dec_ib2_valid_d;
+   logic [`NUM_THREADS-1:0] dec_ib3_valid_d, dec_ib2_valid_d;
 
    logic [31:0] dec_i0_immed_d;
    logic [31:0] dec_i1_immed_d;
 
-   logic [pt.BTB_TOFFSET_SIZE:1] dec_i0_br_immed_d;
-   logic [pt.BTB_TOFFSET_SIZE:1] dec_i1_br_immed_d;
+   logic [`BTB_TOFFSET_SIZE:1] dec_i0_br_immed_d;
+   logic [`BTB_TOFFSET_SIZE:1] dec_i1_br_immed_d;
 
    logic         dec_i0_select_pc_d;
    logic         dec_i1_select_pc_d;
@@ -589,18 +609,18 @@ import eh2_param_pkg::*;
    logic         dec_i0_alu_decode_d;
    logic         dec_i1_alu_decode_d;
 
-   logic [pt.NUM_THREADS-1:0]         ifu_i0_valid, ifu_i1_valid;
-   logic [pt.NUM_THREADS-1:0] [31:0]  ifu_i0_instr, ifu_i1_instr;
-   logic [pt.NUM_THREADS-1:0] [31:1]  ifu_i0_pc, ifu_i1_pc;
+   logic [`NUM_THREADS-1:0]         ifu_i0_valid, ifu_i1_valid;
+   logic [`NUM_THREADS-1:0] [31:0]  ifu_i0_instr, ifu_i1_instr;
+   logic [`NUM_THREADS-1:0] [31:1]  ifu_i0_pc, ifu_i1_pc;
    logic [31:2]  dec_tlu_meihap; // Fast ext int base
 
-   logic [pt.NUM_THREADS-1:0]   flush_final_e3;             // final flush
-   logic [pt.NUM_THREADS-1:0]   i0_flush_final_e3;          // final flush from i0
+   logic [`NUM_THREADS-1:0]   flush_final_e3;             // final flush
+   logic [`NUM_THREADS-1:0]   i0_flush_final_e3;          // final flush from i0
 
-   logic [pt.NUM_THREADS-1:0]   exu_flush_final_early;              // Pipe is being flushed this cycle
-   logic [pt.NUM_THREADS-1:0][31:1] exu_flush_path_final_early;         // Target for the oldest flush source
+   logic [`NUM_THREADS-1:0]   exu_flush_final_early;              // Pipe is being flushed this cycle
+   logic [`NUM_THREADS-1:0][31:1] exu_flush_path_final_early;         // Target for the oldest flush source
 
-   logic [pt.NUM_THREADS-1:0] [31:1] exu_flush_path_final;
+   logic [`NUM_THREADS-1:0] [31:1] exu_flush_path_final;
 
    logic [31:0] exu_lsu_rs1_d;
    logic [31:0] exu_lsu_rs2_d;
@@ -612,48 +632,48 @@ import eh2_param_pkg::*;
    logic        dec_i0_lsu_d;       // chose which gpr value to use
    logic        dec_i1_lsu_d;
 
-   logic [pt.NUM_THREADS-1:0] dec_tlu_force_halt;
+   logic [`NUM_THREADS-1:0] dec_tlu_force_halt;
 
    logic [31:0]  lsu_result_dc3;
    logic [31:0]  lsu_result_corr_dc4;
    logic         lsu_sc_success_dc5;
    logic         lsu_single_ecc_error_incr;     // Increment the ecc error counter
    eh2_lsu_error_pkt_t lsu_error_pkt_dc3;
-   logic [pt.NUM_THREADS-1:0]        lsu_imprecise_error_load_any;
-   logic [pt.NUM_THREADS-1:0]        lsu_imprecise_error_store_any;
-   logic [pt.NUM_THREADS-1:0][31:0]  lsu_imprecise_error_addr_any;
+   logic [`NUM_THREADS-1:0]        lsu_imprecise_error_load_any;
+   logic [`NUM_THREADS-1:0]        lsu_imprecise_error_store_any;
+   logic [`NUM_THREADS-1:0][31:0]  lsu_imprecise_error_addr_any;
    logic         lsu_fastint_stall_any;     // Stall fast interrupts at decode-1
 
-   logic [pt.NUM_THREADS-1:0] lsu_amo_stall_any;         // This is for blocking amo
-   logic [pt.NUM_THREADS-1:0] lsu_load_stall_any;        // This is for blocking loads
-   logic [pt.NUM_THREADS-1:0] lsu_store_stall_any;       // This is for blocking stores
-   logic [pt.NUM_THREADS-1:0] lsu_idle_any;              // This is used to enter halt mode. Exclude DMA
+   logic [`NUM_THREADS-1:0] lsu_amo_stall_any;         // This is for blocking amo
+   logic [`NUM_THREADS-1:0] lsu_load_stall_any;        // This is for blocking loads
+   logic [`NUM_THREADS-1:0] lsu_store_stall_any;       // This is for blocking stores
+   logic [`NUM_THREADS-1:0] lsu_idle_any;              // This is used to enter halt mode. Exclude DMA
 
    logic [31:1]  lsu_fir_addr;              // fast interrupt address
    logic [1:0]   lsu_fir_error;             // Error during fast interrupt lookup
 
    // Non-blocking loads
    logic                                  lsu_nonblock_load_valid_dc1;
-   logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]    lsu_nonblock_load_tag_dc1;
+   logic [`LSU_NUM_NBLOAD_WIDTH-1:0]    lsu_nonblock_load_tag_dc1;
    logic                                  lsu_nonblock_load_inv_dc2;
-   logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]    lsu_nonblock_load_inv_tag_dc2;
+   logic [`LSU_NUM_NBLOAD_WIDTH-1:0]    lsu_nonblock_load_inv_tag_dc2;
    logic                                  lsu_nonblock_load_inv_dc5;
-   logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]    lsu_nonblock_load_inv_tag_dc5;
+   logic [`LSU_NUM_NBLOAD_WIDTH-1:0]    lsu_nonblock_load_inv_tag_dc5;
    logic                                  lsu_nonblock_load_data_valid;
    logic                                  lsu_nonblock_load_data_error;
    logic                                  lsu_nonblock_load_data_tid;
-   logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]    lsu_nonblock_load_data_tag;
+   logic [`LSU_NUM_NBLOAD_WIDTH-1:0]    lsu_nonblock_load_data_tag;
    logic [31:0]                           lsu_nonblock_load_data;
 
 
-   logic [pt.NUM_THREADS-1:0] [31:1]      dec_tlu_flush_path_wb;  // flush pc
-   logic [pt.NUM_THREADS-1:0]             dec_tlu_flush_mp_wb; // commit has a flush (mispredict at e4)
-   logic [pt.NUM_THREADS-1:0]             dec_tlu_flush_lower_wb; // commit has a flush (exception; int; mispredict at e4)
-   logic [pt.NUM_THREADS-1:0]             dec_tlu_flush_lower_wb1; // commit has a flush (exception; int; mispredict at e4)
-   logic [pt.NUM_THREADS-1:0]             dec_tlu_flush_noredir_wb ; // Tell fetch to idle on this flush
-   logic [pt.NUM_THREADS-1:0]             dec_tlu_flush_leak_one_wb; // single step
-   logic [pt.NUM_THREADS-1:0]             dec_tlu_flush_err_wb; // iside perr/ecc rfpc
-   logic [pt.NUM_THREADS-1:0]             dec_tlu_fence_i_wb;     // flush is a fence_i rfnpc, flush icache
+   logic [`NUM_THREADS-1:0] [31:1]      dec_tlu_flush_path_wb;  // flush pc
+   logic [`NUM_THREADS-1:0]             dec_tlu_flush_mp_wb; // commit has a flush (mispredict at e4)
+   logic [`NUM_THREADS-1:0]             dec_tlu_flush_lower_wb; // commit has a flush (exception; int; mispredict at e4)
+   logic [`NUM_THREADS-1:0]             dec_tlu_flush_lower_wb1; // commit has a flush (exception; int; mispredict at e4)
+   logic [`NUM_THREADS-1:0]             dec_tlu_flush_noredir_wb ; // Tell fetch to idle on this flush
+   logic [`NUM_THREADS-1:0]             dec_tlu_flush_leak_one_wb; // single step
+   logic [`NUM_THREADS-1:0]             dec_tlu_flush_err_wb; // iside perr/ecc rfpc
+   logic [`NUM_THREADS-1:0]             dec_tlu_fence_i_wb;     // flush is a fence_i rfnpc, flush icache
 
 
    logic        dec_i0_csr_ren_d;
@@ -666,13 +686,13 @@ import eh2_param_pkg::*;
    logic dec_tlu_i0_valid_e4;
    logic dec_tlu_i1_valid_e4;
    logic [31:0] dec_tlu_mrac_ff;        // CSR for memory region control
-   logic [pt.NUM_THREADS-1:0] dec_tlu_lr_reset_wb; // Reset the reservation on certain events
+   logic [`NUM_THREADS-1:0] dec_tlu_lr_reset_wb; // Reset the reservation on certain events
 
 
-   logic [pt.NUM_THREADS-1:0] ifu_i0_pc4, ifu_i1_pc4;
+   logic [`NUM_THREADS-1:0] ifu_i0_pc4, ifu_i1_pc4;
 
-   eh2_predecode_pkt_t  [pt.NUM_THREADS-1:0] ifu_i0_predecode;
-   eh2_predecode_pkt_t  [pt.NUM_THREADS-1:0] ifu_i1_predecode;
+   eh2_predecode_pkt_t  [`NUM_THREADS-1:0] ifu_i0_predecode;
+   eh2_predecode_pkt_t  [`NUM_THREADS-1:0] ifu_i1_predecode;
 
 
 
@@ -692,7 +712,7 @@ import eh2_param_pkg::*;
 
    logic        dec_i1_valid_e1;
 
-   logic [pt.NUM_THREADS-1:0][31:1] pred_correct_npc_e2; // npc e2 if the prediction is correct
+   logic [`NUM_THREADS-1:0][31:1] pred_correct_npc_e2; // npc e2 if the prediction is correct
 
    logic [31:0] exu_i0_result_e4;
    logic [31:0] exu_i1_result_e4;
@@ -725,14 +745,14 @@ import eh2_param_pkg::*;
    eh2_br_tlu_pkt_t dec_tlu_br0_wb_pkt;
    eh2_br_tlu_pkt_t dec_tlu_br1_wb_pkt;
 
-   eh2_predict_pkt_t [pt.NUM_THREADS-1:0]                    exu_mp_pkt;
-   logic [pt.NUM_THREADS-1:0] [pt.BHT_GHR_SIZE-1:0]           exu_mp_eghr;
-   logic [pt.NUM_THREADS-1:0] [pt.BHT_GHR_SIZE-1:0]           exu_mp_fghr;
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] exu_mp_index;
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_BTAG_SIZE-1:0]          exu_mp_btag;
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_TOFFSET_SIZE-1:0]       exu_mp_toffset;
+   eh2_predict_pkt_t [`NUM_THREADS-1:0]                    exu_mp_pkt;
+   logic [`NUM_THREADS-1:0] [`BHT_GHR_SIZE-1:0]           exu_mp_eghr;
+   logic [`NUM_THREADS-1:0] [`BHT_GHR_SIZE-1:0]           exu_mp_fghr;
+   logic [`NUM_THREADS-1:0] [`BTB_ADDR_HI:`BTB_ADDR_LO] exu_mp_index;
+   logic [`NUM_THREADS-1:0] [`BTB_BTAG_SIZE-1:0]          exu_mp_btag;
+   logic [`NUM_THREADS-1:0] [`BTB_TOFFSET_SIZE-1:0]       exu_mp_toffset;
 
-   logic [pt.BHT_GHR_SIZE-1:0]  exu_i0_br_fghr_e4;
+   logic [`BHT_GHR_SIZE-1:0]  exu_i0_br_fghr_e4;
    logic [1:0]  exu_i0_br_hist_e4;
    logic        exu_i0_br_bank_e4;
    logic        exu_i0_br_error_e4;
@@ -742,7 +762,7 @@ import eh2_param_pkg::*;
    logic        exu_i0_br_ret_e4;
    logic        exu_i0_br_call_e4;
    logic        exu_i0_br_middle_e4;
-   logic [pt.BHT_GHR_SIZE-1:0]  exu_i1_br_fghr_e4;
+   logic [`BHT_GHR_SIZE-1:0]  exu_i1_br_fghr_e4;
    logic dec_i0_tid_e4;
    logic dec_i1_tid_e4;
 
@@ -758,8 +778,8 @@ import eh2_param_pkg::*;
    logic        exu_i0_br_way_e4;
    logic        exu_i1_br_way_e4;
 
-   logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] exu_i0_br_index_e4;
-   logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] exu_i1_br_index_e4;
+   logic [`BTB_ADDR_HI:`BTB_ADDR_LO] exu_i0_br_index_e4;
+   logic [`BTB_ADDR_HI:`BTB_ADDR_LO] exu_i1_br_index_e4;
 
    logic        dma_dccm_req;
    logic        dma_dccm_spec_req;
@@ -795,36 +815,36 @@ import eh2_param_pkg::*;
 
    logic [31:0] i0_result_e2;
 
-   logic [pt.NUM_THREADS-1:0] [1:0]  ifu_i0_icaf_type;
-   logic [pt.NUM_THREADS-1:0]        ifu_i0_icaf;
-   logic [pt.NUM_THREADS-1:0]        ifu_i0_icaf_second;
-   logic [pt.NUM_THREADS-1:0]        ifu_i0_dbecc;
+   logic [`NUM_THREADS-1:0] [1:0]  ifu_i0_icaf_type;
+   logic [`NUM_THREADS-1:0]        ifu_i0_icaf;
+   logic [`NUM_THREADS-1:0]        ifu_i0_icaf_second;
+   logic [`NUM_THREADS-1:0]        ifu_i0_dbecc;
    logic                           iccm_dma_sb_error;
 
-   logic [pt.NUM_THREADS-1:0] dec_i1_cancel_e1;
+   logic [`NUM_THREADS-1:0] dec_i1_cancel_e1;
 
-   eh2_br_pkt_t [pt.NUM_THREADS-1:0] i0_brp;
-   eh2_br_pkt_t [pt.NUM_THREADS-1:0] i1_brp;
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] ifu_i0_bp_index, ifu_i1_bp_index;
-   logic [pt.NUM_THREADS-1:0] [pt.BHT_GHR_SIZE-1:0]           ifu_i0_bp_fghr, ifu_i1_bp_fghr;
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_BTAG_SIZE-1:0]          ifu_i0_bp_btag, ifu_i1_bp_btag;
-   logic [pt.NUM_THREADS-1:0] [pt.BTB_TOFFSET_SIZE-1:0]       ifu_i0_bp_toffset, ifu_i1_bp_toffset;
+   eh2_br_pkt_t [`NUM_THREADS-1:0] i0_brp;
+   eh2_br_pkt_t [`NUM_THREADS-1:0] i1_brp;
+   logic [`NUM_THREADS-1:0] [`BTB_ADDR_HI:`BTB_ADDR_LO] ifu_i0_bp_index, ifu_i1_bp_index;
+   logic [`NUM_THREADS-1:0] [`BHT_GHR_SIZE-1:0]           ifu_i0_bp_fghr, ifu_i1_bp_fghr;
+   logic [`NUM_THREADS-1:0] [`BTB_BTAG_SIZE-1:0]          ifu_i0_bp_btag, ifu_i1_bp_btag;
+   logic [`NUM_THREADS-1:0] [`BTB_TOFFSET_SIZE-1:0]       ifu_i0_bp_toffset, ifu_i1_bp_toffset;
 
-   logic [pt.NUM_THREADS-1:0] [$clog2(pt.BTB_SIZE)-1:0] ifu_i0_bp_fa_index, ifu_i1_bp_fa_index;
-   logic [$clog2(pt.BTB_SIZE)-1:0] dec_fa_error_index; // Fully associt btb error index
+   logic [`NUM_THREADS-1:0] [$clog2(`BTB_SIZE)-1:0] ifu_i0_bp_fa_index, ifu_i1_bp_fa_index;
+   logic [$clog2(`BTB_SIZE)-1:0] dec_fa_error_index; // Fully associt btb error index
 
    eh2_predict_pkt_t  i0_predict_p_d;
    eh2_predict_pkt_t  i1_predict_p_d;
 
-   logic [pt.BHT_GHR_SIZE-1:0]           i0_predict_fghr_d, i1_predict_fghr_d;       // DEC predict fghr
-   logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] i0_predict_index_d, i1_predict_index_d;     // DEC predict index
-   logic [pt.BTB_BTAG_SIZE-1:0]          i0_predict_btag_d, i1_predict_btag_d;       // DEC predict branch tag
-   logic [pt.BTB_TOFFSET_SIZE-1:0]          i0_predict_toffset_d, i1_predict_toffset_d;       // DEC predict branch tag
+   logic [`BHT_GHR_SIZE-1:0]           i0_predict_fghr_d, i1_predict_fghr_d;       // DEC predict fghr
+   logic [`BTB_ADDR_HI:`BTB_ADDR_LO] i0_predict_index_d, i1_predict_index_d;     // DEC predict index
+   logic [`BTB_BTAG_SIZE-1:0]          i0_predict_btag_d, i1_predict_btag_d;       // DEC predict branch tag
+   logic [`BTB_TOFFSET_SIZE-1:0]          i0_predict_toffset_d, i1_predict_toffset_d;       // DEC predict branch tag
 
-   logic [pt.BHT_GHR_SIZE-1:0]           dec_tlu_br0_fghr_wb;  // fghr to bp
-   logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] dec_tlu_br0_index_wb; // bp index
-   logic [pt.BHT_GHR_SIZE-1:0]           dec_tlu_br1_fghr_wb;  // fghr to bp
-   logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] dec_tlu_br1_index_wb; // bp index
+   logic [`BHT_GHR_SIZE-1:0]           dec_tlu_br0_fghr_wb;  // fghr to bp
+   logic [`BTB_ADDR_HI:`BTB_ADDR_LO] dec_tlu_br0_index_wb; // bp index
+   logic [`BHT_GHR_SIZE-1:0]           dec_tlu_br1_fghr_wb;  // fghr to bp
+   logic [`BTB_ADDR_HI:`BTB_ADDR_LO] dec_tlu_br1_index_wb; // bp index
 
       // PIC ports
    logic                  picm_rd_thr;
@@ -836,7 +856,7 @@ import eh2_param_pkg::*;
    logic [31:0]           picm_wr_data;
    logic [31:0]           picm_rd_data;
 
-   logic [pt.NUM_THREADS-1:0]  dec_tlu_btb_write_kill;
+   logic [`NUM_THREADS-1:0]  dec_tlu_btb_write_kill;
 
    logic  dec_tlu_external_ldfwd_disable;
    logic  dec_tlu_bpred_disable;
@@ -864,8 +884,8 @@ import eh2_param_pkg::*;
    logic                   dbg_cmd_write;             // 1: write command; 0: read_command
    logic [1:0]             dbg_cmd_type;              // 0:gpr 1:csr 2: memory
    logic [1:0]             dbg_cmd_size;              // size of the abstract mem access debug command
-   logic [pt.NUM_THREADS-1:0] dbg_halt_req;           // Sticky signal indicating that the debug module wants to start the entering of debug mode ( start the halting sequence )
-   logic [pt.NUM_THREADS-1:0] dbg_resume_req;         // Sticky signal indicating that the debug module wants to resume from debug mode
+   logic [`NUM_THREADS-1:0] dbg_halt_req;           // Sticky signal indicating that the debug module wants to start the entering of debug mode ( start the halting sequence )
+   logic [`NUM_THREADS-1:0] dbg_resume_req;         // Sticky signal indicating that the debug module wants to resume from debug mode
    logic                   dbg_core_rst_l;            // Core reset from DM
 
    logic                   core_dbg_cmd_done;         // Final muxed cmd done to debug
@@ -883,10 +903,10 @@ import eh2_param_pkg::*;
    logic                   dec_dbg_cmd_done;          // This will be treated like a valid signal
    logic                   dec_dbg_cmd_fail;          // Abstract command failed
    logic                   dec_dbg_cmd_tid;           // Tid of abstract command response
-   logic [pt.NUM_THREADS-1:0] dec_tlu_mpc_halted_only;   // Only halted due to MPC
-   logic [pt.NUM_THREADS-1:0] dec_tlu_dbg_halted;        // The core has finished the queiscing sequence. Sticks this signal high
-   logic [pt.NUM_THREADS-1:0] dec_tlu_resume_ack;
-   logic [pt.NUM_THREADS-1:0] dec_tlu_debug_mode;        // Core is in debug mode
+   logic [`NUM_THREADS-1:0] dec_tlu_mpc_halted_only;   // Only halted due to MPC
+   logic [`NUM_THREADS-1:0] dec_tlu_dbg_halted;        // The core has finished the queiscing sequence. Sticks this signal high
+   logic [`NUM_THREADS-1:0] dec_tlu_resume_ack;
+   logic [`NUM_THREADS-1:0] dec_tlu_debug_mode;        // Core is in debug mode
    logic                   dec_debug_wdata_rs1_d;
 
    logic [4:1]             dec_i0_data_en;
@@ -902,49 +922,49 @@ import eh2_param_pkg::*;
    logic                   exu_pmu_i1_br_ataken;
    logic                   exu_pmu_i1_pc4;
 
-   logic [pt.NUM_THREADS-1:0]  lsu_pmu_load_external_dc3;
-   logic [pt.NUM_THREADS-1:0]  lsu_pmu_store_external_dc3;
-   logic [pt.NUM_THREADS-1:0]  lsu_pmu_misaligned_dc3;
-   logic [pt.NUM_THREADS-1:0]  lsu_pmu_bus_trxn;
-   logic [pt.NUM_THREADS-1:0]  lsu_pmu_bus_misaligned;
-   logic [pt.NUM_THREADS-1:0]  lsu_pmu_bus_error;
-   logic [pt.NUM_THREADS-1:0]  lsu_pmu_bus_busy;
+   logic [`NUM_THREADS-1:0]  lsu_pmu_load_external_dc3;
+   logic [`NUM_THREADS-1:0]  lsu_pmu_store_external_dc3;
+   logic [`NUM_THREADS-1:0]  lsu_pmu_misaligned_dc3;
+   logic [`NUM_THREADS-1:0]  lsu_pmu_bus_trxn;
+   logic [`NUM_THREADS-1:0]  lsu_pmu_bus_misaligned;
+   logic [`NUM_THREADS-1:0]  lsu_pmu_bus_error;
+   logic [`NUM_THREADS-1:0]  lsu_pmu_bus_busy;
 
-   logic [pt.NUM_THREADS-1:0] ifu_pmu_fetch_stall;
+   logic [`NUM_THREADS-1:0] ifu_pmu_fetch_stall;
 
-   logic [pt.NUM_THREADS-1:0] ifu_pmu_ic_miss;               // IC miss event
-   logic [pt.NUM_THREADS-1:0] ifu_pmu_ic_hit;                // IC hit event
-   logic [pt.NUM_THREADS-1:0] ifu_pmu_bus_error;             // Bus error event
-   logic [pt.NUM_THREADS-1:0] ifu_pmu_bus_busy;              // Bus busy event
-   logic [pt.NUM_THREADS-1:0] ifu_pmu_bus_trxn;              // Bus transaction
+   logic [`NUM_THREADS-1:0] ifu_pmu_ic_miss;               // IC miss event
+   logic [`NUM_THREADS-1:0] ifu_pmu_ic_hit;                // IC hit event
+   logic [`NUM_THREADS-1:0] ifu_pmu_bus_error;             // Bus error event
+   logic [`NUM_THREADS-1:0] ifu_pmu_bus_busy;              // Bus busy event
+   logic [`NUM_THREADS-1:0] ifu_pmu_bus_trxn;              // Bus transaction
 
    logic                      active_state;
    logic                      free_clk, active_clk;
-   logic [pt.NUM_THREADS-1:0] dec_pause_state_cg;
+   logic [`NUM_THREADS-1:0] dec_pause_state_cg;
 
 
-   logic [pt.NUM_THREADS-1:0] [15:0]            ifu_i0_cinst;
-   logic [pt.NUM_THREADS-1:0] [15:0]            ifu_i1_cinst;
+   logic [`NUM_THREADS-1:0] [15:0]            ifu_i0_cinst;
+   logic [`NUM_THREADS-1:0] [15:0]            ifu_i1_cinst;
 
    logic [31:0]                  lsu_rs1_dc1;
 
    logic                         dec_extint_stall;
 
-   eh2_trace_pkt_t  [pt.NUM_THREADS-1:0] trace_rv_trace_pkt;
+   eh2_trace_pkt_t  [`NUM_THREADS-1:0] trace_rv_trace_pkt;
 
-   logic [pt.NUM_THREADS-1:0]    exu_flush_final;            // Pipe is being flushed this cycle
-   logic [pt.NUM_THREADS-1:0]    exu_i0_flush_final;         // I0 flush to DEC
-   logic [pt.NUM_THREADS-1:0]    exu_i1_flush_final;         // I1 flush to DEC
+   logic [`NUM_THREADS-1:0]    exu_flush_final;            // Pipe is being flushed this cycle
+   logic [`NUM_THREADS-1:0]    exu_i0_flush_final;         // I0 flush to DEC
+   logic [`NUM_THREADS-1:0]    exu_i1_flush_final;         // I1 flush to DEC
 
-   logic [pt.NUM_THREADS-1:0]    exu_i0_flush_lower_e4;        // to TLU - lower branch flush
-   logic [pt.NUM_THREADS-1:0]    exu_i1_flush_lower_e4;        // to TLU - lower branch flush
+   logic [`NUM_THREADS-1:0]    exu_i0_flush_lower_e4;        // to TLU - lower branch flush
+   logic [`NUM_THREADS-1:0]    exu_i1_flush_lower_e4;        // to TLU - lower branch flush
 
    logic                         dec_div_cancel;             // cancel divide operation
 
-   logic [pt.NUM_THREADS-1:0] [7:0]  pic_claimid;
-   logic [pt.NUM_THREADS-1:0] [3:0]  pic_pl, dec_tlu_meicurpl, dec_tlu_meipt;
-   logic [pt.NUM_THREADS-1:0]        mexintpend;
-   logic [pt.NUM_THREADS-1:0]        mhwakeup;
+   logic [`NUM_THREADS-1:0] [7:0]  pic_claimid;
+   logic [`NUM_THREADS-1:0] [3:0]  pic_pl, dec_tlu_meicurpl, dec_tlu_meipt;
+   logic [`NUM_THREADS-1:0]        mexintpend;
+   logic [`NUM_THREADS-1:0]        mhwakeup;
 
 
    logic        dma_active;
@@ -952,10 +972,10 @@ import eh2_param_pkg::*;
 
 // 2nd level clock headers
 
-   logic [pt.NUM_THREADS-1:0] pause_state;
-   logic [pt.NUM_THREADS-1:0] halt_state;
-   logic [pt.NUM_THREADS-1:0] active_thread;
-   logic [pt.NUM_THREADS-1:0] active_thread_l2clk;
+   logic [`NUM_THREADS-1:0] pause_state;
+   logic [`NUM_THREADS-1:0] halt_state;
+   logic [`NUM_THREADS-1:0] active_thread;
+   logic [`NUM_THREADS-1:0] active_thread_l2clk;
 
    logic        dec_tlu_core_empty;
 
@@ -987,7 +1007,7 @@ import eh2_param_pkg::*;
 
 
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
 
       assign pause_state[i] = dec_pause_state_cg[i] & ~(dma_active | lsu_active) & dec_tlu_core_empty;
       assign halt_state[i] = o_cpu_halt_status[i] & ~(dma_active | lsu_active);
@@ -997,7 +1017,7 @@ import eh2_param_pkg::*;
       rvoclkhdr act_cg   ( .clk(clk), .en(active_thread[i]),         .l1clk(active_thread_l2clk[i]), .* );
    end
 
-   if (pt.NUM_THREADS == 1) begin
+   if (`NUM_THREADS == 1) begin
 
       assign active_state = (~(halt_state[0] | pause_state[0]) | (|dec_tlu_flush_lower_wb) | (|dec_tlu_flush_lower_wb1))  | dec_tlu_misc_clk_override;
 
@@ -1023,7 +1043,7 @@ import eh2_param_pkg::*;
    assign core_dbg_cmd_fail = dma_dbg_cmd_fail | dec_dbg_cmd_fail;
    assign core_dbg_rddata[31:0] = dma_dbg_cmd_done ? dma_dbg_rddata[31:0] : dec_dbg_rddata[31:0];
 
-   eh2_dbg #() dbg (
+   eh2_dbg  dbg (
                             .rst_l(core_rst_l),
                             .clk(free_l2clk),
                             .clk_override(dec_tlu_misc_clk_override),
@@ -1048,7 +1068,7 @@ import eh2_param_pkg::*;
    assign core_rst_l = rst_l & (dbg_core_rst_l | scan_mode);
 
    // fetch
-   eh2_ifu #() ifu (
+   eh2_ifu  ifu (
                             .clk(active_l2clk),
                             .clk_override(dec_tlu_ifu_clk_override),
                             .rst_l(core_rst_l),
@@ -1056,7 +1076,7 @@ import eh2_param_pkg::*;
                             // AXI signals
                             .ifu_axi_arready(ifu_axi_arready_int),
                             .ifu_axi_rvalid(ifu_axi_rvalid_int),
-                            .ifu_axi_rid(ifu_axi_rid_int[pt.IFU_BUS_TAG-1:0]),
+                            .ifu_axi_rid(ifu_axi_rid_int[`IFU_BUS_TAG-1:0]),
                             .ifu_axi_rdata(ifu_axi_rdata_int[63:0]),
                             .ifu_axi_rresp(ifu_axi_rresp_int[1:0]),
 
@@ -1065,21 +1085,23 @@ import eh2_param_pkg::*;
 
 
 
-   eh2_dec #() dec (
+   eh2_dec #(.POSIT_LEN(POSIT_LEN), .ES(ES), .REGIME_BW(REGIME_BW), .POSIT(POSIT))
+                        dec (
                             .clk(active_l2clk),
                             .dbg_cmd_wrdata(dbg_cmd_wrdata[1:0]),
                             .rst_l(core_rst_l),
                             .*
                             );
 
-   eh2_exu #() exu (
+   eh2_exu #(.POSIT_LEN(POSIT_LEN), .ES(ES), .REGIME_BW(REGIME_BW), .POSIT(POSIT))
+                        exu (
                             .clk(active_l2clk),
                             .clk_override(dec_tlu_exu_clk_override),
                             .rst_l(core_rst_l),
                             .*
                             );
 
-   eh2_lsu #() lsu (
+   eh2_lsu  lsu (
                             .clk(active_l2clk),
                             .clk_override(dec_tlu_lsu_clk_override),
                             .rst_l(core_rst_l),
@@ -1088,12 +1110,12 @@ import eh2_param_pkg::*;
                             .lsu_axi_awready(lsu_axi_awready_int),
                             .lsu_axi_wready(lsu_axi_wready_int),
                             .lsu_axi_bvalid(lsu_axi_bvalid_int),
-                            .lsu_axi_bid(lsu_axi_bid_int[pt.LSU_BUS_TAG-1:0]),
+                            .lsu_axi_bid(lsu_axi_bid_int[`LSU_BUS_TAG-1:0]),
                             .lsu_axi_bresp(lsu_axi_bresp_int[1:0]),
 
                             .lsu_axi_arready(lsu_axi_arready_int),
                             .lsu_axi_rvalid(lsu_axi_rvalid_int),
-                            .lsu_axi_rid(lsu_axi_rid_int[pt.LSU_BUS_TAG-1:0]),
+                            .lsu_axi_rid(lsu_axi_rid_int[`LSU_BUS_TAG-1:0]),
                             .lsu_axi_rdata(lsu_axi_rdata_int[63:0]),
                             .lsu_axi_rresp(lsu_axi_rresp_int[1:0]),
                             .lsu_axi_rlast(lsu_axi_rlast_int),
@@ -1101,12 +1123,12 @@ import eh2_param_pkg::*;
                             .*
                             );
 
-   eh2_pic_ctrl #()  pic_ctrl_inst (
+   eh2_pic_ctrl   pic_ctrl_inst (
                                             .clk(free_l2clk),
                                             .clk_override(dec_tlu_pic_clk_override),
                                             .io_clk_override(dec_tlu_picio_clk_override),
                                             .picm_mken (picm_mken),
-                                            .extintsrc_req({extintsrc_req[pt.PIC_TOTAL_INT:1],1'b0}),
+                                            .extintsrc_req({extintsrc_req[`PIC_TOTAL_INT:1],1'b0}),
                                             .pl_out(pic_pl),
                                             .claimid_out(pic_claimid),
                                             .mexintpend_out(mexintpend),
@@ -1114,14 +1136,14 @@ import eh2_param_pkg::*;
                                             .rst_l(core_rst_l),
                                             .*);
 
-   eh2_dma_ctrl #() dma_ctrl (
+   eh2_dma_ctrl  dma_ctrl (
                                       .clk(free_l2clk),
                                       .rst_l(core_rst_l),
                                       .clk_override(dec_tlu_misc_clk_override),
 
                                       // AXI signals
                                       .dma_axi_awvalid(dma_axi_awvalid_int),
-                                      .dma_axi_awid(dma_axi_awid_int[pt.DMA_BUS_TAG-1:0]),
+                                      .dma_axi_awid(dma_axi_awid_int[`DMA_BUS_TAG-1:0]),
                                       .dma_axi_awaddr(dma_axi_awaddr_int[31:0]),
                                       .dma_axi_awsize(dma_axi_awsize_int[2:0]),
                                       .dma_axi_wvalid(dma_axi_wvalid_int),
@@ -1130,7 +1152,7 @@ import eh2_param_pkg::*;
                                       .dma_axi_bready(dma_axi_bready_int),
 
                                       .dma_axi_arvalid(dma_axi_arvalid_int),
-                                      .dma_axi_arid(dma_axi_arid_int[pt.DMA_BUS_TAG-1:0]),
+                                      .dma_axi_arid(dma_axi_arid_int[`DMA_BUS_TAG-1:0]),
                                       .dma_axi_araddr(dma_axi_araddr_int[31:0]),
                                       .dma_axi_arsize(dma_axi_arsize_int[2:0]),
                                       .dma_axi_rready(dma_axi_rready_int),
@@ -1138,11 +1160,11 @@ import eh2_param_pkg::*;
                                       .*
    );
 
-   if (pt.BUILD_AHB_LITE == 1) begin: Gen_AXI_To_AHB
+   if (`BUILD_AHB_LITE == 1) begin: Gen_AXI_To_AHB
 
       // AXI4 -> AHB Gasket for LSU
-      axi4_to_ahb #(.NUM_THREADS(pt.NUM_THREADS),
-                    .TAG(pt.LSU_BUS_TAG)) lsu_axi4_to_ahb (
+      axi4_to_ahb #(.NUM_THREADS(`NUM_THREADS),
+                    .TAG(`LSU_BUS_TAG)) lsu_axi4_to_ahb (
          .clk(free_l2clk),
          .free_clk(free_clk),
          .rst_l(core_rst_l),
@@ -1153,7 +1175,7 @@ import eh2_param_pkg::*;
          // AXI Write Channels
          .axi_awvalid(lsu_axi_awvalid),
          .axi_awready(lsu_axi_awready_ahb),
-         .axi_awid(lsu_axi_awid[pt.LSU_BUS_TAG-1:0]),
+         .axi_awid(lsu_axi_awid[`LSU_BUS_TAG-1:0]),
          .axi_awaddr(lsu_axi_awaddr[31:0]),
          .axi_awsize(lsu_axi_awsize[2:0]),
          .axi_awprot(lsu_axi_awprot[2:0]),
@@ -1167,19 +1189,19 @@ import eh2_param_pkg::*;
          .axi_bvalid(lsu_axi_bvalid_ahb),
          .axi_bready(lsu_axi_bready),
          .axi_bresp(lsu_axi_bresp_ahb[1:0]),
-         .axi_bid(lsu_axi_bid_ahb[pt.LSU_BUS_TAG-1:0]),
+         .axi_bid(lsu_axi_bid_ahb[`LSU_BUS_TAG-1:0]),
 
          // AXI Read Channels
          .axi_arvalid(lsu_axi_arvalid),
          .axi_arready(lsu_axi_arready_ahb),
-         .axi_arid(lsu_axi_arid[pt.LSU_BUS_TAG-1:0]),
+         .axi_arid(lsu_axi_arid[`LSU_BUS_TAG-1:0]),
          .axi_araddr(lsu_axi_araddr[31:0]),
          .axi_arsize(lsu_axi_arsize[2:0]),
          .axi_arprot(lsu_axi_arprot[2:0]),
 
          .axi_rvalid(lsu_axi_rvalid_ahb),
          .axi_rready(lsu_axi_rready),
-         .axi_rid(lsu_axi_rid_ahb[pt.LSU_BUS_TAG-1:0]),
+         .axi_rid(lsu_axi_rid_ahb[`LSU_BUS_TAG-1:0]),
          .axi_rdata(lsu_axi_rdata_ahb[63:0]),
          .axi_rresp(lsu_axi_rresp_ahb[1:0]),
          .axi_rlast(lsu_axi_rlast_ahb),
@@ -1201,8 +1223,8 @@ import eh2_param_pkg::*;
          .*
       );
 
-      axi4_to_ahb #(.NUM_THREADS(pt.NUM_THREADS),
-                    .TAG(pt.IFU_BUS_TAG)) ifu_axi4_to_ahb (
+      axi4_to_ahb #(.NUM_THREADS(`NUM_THREADS),
+                    .TAG(`IFU_BUS_TAG)) ifu_axi4_to_ahb (
          .clk(free_l2clk),
          .free_clk(free_clk),
          .rst_l(core_rst_l),
@@ -1227,7 +1249,7 @@ import eh2_param_pkg::*;
          // AXI Write Channels
          .axi_awvalid(ifu_axi_awvalid),
          .axi_awready(ifu_axi_awready_ahb),
-         .axi_awid(ifu_axi_awid[pt.IFU_BUS_TAG-1:0]),
+         .axi_awid(ifu_axi_awid[`IFU_BUS_TAG-1:0]),
          .axi_awaddr(ifu_axi_awaddr[31:0]),
          .axi_awsize(ifu_axi_awsize[2:0]),
          .axi_awprot(ifu_axi_awprot[2:0]),
@@ -1241,19 +1263,19 @@ import eh2_param_pkg::*;
          .axi_bvalid(ifu_axi_bvalid_ahb),
          .axi_bready(1'b1),
          .axi_bresp(ifu_axi_bresp_ahb[1:0]),
-         .axi_bid(ifu_axi_bid_ahb[pt.IFU_BUS_TAG-1:0]),
+         .axi_bid(ifu_axi_bid_ahb[`IFU_BUS_TAG-1:0]),
 
          // AXI Read Channels
          .axi_arvalid(ifu_axi_arvalid),
          .axi_arready(ifu_axi_arready_ahb),
-         .axi_arid(ifu_axi_arid[pt.IFU_BUS_TAG-1:0]),
+         .axi_arid(ifu_axi_arid[`IFU_BUS_TAG-1:0]),
          .axi_araddr(ifu_axi_araddr[31:0]),
          .axi_arsize(ifu_axi_arsize[2:0]),
          .axi_arprot(ifu_axi_arprot[2:0]),
 
          .axi_rvalid(ifu_axi_rvalid_ahb),
          .axi_rready(ifu_axi_rready),
-         .axi_rid(ifu_axi_rid_ahb[pt.IFU_BUS_TAG-1:0]),
+         .axi_rid(ifu_axi_rid_ahb[`IFU_BUS_TAG-1:0]),
          .axi_rdata(ifu_axi_rdata_ahb[63:0]),
          .axi_rresp(ifu_axi_rresp_ahb[1:0]),
          .axi_rlast(ifu_axi_rlast_ahb),
@@ -1261,19 +1283,19 @@ import eh2_param_pkg::*;
       );
 
       // AXI4 -> AHB Gasket for System Bus
-      axi4_to_ahb #(.NUM_THREADS(pt.NUM_THREADS),
-                    .TAG(pt.SB_BUS_TAG)) sb_axi4_to_ahb (
+      axi4_to_ahb #(.NUM_THREADS(`NUM_THREADS),
+                    .TAG(`SB_BUS_TAG)) sb_axi4_to_ahb (
          .clk_override(dec_tlu_bus_clk_override),
          .rst_l(dbg_rst_l),
          .clk(free_l2clk),
          .free_clk(free_clk),
          .bus_clk_en(dbg_bus_clk_en),
-         .dec_tlu_force_halt({pt.NUM_THREADS{1'b0}}),
+         .dec_tlu_force_halt({`NUM_THREADS{1'b0}}),
 
          // AXI Write Channels
          .axi_awvalid(sb_axi_awvalid),
          .axi_awready(sb_axi_awready_ahb),
-         .axi_awid(sb_axi_awid[pt.SB_BUS_TAG-1:0]),
+         .axi_awid(sb_axi_awid[`SB_BUS_TAG-1:0]),
          .axi_awaddr(sb_axi_awaddr[31:0]),
          .axi_awsize(sb_axi_awsize[2:0]),
          .axi_awprot(sb_axi_awprot[2:0]),
@@ -1287,19 +1309,19 @@ import eh2_param_pkg::*;
          .axi_bvalid(sb_axi_bvalid_ahb),
          .axi_bready(sb_axi_bready),
          .axi_bresp(sb_axi_bresp_ahb[1:0]),
-         .axi_bid(sb_axi_bid_ahb[pt.SB_BUS_TAG-1:0]),
+         .axi_bid(sb_axi_bid_ahb[`SB_BUS_TAG-1:0]),
 
          // AXI Read Channels
          .axi_arvalid(sb_axi_arvalid),
          .axi_arready(sb_axi_arready_ahb),
-         .axi_arid(sb_axi_arid[pt.SB_BUS_TAG-1:0]),
+         .axi_arid(sb_axi_arid[`SB_BUS_TAG-1:0]),
          .axi_araddr(sb_axi_araddr[31:0]),
          .axi_arsize(sb_axi_arsize[2:0]),
          .axi_arprot(sb_axi_arprot[2:0]),
 
          .axi_rvalid(sb_axi_rvalid_ahb),
          .axi_rready(sb_axi_rready),
-         .axi_rid(sb_axi_rid_ahb[pt.SB_BUS_TAG-1:0]),
+         .axi_rid(sb_axi_rid_ahb[`SB_BUS_TAG-1:0]),
          .axi_rdata(sb_axi_rdata_ahb[63:0]),
          .axi_rresp(sb_axi_rresp_ahb[1:0]),
          .axi_rlast(sb_axi_rlast_ahb),
@@ -1322,7 +1344,8 @@ import eh2_param_pkg::*;
       );
 
       //AHB -> AXI4 Gasket for DMA
-      ahb_to_axi4 #(.TAG(pt.DMA_BUS_TAG)) dma_ahb_to_axi4 (
+      ahb_to_axi4 #(
+                    .TAG(`DMA_BUS_TAG)) dma_ahb_to_axi4 (
          .clk_override(dec_tlu_bus_clk_override),
          .rst_l(core_rst_l),
          .clk(free_l2clk),
@@ -1331,7 +1354,7 @@ import eh2_param_pkg::*;
          // AXI Write Channels
          .axi_awvalid(dma_axi_awvalid_ahb),
          .axi_awready(dma_axi_awready),
-         .axi_awid(dma_axi_awid_ahb[pt.DMA_BUS_TAG-1:0]),
+         .axi_awid(dma_axi_awid_ahb[`DMA_BUS_TAG-1:0]),
          .axi_awaddr(dma_axi_awaddr_ahb[31:0]),
          .axi_awsize(dma_axi_awsize_ahb[2:0]),
          .axi_awprot(dma_axi_awprot_ahb[2:0]),
@@ -1347,12 +1370,12 @@ import eh2_param_pkg::*;
          .axi_bvalid(dma_axi_bvalid),
          .axi_bready(dma_axi_bready_ahb),
          .axi_bresp(dma_axi_bresp[1:0]),
-         .axi_bid(dma_axi_bid[pt.DMA_BUS_TAG-1:0]),
+         .axi_bid(dma_axi_bid[`DMA_BUS_TAG-1:0]),
 
          // AXI Read Channels
          .axi_arvalid(dma_axi_arvalid_ahb),
          .axi_arready(dma_axi_arready),
-         .axi_arid(dma_axi_arid_ahb[pt.DMA_BUS_TAG-1:0]),
+         .axi_arid(dma_axi_arid_ahb[`DMA_BUS_TAG-1:0]),
          .axi_araddr(dma_axi_araddr_ahb[31:0]),
          .axi_arsize(dma_axi_arsize_ahb[2:0]),
          .axi_arprot(dma_axi_arprot_ahb[2:0]),
@@ -1361,7 +1384,7 @@ import eh2_param_pkg::*;
 
          .axi_rvalid(dma_axi_rvalid),
          .axi_rready(dma_axi_rready_ahb),
-         .axi_rid(dma_axi_rid[pt.DMA_BUS_TAG-1:0]),
+         .axi_rid(dma_axi_rid[`DMA_BUS_TAG-1:0]),
          .axi_rdata(dma_axi_rdata[63:0]),
          .axi_rresp(dma_axi_rresp[1:0]),
 
@@ -1386,68 +1409,68 @@ import eh2_param_pkg::*;
    end
 
    // Drive the final AXI inputs
-   assign lsu_axi_awready_int                 = pt.BUILD_AHB_LITE ? lsu_axi_awready_ahb : lsu_axi_awready;
-   assign lsu_axi_wready_int                  = pt.BUILD_AHB_LITE ? lsu_axi_wready_ahb : lsu_axi_wready;
-   assign lsu_axi_bvalid_int                  = pt.BUILD_AHB_LITE ? lsu_axi_bvalid_ahb : lsu_axi_bvalid;
-   assign lsu_axi_bready_int                  = pt.BUILD_AHB_LITE ? lsu_axi_bready_ahb : lsu_axi_bready;
-   assign lsu_axi_bresp_int[1:0]              = pt.BUILD_AHB_LITE ? lsu_axi_bresp_ahb[1:0] : lsu_axi_bresp[1:0];
-   assign lsu_axi_bid_int[pt.LSU_BUS_TAG-1:0] = pt.BUILD_AHB_LITE ? lsu_axi_bid_ahb[pt.LSU_BUS_TAG-1:0] : lsu_axi_bid[pt.LSU_BUS_TAG-1:0];
-   assign lsu_axi_arready_int                 = pt.BUILD_AHB_LITE ? lsu_axi_arready_ahb : lsu_axi_arready;
-   assign lsu_axi_rvalid_int                  = pt.BUILD_AHB_LITE ? lsu_axi_rvalid_ahb : lsu_axi_rvalid;
-   assign lsu_axi_rid_int[pt.LSU_BUS_TAG-1:0] = pt.BUILD_AHB_LITE ? lsu_axi_rid_ahb[pt.LSU_BUS_TAG-1:0] : lsu_axi_rid[pt.LSU_BUS_TAG-1:0];
-   assign lsu_axi_rdata_int[63:0]             = pt.BUILD_AHB_LITE ? lsu_axi_rdata_ahb[63:0] : lsu_axi_rdata[63:0];
-   assign lsu_axi_rresp_int[1:0]              = pt.BUILD_AHB_LITE ? lsu_axi_rresp_ahb[1:0] : lsu_axi_rresp[1:0];
-   assign lsu_axi_rlast_int                   = pt.BUILD_AHB_LITE ? lsu_axi_rlast_ahb : lsu_axi_rlast;
+   assign lsu_axi_awready_int                 = `BUILD_AHB_LITE ? lsu_axi_awready_ahb : lsu_axi_awready;
+   assign lsu_axi_wready_int                  = `BUILD_AHB_LITE ? lsu_axi_wready_ahb : lsu_axi_wready;
+   assign lsu_axi_bvalid_int                  = `BUILD_AHB_LITE ? lsu_axi_bvalid_ahb : lsu_axi_bvalid;
+   assign lsu_axi_bready_int                  = `BUILD_AHB_LITE ? lsu_axi_bready_ahb : lsu_axi_bready;
+   assign lsu_axi_bresp_int[1:0]              = `BUILD_AHB_LITE ? lsu_axi_bresp_ahb[1:0] : lsu_axi_bresp[1:0];
+   assign lsu_axi_bid_int[`LSU_BUS_TAG-1:0] = `BUILD_AHB_LITE ? lsu_axi_bid_ahb[`LSU_BUS_TAG-1:0] : lsu_axi_bid[`LSU_BUS_TAG-1:0];
+   assign lsu_axi_arready_int                 = `BUILD_AHB_LITE ? lsu_axi_arready_ahb : lsu_axi_arready;
+   assign lsu_axi_rvalid_int                  = `BUILD_AHB_LITE ? lsu_axi_rvalid_ahb : lsu_axi_rvalid;
+   assign lsu_axi_rid_int[`LSU_BUS_TAG-1:0] = `BUILD_AHB_LITE ? lsu_axi_rid_ahb[`LSU_BUS_TAG-1:0] : lsu_axi_rid[`LSU_BUS_TAG-1:0];
+   assign lsu_axi_rdata_int[63:0]             = `BUILD_AHB_LITE ? lsu_axi_rdata_ahb[63:0] : lsu_axi_rdata[63:0];
+   assign lsu_axi_rresp_int[1:0]              = `BUILD_AHB_LITE ? lsu_axi_rresp_ahb[1:0] : lsu_axi_rresp[1:0];
+   assign lsu_axi_rlast_int                   = `BUILD_AHB_LITE ? lsu_axi_rlast_ahb : lsu_axi_rlast;
 
-   assign ifu_axi_awready_int                 = pt.BUILD_AHB_LITE ? ifu_axi_awready_ahb : ifu_axi_awready;
-   assign ifu_axi_wready_int                  = pt.BUILD_AHB_LITE ? ifu_axi_wready_ahb : ifu_axi_wready;
-   assign ifu_axi_bvalid_int                  = pt.BUILD_AHB_LITE ? ifu_axi_bvalid_ahb : ifu_axi_bvalid;
-   assign ifu_axi_bready_int                  = pt.BUILD_AHB_LITE ? ifu_axi_bready_ahb : ifu_axi_bready;
-   assign ifu_axi_bresp_int[1:0]              = pt.BUILD_AHB_LITE ? ifu_axi_bresp_ahb[1:0] : ifu_axi_bresp[1:0];
-   assign ifu_axi_bid_int[pt.IFU_BUS_TAG-1:0] = pt.BUILD_AHB_LITE ? ifu_axi_bid_ahb[pt.IFU_BUS_TAG-1:0] : ifu_axi_bid[pt.IFU_BUS_TAG-1:0];
-   assign ifu_axi_arready_int                 = pt.BUILD_AHB_LITE ? ifu_axi_arready_ahb : ifu_axi_arready;
-   assign ifu_axi_rvalid_int                  = pt.BUILD_AHB_LITE ? ifu_axi_rvalid_ahb : ifu_axi_rvalid;
-   assign ifu_axi_rid_int[pt.IFU_BUS_TAG-1:0] = pt.BUILD_AHB_LITE ? ifu_axi_rid_ahb[pt.IFU_BUS_TAG-1:0] : ifu_axi_rid[pt.IFU_BUS_TAG-1:0];
-   assign ifu_axi_rdata_int[63:0]             = pt.BUILD_AHB_LITE ? ifu_axi_rdata_ahb[63:0] : ifu_axi_rdata[63:0];
-   assign ifu_axi_rresp_int[1:0]              = pt.BUILD_AHB_LITE ? ifu_axi_rresp_ahb[1:0] : ifu_axi_rresp[1:0];
-   assign ifu_axi_rlast_int                   = pt.BUILD_AHB_LITE ? ifu_axi_rlast_ahb : ifu_axi_rlast;
+   assign ifu_axi_awready_int                 = `BUILD_AHB_LITE ? ifu_axi_awready_ahb : ifu_axi_awready;
+   assign ifu_axi_wready_int                  = `BUILD_AHB_LITE ? ifu_axi_wready_ahb : ifu_axi_wready;
+   assign ifu_axi_bvalid_int                  = `BUILD_AHB_LITE ? ifu_axi_bvalid_ahb : ifu_axi_bvalid;
+   assign ifu_axi_bready_int                  = `BUILD_AHB_LITE ? ifu_axi_bready_ahb : ifu_axi_bready;
+   assign ifu_axi_bresp_int[1:0]              = `BUILD_AHB_LITE ? ifu_axi_bresp_ahb[1:0] : ifu_axi_bresp[1:0];
+   assign ifu_axi_bid_int[`IFU_BUS_TAG-1:0] = `BUILD_AHB_LITE ? ifu_axi_bid_ahb[`IFU_BUS_TAG-1:0] : ifu_axi_bid[`IFU_BUS_TAG-1:0];
+   assign ifu_axi_arready_int                 = `BUILD_AHB_LITE ? ifu_axi_arready_ahb : ifu_axi_arready;
+   assign ifu_axi_rvalid_int                  = `BUILD_AHB_LITE ? ifu_axi_rvalid_ahb : ifu_axi_rvalid;
+   assign ifu_axi_rid_int[`IFU_BUS_TAG-1:0] = `BUILD_AHB_LITE ? ifu_axi_rid_ahb[`IFU_BUS_TAG-1:0] : ifu_axi_rid[`IFU_BUS_TAG-1:0];
+   assign ifu_axi_rdata_int[63:0]             = `BUILD_AHB_LITE ? ifu_axi_rdata_ahb[63:0] : ifu_axi_rdata[63:0];
+   assign ifu_axi_rresp_int[1:0]              = `BUILD_AHB_LITE ? ifu_axi_rresp_ahb[1:0] : ifu_axi_rresp[1:0];
+   assign ifu_axi_rlast_int                   = `BUILD_AHB_LITE ? ifu_axi_rlast_ahb : ifu_axi_rlast;
 
-   assign sb_axi_awready_int                  = pt.BUILD_AHB_LITE ? sb_axi_awready_ahb : sb_axi_awready;
-   assign sb_axi_wready_int                   = pt.BUILD_AHB_LITE ? sb_axi_wready_ahb : sb_axi_wready;
-   assign sb_axi_bvalid_int                   = pt.BUILD_AHB_LITE ? sb_axi_bvalid_ahb : sb_axi_bvalid;
-   assign sb_axi_bready_int                   = pt.BUILD_AHB_LITE ? sb_axi_bready_ahb : sb_axi_bready;
-   assign sb_axi_bresp_int[1:0]               = pt.BUILD_AHB_LITE ? sb_axi_bresp_ahb[1:0] : sb_axi_bresp[1:0];
-   assign sb_axi_bid_int[pt.SB_BUS_TAG-1:0]   = pt.BUILD_AHB_LITE ? sb_axi_bid_ahb[pt.SB_BUS_TAG-1:0] : sb_axi_bid[pt.SB_BUS_TAG-1:0];
-   assign sb_axi_arready_int                  = pt.BUILD_AHB_LITE ? sb_axi_arready_ahb : sb_axi_arready;
-   assign sb_axi_rvalid_int                   = pt.BUILD_AHB_LITE ? sb_axi_rvalid_ahb : sb_axi_rvalid;
-   assign sb_axi_rid_int[pt.SB_BUS_TAG-1:0]   = pt.BUILD_AHB_LITE ? sb_axi_rid_ahb[pt.SB_BUS_TAG-1:0] : sb_axi_rid[pt.SB_BUS_TAG-1:0];
-   assign sb_axi_rdata_int[63:0]              = pt.BUILD_AHB_LITE ? sb_axi_rdata_ahb[63:0] : sb_axi_rdata[63:0];
-   assign sb_axi_rresp_int[1:0]               = pt.BUILD_AHB_LITE ? sb_axi_rresp_ahb[1:0] : sb_axi_rresp[1:0];
-   assign sb_axi_rlast_int                    = pt.BUILD_AHB_LITE ? sb_axi_rlast_ahb : sb_axi_rlast;
+   assign sb_axi_awready_int                  = `BUILD_AHB_LITE ? sb_axi_awready_ahb : sb_axi_awready;
+   assign sb_axi_wready_int                   = `BUILD_AHB_LITE ? sb_axi_wready_ahb : sb_axi_wready;
+   assign sb_axi_bvalid_int                   = `BUILD_AHB_LITE ? sb_axi_bvalid_ahb : sb_axi_bvalid;
+   assign sb_axi_bready_int                   = `BUILD_AHB_LITE ? sb_axi_bready_ahb : sb_axi_bready;
+   assign sb_axi_bresp_int[1:0]               = `BUILD_AHB_LITE ? sb_axi_bresp_ahb[1:0] : sb_axi_bresp[1:0];
+   assign sb_axi_bid_int[`SB_BUS_TAG-1:0]   = `BUILD_AHB_LITE ? sb_axi_bid_ahb[`SB_BUS_TAG-1:0] : sb_axi_bid[`SB_BUS_TAG-1:0];
+   assign sb_axi_arready_int                  = `BUILD_AHB_LITE ? sb_axi_arready_ahb : sb_axi_arready;
+   assign sb_axi_rvalid_int                   = `BUILD_AHB_LITE ? sb_axi_rvalid_ahb : sb_axi_rvalid;
+   assign sb_axi_rid_int[`SB_BUS_TAG-1:0]   = `BUILD_AHB_LITE ? sb_axi_rid_ahb[`SB_BUS_TAG-1:0] : sb_axi_rid[`SB_BUS_TAG-1:0];
+   assign sb_axi_rdata_int[63:0]              = `BUILD_AHB_LITE ? sb_axi_rdata_ahb[63:0] : sb_axi_rdata[63:0];
+   assign sb_axi_rresp_int[1:0]               = `BUILD_AHB_LITE ? sb_axi_rresp_ahb[1:0] : sb_axi_rresp[1:0];
+   assign sb_axi_rlast_int                    = `BUILD_AHB_LITE ? sb_axi_rlast_ahb : sb_axi_rlast;
 
-   assign dma_axi_awvalid_int                  = pt.BUILD_AHB_LITE ? dma_axi_awvalid_ahb : dma_axi_awvalid;
-   assign dma_axi_awid_int[pt.DMA_BUS_TAG-1:0] = pt.BUILD_AHB_LITE ? dma_axi_awid_ahb[pt.DMA_BUS_TAG-1:0] : dma_axi_awid[pt.DMA_BUS_TAG-1:0];
-   assign dma_axi_awaddr_int[31:0]             = pt.BUILD_AHB_LITE ? dma_axi_awaddr_ahb[31:0] : dma_axi_awaddr[31:0];
-   assign dma_axi_awsize_int[2:0]              = pt.BUILD_AHB_LITE ? dma_axi_awsize_ahb[2:0] : dma_axi_awsize[2:0];
-   assign dma_axi_awprot_int[2:0]              = pt.BUILD_AHB_LITE ? dma_axi_awprot_ahb[2:0] : dma_axi_awprot[2:0];
-   assign dma_axi_awlen_int[7:0]               = pt.BUILD_AHB_LITE ? dma_axi_awlen_ahb[7:0] : dma_axi_awlen[7:0];
-   assign dma_axi_awburst_int[1:0]             = pt.BUILD_AHB_LITE ? dma_axi_awburst_ahb[1:0] : dma_axi_awburst[1:0];
-   assign dma_axi_wvalid_int                   = pt.BUILD_AHB_LITE ? dma_axi_wvalid_ahb : dma_axi_wvalid;
-   assign dma_axi_wdata_int[63:0]              = pt.BUILD_AHB_LITE ? dma_axi_wdata_ahb[63:0] : dma_axi_wdata;
-   assign dma_axi_wstrb_int[7:0]               = pt.BUILD_AHB_LITE ? dma_axi_wstrb_ahb[7:0] : dma_axi_wstrb[7:0];
-   assign dma_axi_wlast_int                    = pt.BUILD_AHB_LITE ? dma_axi_wlast_ahb : dma_axi_wlast;
-   assign dma_axi_bready_int                   = pt.BUILD_AHB_LITE ? dma_axi_bready_ahb : dma_axi_bready;
-   assign dma_axi_arvalid_int                  = pt.BUILD_AHB_LITE ? dma_axi_arvalid_ahb : dma_axi_arvalid;
-   assign dma_axi_arid_int[pt.DMA_BUS_TAG-1:0] = pt.BUILD_AHB_LITE ? dma_axi_arid_ahb[pt.DMA_BUS_TAG-1:0] : dma_axi_arid[pt.DMA_BUS_TAG-1:0];
-   assign dma_axi_araddr_int[31:0]             = pt.BUILD_AHB_LITE ? dma_axi_araddr_ahb[31:0] : dma_axi_araddr[31:0];
-   assign dma_axi_arsize_int[2:0]              = pt.BUILD_AHB_LITE ? dma_axi_arsize_ahb[2:0] : dma_axi_arsize[2:0];
-   assign dma_axi_arprot_int[2:0]              = pt.BUILD_AHB_LITE ? dma_axi_arprot_ahb[2:0] : dma_axi_arprot[2:0];
-   assign dma_axi_arlen_int[7:0]               = pt.BUILD_AHB_LITE ? dma_axi_arlen_ahb[7:0] : dma_axi_arlen[7:0];
-   assign dma_axi_arburst_int[1:0]             = pt.BUILD_AHB_LITE ? dma_axi_arburst_ahb[1:0] : dma_axi_arburst[1:0];
-   assign dma_axi_rready_int                   = pt.BUILD_AHB_LITE ? dma_axi_rready_ahb : dma_axi_rready;
+   assign dma_axi_awvalid_int                  = `BUILD_AHB_LITE ? dma_axi_awvalid_ahb : dma_axi_awvalid;
+   assign dma_axi_awid_int[`DMA_BUS_TAG-1:0] = `BUILD_AHB_LITE ? dma_axi_awid_ahb[`DMA_BUS_TAG-1:0] : dma_axi_awid[`DMA_BUS_TAG-1:0];
+   assign dma_axi_awaddr_int[31:0]             = `BUILD_AHB_LITE ? dma_axi_awaddr_ahb[31:0] : dma_axi_awaddr[31:0];
+   assign dma_axi_awsize_int[2:0]              = `BUILD_AHB_LITE ? dma_axi_awsize_ahb[2:0] : dma_axi_awsize[2:0];
+   assign dma_axi_awprot_int[2:0]              = `BUILD_AHB_LITE ? dma_axi_awprot_ahb[2:0] : dma_axi_awprot[2:0];
+   assign dma_axi_awlen_int[7:0]               = `BUILD_AHB_LITE ? dma_axi_awlen_ahb[7:0] : dma_axi_awlen[7:0];
+   assign dma_axi_awburst_int[1:0]             = `BUILD_AHB_LITE ? dma_axi_awburst_ahb[1:0] : dma_axi_awburst[1:0];
+   assign dma_axi_wvalid_int                   = `BUILD_AHB_LITE ? dma_axi_wvalid_ahb : dma_axi_wvalid;
+   assign dma_axi_wdata_int[63:0]              = `BUILD_AHB_LITE ? dma_axi_wdata_ahb[63:0] : dma_axi_wdata;
+   assign dma_axi_wstrb_int[7:0]               = `BUILD_AHB_LITE ? dma_axi_wstrb_ahb[7:0] : dma_axi_wstrb[7:0];
+   assign dma_axi_wlast_int                    = `BUILD_AHB_LITE ? dma_axi_wlast_ahb : dma_axi_wlast;
+   assign dma_axi_bready_int                   = `BUILD_AHB_LITE ? dma_axi_bready_ahb : dma_axi_bready;
+   assign dma_axi_arvalid_int                  = `BUILD_AHB_LITE ? dma_axi_arvalid_ahb : dma_axi_arvalid;
+   assign dma_axi_arid_int[`DMA_BUS_TAG-1:0] = `BUILD_AHB_LITE ? dma_axi_arid_ahb[`DMA_BUS_TAG-1:0] : dma_axi_arid[`DMA_BUS_TAG-1:0];
+   assign dma_axi_araddr_int[31:0]             = `BUILD_AHB_LITE ? dma_axi_araddr_ahb[31:0] : dma_axi_araddr[31:0];
+   assign dma_axi_arsize_int[2:0]              = `BUILD_AHB_LITE ? dma_axi_arsize_ahb[2:0] : dma_axi_arsize[2:0];
+   assign dma_axi_arprot_int[2:0]              = `BUILD_AHB_LITE ? dma_axi_arprot_ahb[2:0] : dma_axi_arprot[2:0];
+   assign dma_axi_arlen_int[7:0]               = `BUILD_AHB_LITE ? dma_axi_arlen_ahb[7:0] : dma_axi_arlen[7:0];
+   assign dma_axi_arburst_int[1:0]             = `BUILD_AHB_LITE ? dma_axi_arburst_ahb[1:0] : dma_axi_arburst[1:0];
+   assign dma_axi_rready_int                   = `BUILD_AHB_LITE ? dma_axi_rready_ahb : dma_axi_rready;
 
-   if  (pt.BUILD_AHB_LITE == 1) begin
-   /*`ifdef RV_ASSERT_ON
+   if  (`BUILD_AHB_LITE == 1) begin
+   `ifdef RV_ASSERT_ON
       property ahb_trxn_aligned;
         @(posedge clk) disable iff(~rst_l) (lsu_htrans[1:0] != 2'b0)  |-> ((lsu_hsize[2:0] == 3'h0)                              |
                                                                            ((lsu_hsize[2:0] == 3'h1) & (lsu_haddr[0] == 1'b0))   |
@@ -1464,15 +1487,15 @@ import eh2_param_pkg::*;
                                                                            ((dma_hsize[2:0] == 3'h3) & (dma_haddr[2:0] == 3'b0)));
       endproperty
 
-`endif*/
-   end // if (pt.BUILD_AHB_LITE == 1)
+`endif
+   end // if (`BUILD_AHB_LITE == 1)
 
 
 
       // unpack packet
       // also need retires_p==3
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin : trace_rewire
+   for (genvar i=0; i<`NUM_THREADS; i++) begin : trace_rewire
 
       assign trace_rv_i_insn_ip[i][63:0]     = trace_rv_trace_pkt[i].trace_rv_i_insn_ip[63:0];
       assign trace_rv_i_address_ip[i][63:0]  = trace_rv_trace_pkt[i].trace_rv_i_address_ip[63:0];

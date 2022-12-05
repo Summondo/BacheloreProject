@@ -24,12 +24,12 @@
 //********************************************************************************
 module eh2_lsu_bus_intf
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )(
    input logic                          clk,
    input logic                          clk_override,
-   input logic [pt.NUM_THREADS-1:0]     active_thread_l2clk,  // per thread l2 clock
+   input logic [`NUM_THREADS-1:0]     active_thread_l2clk,  // per thread l2 clock
    input logic                          rst_l,
    input logic                          scan_mode,
    input logic                          dec_tlu_external_ldfwd_disable,     // disable load to load forwarding for externals
@@ -37,7 +37,7 @@ import eh2_param_pkg::*;
    input logic                          dec_tlu_sideeffect_posted_disable,  // disable posted writes to sideeffect addr to the bus
 
    // various clocks needed for the bus reads and writes
-   input logic [pt.NUM_THREADS-1:0]     lsu_bus_obuf_c1_clken,
+   input logic [`NUM_THREADS-1:0]     lsu_bus_obuf_c1_clken,
    input logic                          lsu_busm_clken,
    input logic                          lsu_c1_dc3_clk,
    input logic                          lsu_c1_dc4_clk,
@@ -47,9 +47,9 @@ import eh2_param_pkg::*;
    input logic                          lsu_c2_dc4_clk,
    input logic                          lsu_c2_dc5_clk,
 
-   input logic [pt.NUM_THREADS-1:0]     lsu_bus_ibuf_c1_clk,
-   input logic [pt.NUM_THREADS-1:0]     lsu_bus_obuf_c1_clk,
-   input logic [pt.NUM_THREADS-1:0]     lsu_bus_buf_c1_clk,
+   input logic [`NUM_THREADS-1:0]     lsu_bus_ibuf_c1_clk,
+   input logic [`NUM_THREADS-1:0]     lsu_bus_obuf_c1_clk,
+   input logic [`NUM_THREADS-1:0]     lsu_bus_buf_c1_clk,
    input logic                          lsu_free_c2_clk,
    input logic                          active_clk,
    input logic                          lsu_busm_clk,
@@ -75,53 +75,53 @@ import eh2_param_pkg::*;
    input logic [63:0]                   store_data_ext_dc3,               // store data flowing down the pipe
    input logic [63:0]                   store_data_ext_dc4,               // store data flowing down the pipe
    input logic [63:0]                   store_data_ext_dc5,               // store data flowing down the pipe
-   input logic [pt.NUM_THREADS-1:0]     dec_tlu_force_halt,
+   input logic [`NUM_THREADS-1:0]     dec_tlu_force_halt,
 
    input logic                          core_ldst_dual_dc1,               // core ld/st is dual
    input logic                          ldst_dual_dc2, ldst_dual_dc3, ldst_dual_dc4, ldst_dual_dc5,
    input logic                          lsu_commit_dc5,                   // lsu instruction in dc5 commits
    input logic                          is_sideeffects_dc2,               // lsu attribute is side_effects
    input logic                          is_sideeffects_dc3,               // lsu attribute is side_effects
-   input logic [pt.NUM_THREADS-1:0]     flush_dc2_up,                     // flush
-   input logic [pt.NUM_THREADS-1:0]     flush_dc3,                        // flush
-   input logic [pt.NUM_THREADS-1:0]     flush_dc4,                        // flush
+   input logic [`NUM_THREADS-1:0]     flush_dc2_up,                     // flush
+   input logic [`NUM_THREADS-1:0]     flush_dc3,                        // flush
+   input logic [`NUM_THREADS-1:0]     flush_dc4,                        // flush
 
    output logic                         lsu_busreq_dc2, lsu_busreq_dc3, lsu_busreq_dc4, lsu_busreq_dc5,
-   output logic [pt.NUM_THREADS-1:0]    dec_tlu_force_halt_bus,           // Bus synchronized version of force halt
-   output logic [pt.NUM_THREADS-1:0]    lsu_bus_idle_any,                 // No pending responses from the bus
-   output logic [pt.NUM_THREADS-1:0]    lsu_bus_buffer_pend_any,          // bus buffer has a pending bus entry
-   output logic [pt.NUM_THREADS-1:0]    lsu_bus_buffer_full_any,          // write buffer is full
-   output logic [pt.NUM_THREADS-1:0]    lsu_bus_buffer_empty_any,         // write buffer is empty
+   output logic [`NUM_THREADS-1:0]    dec_tlu_force_halt_bus,           // Bus synchronized version of force halt
+   output logic [`NUM_THREADS-1:0]    lsu_bus_idle_any,                 // No pending responses from the bus
+   output logic [`NUM_THREADS-1:0]    lsu_bus_buffer_pend_any,          // bus buffer has a pending bus entry
+   output logic [`NUM_THREADS-1:0]    lsu_bus_buffer_full_any,          // write buffer is full
+   output logic [`NUM_THREADS-1:0]    lsu_bus_buffer_empty_any,         // write buffer is empty
    output logic [31:0]                  bus_read_data_dc3,                   // the bus return data
 
-   output logic [pt.NUM_THREADS-1:0]         lsu_imprecise_error_load_any,     // imprecise load bus error
-   output logic [pt.NUM_THREADS-1:0]         lsu_imprecise_error_store_any,    // imprecise store bus error
-   output logic [pt.NUM_THREADS-1:0][31:0]   lsu_imprecise_error_addr_any,     // address of the imprecise error
+   output logic [`NUM_THREADS-1:0]         lsu_imprecise_error_load_any,     // imprecise load bus error
+   output logic [`NUM_THREADS-1:0]         lsu_imprecise_error_store_any,    // imprecise store bus error
+   output logic [`NUM_THREADS-1:0][31:0]   lsu_imprecise_error_addr_any,     // address of the imprecise error
 
    // Non-blocking loads
    output logic                               lsu_nonblock_load_valid_dc1,     // there is an external load -> put in the cam
-   output logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0] lsu_nonblock_load_tag_dc1,       // the tag of the external non block load
+   output logic [`LSU_NUM_NBLOAD_WIDTH-1:0] lsu_nonblock_load_tag_dc1,       // the tag of the external non block load
    output logic                               lsu_nonblock_load_inv_dc2,       // Invalidate the non-block load bcoz of memory forwarding
-   output logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0] lsu_nonblock_load_inv_tag_dc2,
+   output logic [`LSU_NUM_NBLOAD_WIDTH-1:0] lsu_nonblock_load_inv_tag_dc2,
    output logic                               lsu_nonblock_load_inv_dc5,       // invalidate signal for the cam entry for non block loads
-   output logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0] lsu_nonblock_load_inv_tag_dc5,   // tag of the enrty which needs to be invalidated
+   output logic [`LSU_NUM_NBLOAD_WIDTH-1:0] lsu_nonblock_load_inv_tag_dc5,   // tag of the enrty which needs to be invalidated
    output logic                               lsu_nonblock_load_data_valid,    // the non block is valid - sending information back to the cam
    output logic                               lsu_nonblock_load_data_error,    // non block load has an error
    output logic                               lsu_nonblock_load_data_tid,      // tid for nonblock load return
-   output logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0] lsu_nonblock_load_data_tag,      // the tag of the non block load sending the data/error
+   output logic [`LSU_NUM_NBLOAD_WIDTH-1:0] lsu_nonblock_load_data_tag,      // the tag of the non block load sending the data/error
    output logic [31:0]                        lsu_nonblock_load_data,          // Data of the non block load
 
    // PMU events
-   output logic [pt.NUM_THREADS-1:0]    lsu_pmu_bus_trxn,
-   output logic [pt.NUM_THREADS-1:0]    lsu_pmu_bus_misaligned,
-   output logic [pt.NUM_THREADS-1:0]    lsu_pmu_bus_error,
-   output logic [pt.NUM_THREADS-1:0]    lsu_pmu_bus_busy,
+   output logic [`NUM_THREADS-1:0]    lsu_pmu_bus_trxn,
+   output logic [`NUM_THREADS-1:0]    lsu_pmu_bus_misaligned,
+   output logic [`NUM_THREADS-1:0]    lsu_pmu_bus_error,
+   output logic [`NUM_THREADS-1:0]    lsu_pmu_bus_busy,
 
    //-------------------------- LSU AXI signals--------------------------
    // AXI Write Channels
    output logic                         lsu_axi_awvalid,
    input  logic                         lsu_axi_awready,
-   output logic [pt.LSU_BUS_TAG-1:0]    lsu_axi_awid,
+   output logic [`LSU_BUS_TAG-1:0]    lsu_axi_awid,
    output logic [31:0]                  lsu_axi_awaddr,
    output logic [3:0]                   lsu_axi_awregion,
    output logic [7:0]                   lsu_axi_awlen,
@@ -141,12 +141,12 @@ import eh2_param_pkg::*;
    input  logic                         lsu_axi_bvalid,
    output logic                         lsu_axi_bready,
    input  logic [1:0]                   lsu_axi_bresp,
-   input  logic [pt.LSU_BUS_TAG-1:0]    lsu_axi_bid,
+   input  logic [`LSU_BUS_TAG-1:0]    lsu_axi_bid,
 
    // AXI Read Channels
    output logic                         lsu_axi_arvalid,
    input  logic                         lsu_axi_arready,
-   output logic [pt.LSU_BUS_TAG-1:0]    lsu_axi_arid,
+   output logic [`LSU_BUS_TAG-1:0]    lsu_axi_arid,
    output logic [31:0]                  lsu_axi_araddr,
    output logic [3:0]                   lsu_axi_arregion,
    output logic [7:0]                   lsu_axi_arlen,
@@ -159,7 +159,7 @@ import eh2_param_pkg::*;
 
    input  logic                         lsu_axi_rvalid,
    output logic                         lsu_axi_rready,
-   input  logic [pt.LSU_BUS_TAG-1:0]    lsu_axi_rid,
+   input  logic [`LSU_BUS_TAG-1:0]    lsu_axi_rid,
    input  logic [63:0]                  lsu_axi_rdata,
    input  logic [1:0]                   lsu_axi_rresp,
 
@@ -198,8 +198,8 @@ import eh2_param_pkg::*;
    logic [31:0]       ld_fwddata_dc3pipe_lo, ld_fwddata_dc4pipe_lo, ld_fwddata_dc5pipe_lo;
    logic [31:0]       ld_fwddata_dc3pipe_hi, ld_fwddata_dc4pipe_hi, ld_fwddata_dc5pipe_hi;
 
-   logic [pt.NUM_THREADS-1:0][3:0]   ld_byte_hit_buf_lo, ld_byte_hit_buf_hi;
-   logic [pt.NUM_THREADS-1:0][31:0]  ld_fwddata_buf_lo, ld_fwddata_buf_hi;
+   logic [`NUM_THREADS-1:0][3:0]   ld_byte_hit_buf_lo, ld_byte_hit_buf_hi;
+   logic [`NUM_THREADS-1:0][31:0]  ld_fwddata_buf_lo, ld_fwddata_buf_hi;
 
    logic [31:0]       ld_fwddata_lo, ld_fwddata_hi;
    logic [31:0]       ld_fwddata_dc2, ld_fwddata_dc3;
@@ -207,37 +207,37 @@ import eh2_param_pkg::*;
    logic              ld_full_hit_hi_dc2, ld_full_hit_lo_dc2;
    logic              ld_full_hit_dc2;
 
-   logic [pt.NUM_THREADS-1:0][pt.LSU_NUM_NBLOAD_WIDTH-1:0] WrPtr0_dc1, WrPtr0_dc2, WrPtr0_dc5;
+   logic [`NUM_THREADS-1:0][`LSU_NUM_NBLOAD_WIDTH-1:0] WrPtr0_dc1, WrPtr0_dc2, WrPtr0_dc5;
 
    logic [63:32]     ld_fwddata_dc2_nc;
 
    logic             bus_tid, nxt_bus_tid, bus_tid_en;
 
    // Output buffer signals
-   logic [pt.NUM_THREADS-1:0]                     obuf_valid;
-   logic [pt.NUM_THREADS-1:0]                     obuf_nosend;
-   logic [pt.NUM_THREADS-1:0]                     obuf_write;
-   logic [pt.NUM_THREADS-1:0]                     obuf_sideeffect;
-   logic [pt.NUM_THREADS-1:0][31:0]               obuf_addr;
-   logic [pt.NUM_THREADS-1:0][63:0]               obuf_data;
-   logic [pt.NUM_THREADS-1:0][1:0]                obuf_sz;
-   logic [pt.NUM_THREADS-1:0][7:0]                obuf_byteen;
-   logic [pt.NUM_THREADS-1:0]                     obuf_cmd_done, obuf_data_done;
-   logic [pt.NUM_THREADS-1:0][pt.LSU_BUS_TAG-1:0] obuf_tag0;
-   logic [pt.NUM_THREADS-1:0]                     obuf_nxtready;
+   logic [`NUM_THREADS-1:0]                     obuf_valid;
+   logic [`NUM_THREADS-1:0]                     obuf_nosend;
+   logic [`NUM_THREADS-1:0]                     obuf_write;
+   logic [`NUM_THREADS-1:0]                     obuf_sideeffect;
+   logic [`NUM_THREADS-1:0][31:0]               obuf_addr;
+   logic [`NUM_THREADS-1:0][63:0]               obuf_data;
+   logic [`NUM_THREADS-1:0][1:0]                obuf_sz;
+   logic [`NUM_THREADS-1:0][7:0]                obuf_byteen;
+   logic [`NUM_THREADS-1:0]                     obuf_cmd_done, obuf_data_done;
+   logic [`NUM_THREADS-1:0][`LSU_BUS_TAG-1:0] obuf_tag0;
+   logic [`NUM_THREADS-1:0]                     obuf_nxtready;
 
    logic                                lsu_nonblock_load_valid_dc2, lsu_nonblock_load_valid_dc3, lsu_nonblock_load_valid_dc4,lsu_nonblock_load_valid_dc5;
-   logic [pt.NUM_THREADS-1:0]           bus_pend_trxn_en;
-   logic [pt.NUM_THREADS-1:0][7:0]      bus_pend_trxn, bus_pend_trxn_ns, bus_pend_trxnQ;
-   logic [pt.NUM_THREADS-1:0]           lsu_bus_cntr_overflow;
+   logic [`NUM_THREADS-1:0]           bus_pend_trxn_en;
+   logic [`NUM_THREADS-1:0][7:0]      bus_pend_trxn, bus_pend_trxn_ns, bus_pend_trxnQ;
+   logic [`NUM_THREADS-1:0]           lsu_bus_cntr_overflow;
 
-   logic [pt.NUM_THREADS-1:0]           bus_addr_match_pending;
+   logic [`NUM_THREADS-1:0]           bus_addr_match_pending;
    logic                                bus_cmd_valid, bus_cmd_sent, bus_cmd_ready;
    logic                                bus_wcmd_sent, bus_wdata_sent;
 
    logic                                bus_rsp_read, bus_rsp_write;
    logic                                bus_rsp_tid;
-   logic [pt.LSU_BUS_TAG-1:0]           bus_rsp_read_tag, bus_rsp_write_tag;
+   logic [`LSU_BUS_TAG-1:0]           bus_rsp_read_tag, bus_rsp_write_tag;
    logic                                bus_rsp_read_tid, bus_rsp_write_tid;
    logic                                bus_rsp_read_error, bus_rsp_write_error;
    logic [63:0]                         bus_rsp_rdata;
@@ -246,16 +246,16 @@ import eh2_param_pkg::*;
    logic                                bus_rsp_write_tid_q;
    logic [63:0]                         bus_rsp_rdata_q;
 
-   logic [pt.NUM_THREADS-1:0] tid_bus_buffer_pend_any;
+   logic [`NUM_THREADS-1:0] tid_bus_buffer_pend_any;
 
-   logic [pt.NUM_THREADS-1:0][31:0] tid_imprecise_error_addr_any;     // address of the imprecise error
+   logic [`NUM_THREADS-1:0][31:0] tid_imprecise_error_addr_any;     // address of the imprecise error
 
    // Non-blocking loads
-   logic [pt.NUM_THREADS-1:0]                              tid_nonblock_load_data_ready;
-   logic [pt.NUM_THREADS-1:0]                              tid_nonblock_load_data_valid;
-   logic [pt.NUM_THREADS-1:0]                              tid_nonblock_load_data_error;
-   logic [pt.NUM_THREADS-1:0][pt.LSU_NUM_NBLOAD_WIDTH-1:0] tid_nonblock_load_data_tag;
-   logic [pt.NUM_THREADS-1:0][31:0]                        tid_nonblock_load_data;
+   logic [`NUM_THREADS-1:0]                              tid_nonblock_load_data_ready;
+   logic [`NUM_THREADS-1:0]                              tid_nonblock_load_data_valid;
+   logic [`NUM_THREADS-1:0]                              tid_nonblock_load_data_error;
+   logic [`NUM_THREADS-1:0][`LSU_NUM_NBLOAD_WIDTH-1:0] tid_nonblock_load_data_tag;
+   logic [`NUM_THREADS-1:0][31:0]                        tid_nonblock_load_data;
 
    logic                                                   bus_coalescing_disable;
 
@@ -264,7 +264,7 @@ import eh2_param_pkg::*;
    logic                   lsu_axi_arvalid_q, lsu_axi_arready_q;
    logic                   lsu_axi_bvalid_q, lsu_axi_bready_q;
    logic                   lsu_axi_rvalid_q, lsu_axi_rready_q;
-   logic [pt.LSU_BUS_TAG-1:0] lsu_axi_bid_q, lsu_axi_rid_q;
+   logic [`LSU_BUS_TAG-1:0] lsu_axi_bid_q, lsu_axi_rid_q;
    logic [1:0]             lsu_axi_bresp_q, lsu_axi_rresp_q;
    logic [63:0]            lsu_axi_rdata_q;
 
@@ -272,7 +272,7 @@ import eh2_param_pkg::*;
    //----------------------------------------Logic starts here---------------------------------------------------
    //------------------------------------------------------------------------------------------------------------
 
-   assign bus_coalescing_disable = dec_tlu_wb_coalescing_disable | pt.BUILD_AHB_LITE;  // No coalescing for ahb
+   assign bus_coalescing_disable = dec_tlu_wb_coalescing_disable | `BUILD_AHB_LITE;  // No coalescing for ahb
 
    assign ldst_byteen_dc2[3:0] = ({4{lsu_pkt_dc2.by}}   & 4'b0001) |
                                  ({4{lsu_pkt_dc2.half}} & 4'b0011) |
@@ -417,11 +417,11 @@ import eh2_param_pkg::*;
 
    // Non blocking ports
    assign lsu_nonblock_load_valid_dc1 = lsu_busreq_dc1 & lsu_pkt_dc1_pre.valid & lsu_pkt_dc1_pre.load & ~flush_dc2_up[lsu_pkt_dc1_pre.tid];
-   assign lsu_nonblock_load_tag_dc1[pt.LSU_NUM_NBLOAD_WIDTH-1:0] = WrPtr0_dc1[lsu_pkt_dc1_pre.tid][pt.LSU_NUM_NBLOAD_WIDTH-1:0];
+   assign lsu_nonblock_load_tag_dc1[`LSU_NUM_NBLOAD_WIDTH-1:0] = WrPtr0_dc1[lsu_pkt_dc1_pre.tid][`LSU_NUM_NBLOAD_WIDTH-1:0];
    assign lsu_nonblock_load_inv_dc2 = lsu_nonblock_load_valid_dc2 & ld_full_hit_dc2;
-   assign lsu_nonblock_load_inv_tag_dc2[pt.LSU_NUM_NBLOAD_WIDTH-1:0] = WrPtr0_dc2[lsu_pkt_dc2.tid][pt.LSU_NUM_NBLOAD_WIDTH-1:0];
+   assign lsu_nonblock_load_inv_tag_dc2[`LSU_NUM_NBLOAD_WIDTH-1:0] = WrPtr0_dc2[lsu_pkt_dc2.tid][`LSU_NUM_NBLOAD_WIDTH-1:0];
    assign lsu_nonblock_load_inv_dc5 = lsu_nonblock_load_valid_dc5 & ~lsu_commit_dc5;
-   assign lsu_nonblock_load_inv_tag_dc5[pt.LSU_NUM_NBLOAD_WIDTH-1:0] = WrPtr0_dc5[lsu_pkt_dc5.tid][pt.LSU_NUM_NBLOAD_WIDTH-1:0];      // dc5 tag needs to be accurate even if there is no invalidate
+   assign lsu_nonblock_load_inv_tag_dc5[`LSU_NUM_NBLOAD_WIDTH-1:0] = WrPtr0_dc5[lsu_pkt_dc5.tid][`LSU_NUM_NBLOAD_WIDTH-1:0];      // dc5 tag needs to be accurate even if there is no invalidate
 
    // Generic bus signals
    assign bus_cmd_ready                      = obuf_write[bus_tid] ? ((obuf_cmd_done[bus_tid] | obuf_data_done[bus_tid]) ? (obuf_cmd_done[bus_tid] ? lsu_axi_wready : lsu_axi_awready) : (lsu_axi_awready & lsu_axi_wready)) : lsu_axi_arready;
@@ -432,19 +432,19 @@ import eh2_param_pkg::*;
 
    assign bus_rsp_read                       = lsu_axi_rvalid & lsu_axi_rready;
    assign bus_rsp_write                      = lsu_axi_bvalid & lsu_axi_bready;
-   assign bus_rsp_read_tag[pt.LSU_BUS_TAG-1:0]  = lsu_axi_rid[pt.LSU_BUS_TAG-2:0];
-   assign bus_rsp_write_tag[pt.LSU_BUS_TAG-1:0] = lsu_axi_bid[pt.LSU_BUS_TAG-2:0];
+   assign bus_rsp_read_tag[`LSU_BUS_TAG-1:0]  = lsu_axi_rid[`LSU_BUS_TAG-2:0];
+   assign bus_rsp_write_tag[`LSU_BUS_TAG-1:0] = lsu_axi_bid[`LSU_BUS_TAG-2:0];
    assign bus_rsp_write_error                = bus_rsp_write & (lsu_axi_bresp[1:0] != 2'b0);
    assign bus_rsp_read_error                 = bus_rsp_read  & (lsu_axi_rresp[1:0] != 2'b0);
    assign bus_rsp_rdata[63:0]                = lsu_axi_rdata[63:0];
-   assign bus_rsp_read_tid                   = lsu_axi_rid[pt.LSU_BUS_TAG-1];
-   assign bus_rsp_write_tid                  = lsu_axi_bid[pt.LSU_BUS_TAG-1];
+   assign bus_rsp_read_tid                   = lsu_axi_rid[`LSU_BUS_TAG-1];
+   assign bus_rsp_write_tid                  = lsu_axi_bid[`LSU_BUS_TAG-1];
 
-   assign bus_rsp_write_tid_q                = lsu_axi_bid_q[pt.LSU_BUS_TAG-1];
+   assign bus_rsp_write_tid_q                = lsu_axi_bid_q[`LSU_BUS_TAG-1];
 
    // AXI command signals
    assign lsu_axi_awvalid               = obuf_valid[bus_tid] & obuf_write[bus_tid] & ~obuf_cmd_done[bus_tid] & ~bus_addr_match_pending[bus_tid];
-   assign lsu_axi_awid[pt.LSU_BUS_TAG-1:0] = (pt.LSU_BUS_TAG)'({bus_tid,obuf_tag0[bus_tid][pt.LSU_BUS_TAG-2:0]});
+   assign lsu_axi_awid[`LSU_BUS_TAG-1:0] = (`LSU_BUS_TAG)'({bus_tid,obuf_tag0[bus_tid][`LSU_BUS_TAG-2:0]});
    assign lsu_axi_awaddr[31:0]          = obuf_sideeffect[bus_tid] ? obuf_addr[bus_tid][31:0] : {obuf_addr[bus_tid][31:3],3'b0};
    assign lsu_axi_awsize[2:0]           = obuf_sideeffect[bus_tid] ? {1'b0, obuf_sz[bus_tid][1:0]} : 3'b011;
    assign lsu_axi_awprot[2:0]           = 3'b001;
@@ -461,7 +461,7 @@ import eh2_param_pkg::*;
    assign lsu_axi_wlast                 = '1;
 
    assign lsu_axi_arvalid               = obuf_valid[bus_tid] & ~obuf_nosend[bus_tid] & ~obuf_write[bus_tid] & ~bus_addr_match_pending[bus_tid];
-   assign lsu_axi_arid[pt.LSU_BUS_TAG-1:0] = (pt.LSU_BUS_TAG)'({bus_tid,obuf_tag0[bus_tid][pt.LSU_BUS_TAG-2:0]});
+   assign lsu_axi_arid[`LSU_BUS_TAG-1:0] = (`LSU_BUS_TAG)'({bus_tid,obuf_tag0[bus_tid][`LSU_BUS_TAG-2:0]});
    assign lsu_axi_araddr[31:0]          = obuf_sideeffect[bus_tid] ? obuf_addr[bus_tid][31:0] : {obuf_addr[bus_tid][31:3],3'b0};
    assign lsu_axi_arsize[2:0]           = obuf_sideeffect[bus_tid] ? {1'b0, obuf_sz[bus_tid][1:0]} : 3'b011;
    assign lsu_axi_arprot[2:0]           = 3'b001;
@@ -476,15 +476,15 @@ import eh2_param_pkg::*;
    assign lsu_axi_rready = 1;
 
    // Count the number of pending trxns for fence
-   assign bus_pend_trxnQ[pt.NUM_THREADS-1:0]    = '0;
-   assign bus_pend_trxn[pt.NUM_THREADS-1:0]     = '0;
-   assign bus_pend_trxn_en[pt.NUM_THREADS-1:0]  = 1'b0;
-   assign lsu_bus_cntr_overflow[pt.NUM_THREADS-1:0] = '0;
-   assign lsu_bus_idle_any[pt.NUM_THREADS-1:0]  = {pt.NUM_THREADS{1'b1}};
-   assign dec_tlu_force_halt_bus[pt.NUM_THREADS-1:0] = 2'h0;
+   assign bus_pend_trxnQ[`NUM_THREADS-1:0]    = '0;
+   assign bus_pend_trxn[`NUM_THREADS-1:0]     = '0;
+   assign bus_pend_trxn_en[`NUM_THREADS-1:0]  = 1'b0;
+   assign lsu_bus_cntr_overflow[`NUM_THREADS-1:0] = '0;
+   assign lsu_bus_idle_any[`NUM_THREADS-1:0]  = {`NUM_THREADS{1'b1}};
+   assign dec_tlu_force_halt_bus[`NUM_THREADS-1:0] = 2'h0;
 
    // PMU signals
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin: GenPMU
+   for (genvar i=0; i<`NUM_THREADS; i++) begin: GenPMU
       assign lsu_pmu_bus_trxn[i]       = ((lsu_axi_awvalid & lsu_axi_awready) | (lsu_axi_wvalid & lsu_axi_wready) | (lsu_axi_arvalid & lsu_axi_arready)) & (i == bus_tid);
       assign lsu_pmu_bus_misaligned[i] = lsu_busreq_dc5 & ldst_dual_dc5 & lsu_commit_dc5 & (i == lsu_pkt_dc5.tid);
       assign lsu_pmu_bus_error[i]      = lsu_imprecise_error_load_any[i] | lsu_imprecise_error_store_any[i];
@@ -501,16 +501,16 @@ import eh2_param_pkg::*;
    rvdff_fpga  #(.WIDTH(1))              lsu_axi_bvalid_ff  (.din(lsu_axi_bvalid),                 .dout(lsu_axi_bvalid_q),                 .clk(lsu_busm_clk), .clken(lsu_busm_clken), .rawclk(clk), .*);
    rvdff_fpga  #(.WIDTH(1))              lsu_axi_bready_ff  (.din(lsu_axi_bready),                 .dout(lsu_axi_bready_q),                 .clk(lsu_busm_clk), .clken(lsu_busm_clken), .rawclk(clk), .*);
    rvdff_fpga  #(.WIDTH(2))              lsu_axi_bresp_ff   (.din(lsu_axi_bresp[1:0]),             .dout(lsu_axi_bresp_q[1:0]),             .clk(lsu_busm_clk), .clken(lsu_busm_clken), .rawclk(clk), .*);
-   rvdff_fpga  #(.WIDTH(pt.LSU_BUS_TAG)) lsu_axi_bid_ff     (.din(lsu_axi_bid[pt.LSU_BUS_TAG-1:0]),.dout(lsu_axi_bid_q[pt.LSU_BUS_TAG-1:0]),.clk(lsu_busm_clk), .clken(lsu_busm_clken), .rawclk(clk), .*);
+   rvdff_fpga  #(.WIDTH(`LSU_BUS_TAG)) lsu_axi_bid_ff     (.din(lsu_axi_bid[`LSU_BUS_TAG-1:0]),.dout(lsu_axi_bid_q[`LSU_BUS_TAG-1:0]),.clk(lsu_busm_clk), .clken(lsu_busm_clken), .rawclk(clk), .*);
    rvdffe      #(.WIDTH(64))             lsu_axi_rdata_ff   (.din(lsu_axi_rdata[63:0]),            .dout(lsu_axi_rdata_q[63:0]),            .en((lsu_axi_rvalid | clk_override) & lsu_bus_clk_en), .*);
 
    rvdff_fpga  #(.WIDTH(1))              lsu_axi_rvalid_ff  (.din(lsu_axi_rvalid),                 .dout(lsu_axi_rvalid_q),                 .clk(lsu_busm_clk), .clken(lsu_busm_clken), .rawclk(clk), .*);
    rvdff_fpga  #(.WIDTH(1))              lsu_axi_rready_ff  (.din(lsu_axi_rready),                 .dout(lsu_axi_rready_q),                 .clk(lsu_busm_clk), .clken(lsu_busm_clken), .rawclk(clk), .*);
    rvdff_fpga  #(.WIDTH(2))              lsu_axi_rresp_ff   (.din(lsu_axi_rresp[1:0]),             .dout(lsu_axi_rresp_q[1:0]),             .clk(lsu_busm_clk), .clken(lsu_busm_clken), .rawclk(clk), .*);
-   rvdff_fpga  #(.WIDTH(pt.LSU_BUS_TAG)) lsu_axi_rid_ff     (.din(lsu_axi_rid[pt.LSU_BUS_TAG-1:0]),.dout(lsu_axi_rid_q[pt.LSU_BUS_TAG-1:0]),.clk(lsu_busm_clk), .clken(lsu_busm_clken), .rawclk(clk), .*);
+   rvdff_fpga  #(.WIDTH(`LSU_BUS_TAG)) lsu_axi_rid_ff     (.din(lsu_axi_rid[`LSU_BUS_TAG-1:0]),.dout(lsu_axi_rid_q[`LSU_BUS_TAG-1:0]),.clk(lsu_busm_clk), .clken(lsu_busm_clken), .rawclk(clk), .*);
 
    // Per thread bus buffer
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin: GenThreadLoop
+   for (genvar i=0; i<`NUM_THREADS; i++) begin: GenThreadLoop
       // Read/Write Buffer
       eh2_lsu_bus_buffer #() bus_buffer (
          .tid(1'(i)),
@@ -569,16 +569,16 @@ import eh2_param_pkg::*;
       lsu_nonblock_load_data_error = '0;
       lsu_nonblock_load_data_tag   = '0;
       lsu_nonblock_load_data       = '0;
-      for (int i=0; i<pt.NUM_THREADS; i++) begin
+      for (int i=0; i<`NUM_THREADS; i++) begin
          lsu_nonblock_load_data_valid |= (tid_nonblock_load_data_valid[i] & (lsu_nonblock_load_data_tid == i));
          lsu_nonblock_load_data_error |= (tid_nonblock_load_data_error[i] & (lsu_nonblock_load_data_tid == i));
-         lsu_nonblock_load_data_tag   |= {(pt.LSU_NUM_NBLOAD_WIDTH){lsu_nonblock_load_data_tid == i}} & tid_nonblock_load_data_tag[i];
+         lsu_nonblock_load_data_tag   |= {(`LSU_NUM_NBLOAD_WIDTH){lsu_nonblock_load_data_tid == i}} & tid_nonblock_load_data_tag[i];
          lsu_nonblock_load_data       |= {32{lsu_nonblock_load_data_tid == i}} & tid_nonblock_load_data[i];
       end
    end
 
    // Thread arbitration logic for bus tid
-   if (pt.NUM_THREADS == 2) begin: GenMT
+   if (`NUM_THREADS == 2) begin: GenMT
       assign nxt_bus_tid = bus_tid ? (~(obuf_nxtready[0] | obuf_valid[0]) & obuf_nxtready[1]) :
                                      (~obuf_nxtready[0] | (obuf_nxtready[1] | obuf_valid[1]));
       assign bus_tid_en  = bus_cmd_sent | (~bus_cmd_valid & (obuf_nxtready[0] | obuf_nxtready[1]) & ~obuf_nxtready[bus_tid]) | (~obuf_valid[bus_tid] & obuf_valid[~bus_tid]);
@@ -588,7 +588,7 @@ import eh2_param_pkg::*;
    end
 
    // Thread arbitration logic for nonblock tid
-   if (pt.NUM_THREADS == 2) begin: GenNBTID_MT
+   if (`NUM_THREADS == 2) begin: GenNBTID_MT
       rvarbiter2 nbtid_arbiter (
          .clk(active_clk),
          .ready(tid_nonblock_load_data_ready[1:0]),
@@ -622,7 +622,7 @@ import eh2_param_pkg::*;
    rvdff #(.WIDTH(1)) lsu_nonblock_load_valid_dc4ff  (.din(lsu_nonblock_load_valid_dc3),  .dout(lsu_nonblock_load_valid_dc4), .clk(lsu_c2_dc4_clk), .*);
    rvdff #(.WIDTH(1)) lsu_nonblock_load_valid_dc5ff  (.din(lsu_nonblock_load_valid_dc4),  .dout(lsu_nonblock_load_valid_dc5), .clk(lsu_c2_dc5_clk), .*);
 
-/*`ifdef RV_ASSERT_ON
+`ifdef RV_ASSERT_ON
 
      // Assertion to check AXI write address is aligned to size
      property lsu_axi_awaddr_aligned;
@@ -647,14 +647,14 @@ import eh2_param_pkg::*;
 
      // Assertion to check awvalid stays stable during entire bus clock
     property lsu_axi_awvalid_stable;
-        @(posedge clk) disable iff(~rst_l)  (lsu_axi_awvalid != $past(lsu_axi_awvalid)) |-> ($past(lsu_bus_clk_en) | (|dec_tlu_force_halt[pt.NUM_THREADS-1:0]));
+        @(posedge clk) disable iff(~rst_l)  (lsu_axi_awvalid != $past(lsu_axi_awvalid)) |-> ($past(lsu_bus_clk_en) | (|dec_tlu_force_halt[`NUM_THREADS-1:0]));
      endproperty
      assert_lsu_axi_awvalid_stable: assert property (lsu_axi_awvalid_stable) else
         $display("LSU AXI awvalid changed in middle of bus clock");
 
      // Assertion to check awid stays stable during entire bus clock
      property lsu_axi_awid_stable;
-        @(posedge clk) disable iff(~rst_l)  (lsu_axi_awvalid & (lsu_axi_awid[pt.LSU_BUS_TAG-1:0] != $past(lsu_axi_awid[pt.LSU_BUS_TAG-1:0]))) |-> $past(lsu_bus_clk_en);
+        @(posedge clk) disable iff(~rst_l)  (lsu_axi_awvalid & (lsu_axi_awid[`LSU_BUS_TAG-1:0] != $past(lsu_axi_awid[`LSU_BUS_TAG-1:0]))) |-> $past(lsu_bus_clk_en);
      endproperty
      assert_lsu_axi_awid_stable: assert property (lsu_axi_awid_stable) else
         $display("LSU AXI awid changed in middle of bus clock");
@@ -689,14 +689,14 @@ import eh2_param_pkg::*;
 
      // Assertion to check awvalid stays stable during entire bus clock
      property lsu_axi_arvalid_stable;
-        @(posedge clk) disable iff(~rst_l)  (lsu_axi_arvalid != $past(lsu_axi_arvalid)) |-> ($past(lsu_bus_clk_en) | (|dec_tlu_force_halt[pt.NUM_THREADS-1:0]));
+        @(posedge clk) disable iff(~rst_l)  (lsu_axi_arvalid != $past(lsu_axi_arvalid)) |-> ($past(lsu_bus_clk_en) | (|dec_tlu_force_halt[`NUM_THREADS-1:0]));
      endproperty
      assert_lsu_axi_arvalid_stable: assert property (lsu_axi_arvalid_stable) else
         $display("LSU AXI awvalid changed in middle of bus clock");
 
      // Assertion to check awid stays stable during entire bus clock
      property lsu_axi_arid_stable;
-        @(posedge clk) disable iff(~rst_l)  (lsu_axi_arvalid & (lsu_axi_arid[pt.LSU_BUS_TAG-1:0] != $past(lsu_axi_arid[pt.LSU_BUS_TAG-1:0]))) |-> $past(lsu_bus_clk_en);
+        @(posedge clk) disable iff(~rst_l)  (lsu_axi_arvalid & (lsu_axi_arid[`LSU_BUS_TAG-1:0] != $past(lsu_axi_arid[`LSU_BUS_TAG-1:0]))) |-> $past(lsu_bus_clk_en);
      endproperty
      assert_lsu_axi_arid_stable: assert property (lsu_axi_arid_stable) else
         $display("LSU AXI awid changed in middle of bus clock");
@@ -715,6 +715,6 @@ import eh2_param_pkg::*;
      assert_lsu_axi_arsize_stable: assert property (lsu_axi_arsize_stable) else
         $display("LSU AXI awsize changed in middle of bus clock");
 
-`endif*/
+`endif
 
 endmodule // lsu_bus_intf

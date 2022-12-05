@@ -23,8 +23,8 @@
 
 module eh2_dma_ctrl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
  )(
    input logic         clk,
    input logic         free_clk,
@@ -84,7 +84,7 @@ import eh2_param_pkg::*;
    // AXI Write Channels
    input  logic                        dma_axi_awvalid,
    output logic                        dma_axi_awready,
-   input  logic [pt.DMA_BUS_TAG-1:0]   dma_axi_awid,
+   input  logic [`DMA_BUS_TAG-1:0]   dma_axi_awid,
    input  logic [31:0]                 dma_axi_awaddr,
    input  logic [2:0]                  dma_axi_awsize,
 
@@ -97,25 +97,25 @@ import eh2_param_pkg::*;
    output logic                        dma_axi_bvalid,
    input  logic                        dma_axi_bready,
    output logic [1:0]                  dma_axi_bresp,
-   output logic [pt.DMA_BUS_TAG-1:0]   dma_axi_bid,
+   output logic [`DMA_BUS_TAG-1:0]   dma_axi_bid,
 
    // AXI Read Channels
    input  logic                        dma_axi_arvalid,
    output logic                        dma_axi_arready,
-   input  logic [pt.DMA_BUS_TAG-1:0]   dma_axi_arid,
+   input  logic [`DMA_BUS_TAG-1:0]   dma_axi_arid,
    input  logic [31:0]                 dma_axi_araddr,
    input  logic [2:0]                  dma_axi_arsize,
 
    output logic                        dma_axi_rvalid,
    input  logic                        dma_axi_rready,
-   output logic [pt.DMA_BUS_TAG-1:0]   dma_axi_rid,
+   output logic [`DMA_BUS_TAG-1:0]   dma_axi_rid,
    output logic [63:0]                 dma_axi_rdata,
    output logic [1:0]                  dma_axi_rresp,
    output logic                        dma_axi_rlast
 );
 
 
-   localparam DEPTH = pt.DMA_BUF_DEPTH;
+   localparam DEPTH = `DMA_BUF_DEPTH;
    localparam DEPTH_PTR = $clog2(DEPTH);
    localparam NACK_COUNT = 7;
 
@@ -134,9 +134,9 @@ import eh2_param_pkg::*;
    logic [DEPTH-1:0]        fifo_posted_write;
    logic [DEPTH-1:0]        fifo_dbg;
    logic [DEPTH-1:0][63:0]  fifo_data;
-   logic [DEPTH-1:0][pt.DMA_BUS_TAG-1:0]  fifo_tag;
-   logic [DEPTH-1:0][pt.DMA_BUS_ID-1:0]   fifo_mid;
-   logic [DEPTH-1:0][pt.DMA_BUS_PRTY-1:0] fifo_prty;
+   logic [DEPTH-1:0][`DMA_BUS_TAG-1:0]  fifo_tag;
+   logic [DEPTH-1:0][`DMA_BUS_ID-1:0]   fifo_mid;
+   logic [DEPTH-1:0][`DMA_BUS_PRTY-1:0] fifo_prty;
 
    logic [DEPTH-1:0]        fifo_cmd_en;
    logic [DEPTH-1:0]        fifo_data_en;
@@ -197,9 +197,9 @@ import eh2_param_pkg::*;
    logic [2:0]              bus_cmd_sz;
    logic [31:0]             bus_cmd_addr;
    logic [63:0]             bus_cmd_wdata;
-   logic [pt.DMA_BUS_TAG-1:0]  bus_cmd_tag;
-   logic [pt.DMA_BUS_ID-1:0]   bus_cmd_mid;
-   logic [pt.DMA_BUS_PRTY-1:0] bus_cmd_prty;
+   logic [`DMA_BUS_TAG-1:0]  bus_cmd_tag;
+   logic [`DMA_BUS_ID-1:0]   bus_cmd_mid;
+   logic [`DMA_BUS_PRTY-1:0] bus_cmd_prty;
    logic                    bus_posted_write_done;
 
    logic                    fifo_full_spec_bus;
@@ -210,7 +210,7 @@ import eh2_param_pkg::*;
    logic                       wrbuf_en, wrbuf_data_en;
    logic                       wrbuf_cmd_sent, wrbuf_rst, wrbuf_data_rst;
    logic                       wrbuf_vld, wrbuf_data_vld;
-   logic [pt.DMA_BUS_TAG-1:0]  wrbuf_tag;
+   logic [`DMA_BUS_TAG-1:0]  wrbuf_tag;
    logic [2:0]                 wrbuf_sz;
    logic [31:0]                wrbuf_addr;
    logic [63:0]                wrbuf_data;
@@ -219,7 +219,7 @@ import eh2_param_pkg::*;
    logic                       rdbuf_en;
    logic                       rdbuf_cmd_sent, rdbuf_rst;
    logic                       rdbuf_vld;
-   logic [pt.DMA_BUS_TAG-1:0]  rdbuf_tag;
+   logic [`DMA_BUS_TAG-1:0]  rdbuf_tag;
    logic [2:0]                 rdbuf_sz;
    logic [31:0]                rdbuf_addr;
 
@@ -229,7 +229,7 @@ import eh2_param_pkg::*;
 
    logic                       axi_rsp_valid, axi_rsp_sent;
    logic                       axi_rsp_write;
-   logic [pt.DMA_BUS_TAG-1:0]  axi_rsp_tag;
+   logic [`DMA_BUS_TAG-1:0]  axi_rsp_tag;
    logic [1:0]                 axi_rsp_error;
    logic [63:0]                axi_rsp_rdata;
 
@@ -281,9 +281,9 @@ import eh2_param_pkg::*;
       rvdffs  #(1) fifo_posted_write_dff (.din(fifo_posted_write_in), .dout(fifo_posted_write[i]), .en(fifo_cmd_en[i]), .clk(dma_buffer_c1_clk), .*);
       rvdffs  #(1) fifo_dbg_dff (.din(fifo_dbg_in), .dout(fifo_dbg[i]), .en(fifo_cmd_en[i]), .clk(dma_buffer_c1_clk), .*);
       rvdffe  #(64) fifo_data_dff (.din(fifo_data_in[i]), .dout(fifo_data[i]), .en(fifo_data_en[i]), .*);
-      rvdffs  #(pt.DMA_BUS_TAG) fifo_tag_dff(.din(bus_cmd_tag[pt.DMA_BUS_TAG-1:0]), .dout(fifo_tag[i][pt.DMA_BUS_TAG-1:0]), .en(fifo_cmd_en[i]), .clk(dma_buffer_c1_clk), .*);
-      rvdffs  #(pt.DMA_BUS_ID) fifo_mid_dff(.din(bus_cmd_mid[pt.DMA_BUS_ID-1:0]), .dout(fifo_mid[i][pt.DMA_BUS_ID-1:0]), .en(fifo_cmd_en[i]), .clk(dma_buffer_c1_clk), .*);
-      rvdffs  #(pt.DMA_BUS_PRTY) fifo_prty_dff(.din(bus_cmd_prty[pt.DMA_BUS_PRTY-1:0]), .dout(fifo_prty[i][pt.DMA_BUS_PRTY-1:0]), .en(fifo_cmd_en[i]), .clk(dma_buffer_c1_clk), .*);
+      rvdffs  #(`DMA_BUS_TAG) fifo_tag_dff(.din(bus_cmd_tag[`DMA_BUS_TAG-1:0]), .dout(fifo_tag[i][`DMA_BUS_TAG-1:0]), .en(fifo_cmd_en[i]), .clk(dma_buffer_c1_clk), .*);
+      rvdffs  #(`DMA_BUS_ID) fifo_mid_dff(.din(bus_cmd_mid[`DMA_BUS_ID-1:0]), .dout(fifo_mid[i][`DMA_BUS_ID-1:0]), .en(fifo_cmd_en[i]), .clk(dma_buffer_c1_clk), .*);
+      rvdffs  #(`DMA_BUS_PRTY) fifo_prty_dff(.din(bus_cmd_prty[`DMA_BUS_PRTY-1:0]), .dout(fifo_prty[i][`DMA_BUS_PRTY-1:0]), .en(fifo_cmd_en[i]), .clk(dma_buffer_c1_clk), .*);
    end
 
    // Pointer logic
@@ -379,9 +379,9 @@ import eh2_param_pkg::*;
    assign dma_pmu_any_write   = (dma_dccm_req | dma_iccm_req) & dma_mem_write;
 
    // Address check  dccm
-   if (pt.DCCM_ENABLE) begin
-      rvrangecheck #(.CCM_SADR(pt.DCCM_SADR),
-                     .CCM_SIZE(pt.DCCM_SIZE)) addr_dccm_rangecheck (
+   if (`DCCM_ENABLE) begin
+      rvrangecheck #(.CCM_SADR(`DCCM_SADR),
+                     .CCM_SIZE(`DCCM_SIZE)) addr_dccm_rangecheck (
          .addr(dma_mem_addr[31:0]),
          .in_range(dma_mem_addr_in_dccm),
          .in_region(dma_mem_addr_in_dccm_region_nc)
@@ -390,12 +390,12 @@ import eh2_param_pkg::*;
    else begin
       assign dma_mem_addr_in_dccm = 1'b0;
       assign dma_mem_addr_in_dccm_region_nc = 1'b0;
-   end // else: !if(pt.DCCM_ENABLE)
+   end // else: !if(`DCCM_ENABLE)
 
    // Address check  iccm
-   if (pt.ICCM_ENABLE) begin
-      rvrangecheck #(.CCM_SADR(pt.ICCM_SADR),
-                     .CCM_SIZE(pt.ICCM_SIZE)) addr_iccm_rangecheck (
+   if (`ICCM_ENABLE) begin
+      rvrangecheck #(.CCM_SADR(`ICCM_SADR),
+                     .CCM_SIZE(`ICCM_SIZE)) addr_iccm_rangecheck (
          .addr(dma_mem_addr[31:0]),
          .in_range(dma_mem_addr_in_iccm),
          .in_region(dma_mem_addr_in_iccm_region_nc)
@@ -404,12 +404,12 @@ import eh2_param_pkg::*;
    else  begin
       assign dma_mem_addr_in_iccm = '0;
       assign dma_mem_addr_in_iccm_region_nc = '0;
-   end // else: !if(pt.ICCM_ENABLE)
+   end // else: !if(`ICCM_ENABLE)
 
 
    // PIC memory address check
-   rvrangecheck #(.CCM_SADR(pt.PIC_BASE_ADDR),
-                  .CCM_SIZE(pt.PIC_SIZE)) addr_pic_rangecheck (
+   rvrangecheck #(.CCM_SADR(`PIC_BASE_ADDR),
+                  .CCM_SIZE(`PIC_SIZE)) addr_pic_rangecheck (
       .addr(dma_mem_addr[31:0]),
       .in_range(dma_mem_addr_in_pic),
       .in_region(dma_mem_addr_in_pic_region_nc)
@@ -443,7 +443,7 @@ import eh2_param_pkg::*;
 
    rvdffsc_fpga  #(.WIDTH(1))              wrbuf_vldff       (.din(1'b1), .dout(wrbuf_vld),      .en(wrbuf_en),      .clear(wrbuf_rst),      .clk(dma_bus_clk), .clken(dma_bus_clk_en), .rawclk(clk), .*);
    rvdffsc_fpga  #(.WIDTH(1))              wrbuf_data_vldff  (.din(1'b1), .dout(wrbuf_data_vld), .en(wrbuf_data_en), .clear(wrbuf_data_rst), .clk(dma_bus_clk), .clken(dma_bus_clk_en), .rawclk(clk), .*);
-   rvdffs_fpga   #(.WIDTH(pt.DMA_BUS_TAG)) wrbuf_tagff       (.din(dma_axi_awid[pt.DMA_BUS_TAG-1:0]), .dout(wrbuf_tag[pt.DMA_BUS_TAG-1:0]), .en(wrbuf_en), .clk(dma_bus_clk), .clken(dma_bus_clk_en), .rawclk(clk), .*);
+   rvdffs_fpga   #(.WIDTH(`DMA_BUS_TAG)) wrbuf_tagff       (.din(dma_axi_awid[`DMA_BUS_TAG-1:0]), .dout(wrbuf_tag[`DMA_BUS_TAG-1:0]), .en(wrbuf_en), .clk(dma_bus_clk), .clken(dma_bus_clk_en), .rawclk(clk), .*);
    rvdffs_fpga   #(.WIDTH(3))              wrbuf_szff        (.din(dma_axi_awsize[2:0]),  .dout(wrbuf_sz[2:0]),     .en(wrbuf_en),                  .clk(dma_bus_clk), .clken(dma_bus_clk_en), .rawclk(clk), .*);
    rvdffe        #(.WIDTH(32))             wrbuf_addrff      (.din(dma_axi_awaddr[31:0]), .dout(wrbuf_addr[31:0]),  .en(wrbuf_en & dma_bus_clk_en), .*);
    rvdffe        #(.WIDTH(64))             wrbuf_dataff      (.din(dma_axi_wdata[63:0]),  .dout(wrbuf_data[63:0]),  .en(wrbuf_data_en & dma_bus_clk_en), .*);
@@ -455,7 +455,7 @@ import eh2_param_pkg::*;
    assign rdbuf_rst   = rdbuf_cmd_sent & ~rdbuf_en;
 
    rvdffsc_fpga  #(.WIDTH(1))              rdbuf_vldff  (.din(1'b1), .dout(rdbuf_vld), .en(rdbuf_en), .clear(rdbuf_rst), .clk(dma_bus_clk), .clken(dma_bus_clk_en), .rawclk(clk), .*);
-   rvdffs_fpga   #(.WIDTH(pt.DMA_BUS_TAG)) rdbuf_tagff  (.din(dma_axi_arid[pt.DMA_BUS_TAG-1:0]), .dout(rdbuf_tag[pt.DMA_BUS_TAG-1:0]), .en(rdbuf_en), .clk(dma_bus_clk), .clken(dma_bus_clk_en), .rawclk(clk), .*);
+   rvdffs_fpga   #(.WIDTH(`DMA_BUS_TAG)) rdbuf_tagff  (.din(dma_axi_arid[`DMA_BUS_TAG-1:0]), .dout(rdbuf_tag[`DMA_BUS_TAG-1:0]), .en(rdbuf_en), .clk(dma_bus_clk), .clken(dma_bus_clk_en), .rawclk(clk), .*);
    rvdffs_fpga   #(.WIDTH(3))              rdbuf_szff   (.din(dma_axi_arsize[2:0]),  .dout(rdbuf_sz[2:0]),    .en(rdbuf_en), .clk(dma_bus_clk), .clken(dma_bus_clk_en), .rawclk(clk), .*);
    rvdffe       #(.WIDTH(32))              rdbuf_addrff (.din(dma_axi_araddr[31:0]), .dout(rdbuf_addr[31:0]), .en(rdbuf_en & dma_bus_clk_en), .*);
 
@@ -472,9 +472,9 @@ import eh2_param_pkg::*;
    assign bus_cmd_sz[2:0]                   = axi_mstr_sel ? wrbuf_sz[2:0] : rdbuf_sz[2:0];
    assign bus_cmd_wdata[63:0]               = wrbuf_data[63:0];
    assign bus_cmd_byteen[7:0]               = wrbuf_byteen[7:0];
-   assign bus_cmd_tag[pt.DMA_BUS_TAG-1:0]   = axi_mstr_sel ? wrbuf_tag[pt.DMA_BUS_TAG-1:0] : rdbuf_tag[pt.DMA_BUS_TAG-1:0];
-   assign bus_cmd_mid[pt.DMA_BUS_ID-1:0]    = '0;
-   assign bus_cmd_prty[pt.DMA_BUS_PRTY-1:0] = '0;
+   assign bus_cmd_tag[`DMA_BUS_TAG-1:0]   = axi_mstr_sel ? wrbuf_tag[`DMA_BUS_TAG-1:0] : rdbuf_tag[`DMA_BUS_TAG-1:0];
+   assign bus_cmd_mid[`DMA_BUS_ID-1:0]    = '0;
+   assign bus_cmd_prty[`DMA_BUS_PRTY-1:0] = '0;
 
    // Sel=1 -> write has higher priority
    assign axi_mstr_sel     = (wrbuf_vld & wrbuf_data_vld & rdbuf_vld) ? axi_mstr_priority : (wrbuf_vld & wrbuf_data_vld);
@@ -487,18 +487,18 @@ import eh2_param_pkg::*;
    assign axi_rsp_write                   = fifo_write[RspPtr];
    assign axi_rsp_posted_write            = axi_rsp_write & fifo_posted_write[RspPtr];
    assign axi_rsp_error[1:0]              = fifo_error[RspPtr][0] ? 2'b10 : (fifo_error[RspPtr][1] ? 2'b11 : 2'b0);
-   assign axi_rsp_tag[pt.DMA_BUS_TAG-1:0] = fifo_tag[RspPtr];
+   assign axi_rsp_tag[`DMA_BUS_TAG-1:0] = fifo_tag[RspPtr];
 
    // AXI response channel signals
    assign dma_axi_bvalid                  = axi_rsp_valid & axi_rsp_write;
    assign dma_axi_bresp[1:0]              = axi_rsp_error[1:0];
-   assign dma_axi_bid[pt.DMA_BUS_TAG-1:0] = axi_rsp_tag[pt.DMA_BUS_TAG-1:0];
+   assign dma_axi_bid[`DMA_BUS_TAG-1:0] = axi_rsp_tag[`DMA_BUS_TAG-1:0];
 
    assign dma_axi_rvalid                  = axi_rsp_valid & ~axi_rsp_write;
    assign dma_axi_rresp[1:0]              = axi_rsp_error;
    assign dma_axi_rdata[63:0]             = axi_rsp_rdata[63:0];
    assign dma_axi_rlast                   = 1'b1;
-   assign dma_axi_rid[pt.DMA_BUS_TAG-1:0] = axi_rsp_tag[pt.DMA_BUS_TAG-1:0];
+   assign dma_axi_rid[`DMA_BUS_TAG-1:0] = axi_rsp_tag[`DMA_BUS_TAG-1:0];
 
    assign bus_posted_write_done = 1'b0;
    assign bus_rsp_valid      = (dma_axi_bvalid | dma_axi_rvalid);
@@ -506,7 +506,7 @@ import eh2_param_pkg::*;
    assign dma_active  = wrbuf_vld | rdbuf_vld | (|fifo_valid[DEPTH-1:0]);
 
 
-/*`ifdef RV_ASSERT_ON
+`ifdef RV_ASSERT_ON
 
    for (genvar i=0; i<DEPTH; i++) begin
       assert_fifo_done_and_novalid: assert #0 (~fifo_done[i] | fifo_valid[i]);
@@ -542,7 +542,7 @@ import eh2_param_pkg::*;
 
      // Assertion to check bid stays stable during entire bus clock
      property dma_axi_bid_stable;
-        @(posedge clk) disable iff(~rst_l)  (dma_axi_bvalid & (dma_axi_bid[pt.DMA_BUS_TAG-1:0] != $past(dma_axi_bid[pt.DMA_BUS_TAG-1:0]))) |-> $past(dma_bus_clk_en);
+        @(posedge clk) disable iff(~rst_l)  (dma_axi_bvalid & (dma_axi_bid[`DMA_BUS_TAG-1:0] != $past(dma_axi_bid[`DMA_BUS_TAG-1:0]))) |-> $past(dma_bus_clk_en);
      endproperty
      assert_dma_axi_bid_stable: assert property (dma_axi_bid_stable) else
         $display("DMA AXI bid changed in middle of bus clock");
@@ -563,7 +563,7 @@ import eh2_param_pkg::*;
 
      // Assertion to check rid stays stable during entire bus clock
      property dma_axi_rid_stable;
-        @(posedge clk) disable iff(~rst_l)  (dma_axi_rvalid & (dma_axi_rid[pt.DMA_BUS_TAG-1:0] != $past(dma_axi_rid[pt.DMA_BUS_TAG-1:0]))) |-> $past(dma_bus_clk_en);
+        @(posedge clk) disable iff(~rst_l)  (dma_axi_rvalid & (dma_axi_rid[`DMA_BUS_TAG-1:0] != $past(dma_axi_rid[`DMA_BUS_TAG-1:0]))) |-> $past(dma_bus_clk_en);
      endproperty
      assert_dma_axi_rid_stable: assert property (dma_axi_rid_stable) else
         $display("DMA AXI rid changed in middle of bus clock");
@@ -582,6 +582,6 @@ import eh2_param_pkg::*;
      assert_dma_axi_rdata_stable: assert property (dma_axi_rdata_stable) else
         $display("DMA AXI rdata changed in middle of bus clock");
 
-`endif*/
+`endif
 
 endmodule // eh2_dma_ctrl

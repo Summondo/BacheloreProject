@@ -24,8 +24,8 @@
 
 module eh2_dec_csr
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
   (
 
@@ -517,8 +517,8 @@ assign legal = (!dec_csr_rdaddr_d[11]&dec_csr_rdaddr_d[10]&dec_csr_rdaddr_d[9]
    assign tlu_postsync_d = postsync & dec_csr_any_unq_d;
 
    // allow individual configuration of these features
-   assign conditionally_illegal = ((csr_mitcnt0 | csr_mitcnt1 | csr_mitb0 | csr_mitb1 | csr_mitctl0 | csr_mitctl1) & !pt.TIMER_LEGAL_EN) |
-                                  (csr_meicpct & pt.FAST_INTERRUPT_REDIRECT);
+   assign conditionally_illegal = ((csr_mitcnt0 | csr_mitcnt1 | csr_mitb0 | csr_mitb1 | csr_mitctl0 | csr_mitctl1) & !`TIMER_LEGAL_EN) |
+                                  (csr_meicpct & `FAST_INTERRUPT_REDIRECT);
 
    assign valid_csr = ( legal &
                         // not a debug only csr during running mode

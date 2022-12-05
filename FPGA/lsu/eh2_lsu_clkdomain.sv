@@ -26,33 +26,33 @@
 
 module eh2_lsu_clkdomain
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )(
    input logic      clk,                               // clock
    input logic      active_clk,                        // clock
-   input logic [pt.NUM_THREADS-1:0]  active_thread_l2clk,  // per thread l2 clock
+   input logic [`NUM_THREADS-1:0]  active_thread_l2clk,  // per thread l2 clock
    input logic      rst_l,                             // reset
 
    // Inputs
-   input logic [pt.NUM_THREADS-1:0] dec_tlu_force_halt,
+   input logic [`NUM_THREADS-1:0] dec_tlu_force_halt,
    input logic      clk_override,                      // chciken bit to turn off clock gating
    input logic      addr_in_dccm_dc2,                  // address in dccm
    input logic      addr_in_pic_dc2,                   // address is in pic
    input logic      dma_dccm_req,                      // dma is active
    input logic      dma_mem_write,                     // dma write is active
    input logic      store_stbuf_reqvld_dc5,            // allocating in to the store queue
-   input logic [pt.NUM_THREADS-1:0]lr_vld,             // needed for clk gating
+   input logic [`NUM_THREADS-1:0]lr_vld,             // needed for clk gating
 
 
    input logic      stbuf_reqvld_any,                  // stbuf is draining
    input logic      stbuf_reqvld_flushed_any,          // stbuf is flushed
    input logic      lsu_busreq_dc5,                    // busreq in dc5
-   input logic [pt.NUM_THREADS-1:0] lsu_bus_idle_any,
-   input logic [pt.NUM_THREADS-1:0] lsu_bus_buffer_pend_any,           // bus buffer has a pending bus entry
-   input logic [pt.NUM_THREADS-1:0] lsu_bus_buffer_empty_any,          // external bus buffer is empty
-   input logic [pt.NUM_THREADS-1:0] lsu_stbuf_empty_any,               // stbuf is empty
-   input logic [pt.NUM_THREADS-1:0] dec_tlu_force_halt_bus,           // Bus synchronized version of force halt
+   input logic [`NUM_THREADS-1:0] lsu_bus_idle_any,
+   input logic [`NUM_THREADS-1:0] lsu_bus_buffer_pend_any,           // bus buffer has a pending bus entry
+   input logic [`NUM_THREADS-1:0] lsu_bus_buffer_empty_any,          // external bus buffer is empty
+   input logic [`NUM_THREADS-1:0] lsu_stbuf_empty_any,               // stbuf is empty
+   input logic [`NUM_THREADS-1:0] dec_tlu_force_halt_bus,           // Bus synchronized version of force halt
 
    input logic      lsu_bus_clk_en,               // bus clock enable
 
@@ -64,7 +64,7 @@ import eh2_param_pkg::*;
    input eh2_lsu_pkt_t  lsu_pkt_dc5,                       // lsu packet in dc5
 
    // Outputs
-   output logic [pt.NUM_THREADS-1:0] lsu_bus_obuf_c1_clken,
+   output logic [`NUM_THREADS-1:0] lsu_bus_obuf_c1_clken,
    output logic     lsu_busm_clken,
 
    output logic     lsu_c1_dc1_clk,                    // dc3 pipe single pulse clock
@@ -94,9 +94,9 @@ import eh2_param_pkg::*;
    output logic     lsu_pic_c1_dc3_clk,                // pic clock
 
    output logic     lsu_stbuf_c1_clk,
-   output logic [pt.NUM_THREADS-1:0]  lsu_bus_obuf_c1_clk,               // ibuf clock
-   output logic [pt.NUM_THREADS-1:0]  lsu_bus_ibuf_c1_clk,               // ibuf clock
-   output logic [pt.NUM_THREADS-1:0]  lsu_bus_buf_c1_clk,                // ibuf clock
+   output logic [`NUM_THREADS-1:0]  lsu_bus_obuf_c1_clk,               // ibuf clock
+   output logic [`NUM_THREADS-1:0]  lsu_bus_ibuf_c1_clk,               // ibuf clock
+   output logic [`NUM_THREADS-1:0]  lsu_bus_buf_c1_clk,                // ibuf clock
    output logic     lsu_busm_clk,                      // bus clock
 
    output logic     lsu_free_c2_clk,
@@ -109,7 +109,7 @@ import eh2_param_pkg::*;
    logic lsu_store_c1_dc1_clken, lsu_store_c1_dc2_clken, lsu_store_c1_dc3_clken;
 
    logic lsu_stbuf_c1_clken;
-   logic [pt.NUM_THREADS-1:0] lsu_bus_ibuf_c1_clken, lsu_bus_buf_c1_clken;
+   logic [`NUM_THREADS-1:0] lsu_bus_ibuf_c1_clken, lsu_bus_buf_c1_clken;
 
    logic lsu_dccm_c1_dc3_clken, lsu_pic_c1_dc3_clken;
 
@@ -139,7 +139,7 @@ import eh2_param_pkg::*;
 
    assign lsu_stbuf_c1_clken = store_stbuf_reqvld_dc5 | stbuf_reqvld_any | stbuf_reqvld_flushed_any | clk_override;
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin: GenBufClkEn
+   for (genvar i=0; i<`NUM_THREADS; i++) begin: GenBufClkEn
       assign lsu_bus_ibuf_c1_clken[i] = (lsu_busreq_dc5 & (lsu_pkt_dc5.tid == i)) | clk_override;
       assign lsu_bus_obuf_c1_clken[i] = (lsu_bus_buffer_pend_any[i] | (lsu_busreq_dc5 & (lsu_pkt_dc5.tid == i)) | clk_override) & lsu_bus_clk_en;
       assign lsu_bus_buf_c1_clken[i]  = ~lsu_bus_buffer_empty_any[i] | (lsu_busreq_dc5 & (lsu_pkt_dc5.tid == i)) | dec_tlu_force_halt | clk_override;
@@ -156,8 +156,8 @@ import eh2_param_pkg::*;
    assign lsu_dccm_c1_dc3_clken = ((lsu_c1_dc3_clken & addr_in_dccm_dc2) | clk_override);
    assign lsu_pic_c1_dc3_clken  = ((lsu_c1_dc3_clken & addr_in_pic_dc2) | clk_override);
 
-   assign lsu_free_c1_clken =  lsu_p.valid | lsu_pkt_dc1.valid | lsu_pkt_dc2.valid | lsu_pkt_dc3.valid | lsu_pkt_dc4.valid | lsu_pkt_dc5.valid | (|lr_vld[pt.NUM_THREADS-1:0]) |
-                              ~(&lsu_bus_buffer_empty_any[pt.NUM_THREADS-1:0]) | ~(&lsu_stbuf_empty_any[pt.NUM_THREADS-1:0]) | clk_override;
+   assign lsu_free_c1_clken =  lsu_p.valid | lsu_pkt_dc1.valid | lsu_pkt_dc2.valid | lsu_pkt_dc3.valid | lsu_pkt_dc4.valid | lsu_pkt_dc5.valid | (|lr_vld[`NUM_THREADS-1:0]) |
+                              ~(&lsu_bus_buffer_empty_any[`NUM_THREADS-1:0]) | ~(&lsu_stbuf_empty_any[`NUM_THREADS-1:0]) | clk_override;
    assign lsu_free_c2_clken = lsu_free_c1_clken | lsu_free_c1_clken_q | clk_override;
 
     // Flops
@@ -188,7 +188,7 @@ import eh2_param_pkg::*;
 
    rvoclkhdr lsu_stbuf_c1_cgc ( .en(lsu_stbuf_c1_clken), .l1clk(lsu_stbuf_c1_clk), .* );
 
-   assign lsu_busm_clken = (~(&lsu_bus_buffer_empty_any[pt.NUM_THREADS-1:0]) | ~(&lsu_bus_idle_any[pt.NUM_THREADS-1:0]) | (|dec_tlu_force_halt_bus[pt.NUM_THREADS-1:0]) | lsu_busreq_dc5 | clk_override) & lsu_bus_clk_en;
+   assign lsu_busm_clken = (~(&lsu_bus_buffer_empty_any[`NUM_THREADS-1:0]) | ~(&lsu_bus_idle_any[`NUM_THREADS-1:0]) | (|dec_tlu_force_halt_bus[`NUM_THREADS-1:0]) | lsu_busreq_dc5 | clk_override) & lsu_bus_clk_en;
 
 `ifdef RV_FPGA_OPTIMIZE
    assign lsu_busm_clk = 1'b0;

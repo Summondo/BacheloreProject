@@ -16,8 +16,8 @@
 
 module eh2_exu_div_ctl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
   (
    input logic           clk,                       // Top level clock
@@ -43,7 +43,7 @@ import eh2_param_pkg::*;
 
 
 
-   if (pt.DIV_NEW == 0)
+   if (`DIV_NEW == 0)
       begin
         eh2_exu_div_existing_1bit_cheapshortq   i_existing_1bit_div_cheapshortq (
             .clk              ( clk                      ),   // I
@@ -60,7 +60,7 @@ import eh2_param_pkg::*;
       end
 
 
-   if ( (pt.DIV_NEW == 1) & (pt.DIV_BIT == 1) )
+   if ( (`DIV_NEW == 1) & (`DIV_BIT == 1) )
       begin
         eh2_exu_div_new_1bit_fullshortq         i_new_1bit_div_fullshortq  (
             .clk              ( clk                      ),   // I
@@ -77,7 +77,7 @@ import eh2_param_pkg::*;
       end
 
 
-   if ( (pt.DIV_NEW == 1) & (pt.DIV_BIT == 2) )
+   if ( (`DIV_NEW == 1) & (`DIV_BIT == 2) )
       begin
         eh2_exu_div_new_2bit_fullshortq         i_new_2bit_div_fullshortq  (
             .clk              ( clk                      ),   // I
@@ -94,7 +94,7 @@ import eh2_param_pkg::*;
       end
 
 
-   if ( (pt.DIV_NEW == 1) & (pt.DIV_BIT == 3) )
+   if ( (`DIV_NEW == 1) & (`DIV_BIT == 3) )
       begin
         eh2_exu_div_new_3bit_fullshortq         i_new_3bit_div_fullshortq  (
             .clk              ( clk                      ),   // I
@@ -111,7 +111,7 @@ import eh2_param_pkg::*;
       end
 
 
-   if ( (pt.DIV_NEW == 1) & (pt.DIV_BIT == 4) )
+   if ( (`DIV_NEW == 1) & (`DIV_BIT == 4) )
       begin
         eh2_exu_div_new_4bit_fullshortq         i_new_4bit_div_fullshortq  (
             .clk              ( clk                      ),   // I

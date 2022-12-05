@@ -25,8 +25,8 @@
 
 module eh2_dec_tlu_ctl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
   (
    input logic clk,
@@ -407,7 +407,7 @@ import eh2_param_pkg::*;
    logic [4:0] tlu_exc_cause_wb1_raw, tlu_exc_cause_wb2;
    logic tlu_int_valid_wb2;
 
-if (pt.ICACHE_ECC == 1) begin
+if (`ICACHE_ECC == 1) begin
    logic [3:0] dicad1_raw, dicad1_ns;
 end
 else begin
@@ -846,12 +846,12 @@ localparam MTDATA1_LD    = 0;
    assign o_debug_mode_status = debug_mode_status;
 
 
-/*`ifdef RV_ASSERT_ON
+`ifdef RV_ASSERT_ON
   assert_commit_while_halted: assert #0 (~((tlu_i0_commit_cmt | tlu_i1_commit_cmt) & o_cpu_halt_status)) else $display("ERROR: Commiting while cpu_halt_status asserted!");
   assert_flush_while_fastint: assert #0 (~((take_ext_int_start_d1 | take_ext_int_start_d2| take_ext_int_start_d3| take_ext_int_start_d4| take_ext_int_start_d5) & tlu_flush_lower_e4)) else $display("ERROR: TLU Flushing inside fast interrupt procedure!");
 
   assert_double_ras_case: assert #0 (~( iside_oop_rfpc & (lsu_i0_rfnpc_dc4 | lsu_i1_rfnpc_dc4) & (|tlu_packet_e4.i0trigger[3:0]))) else $display("ERROR: DOUBLE RAS WITH TRIGGER, IGNORE TEST");
-`endif*/
+`endif
 
    // high priority interrupts can wakeup from external halt, so can unmasked timer interrupts
    assign i_cpu_run_req_d1 = i_cpu_run_req_d1_raw | ((nmi_int_detected | timer_int_ready | soft_int_ready | int_timer0_int_hold_f | int_timer1_int_hold_f | (mhwakeup & mhwakeup_ready)) & o_cpu_halt_status & ~i_cpu_halt_req_d1);
@@ -928,7 +928,7 @@ localparam MTDATA1_LD    = 0;
                        (exu_i1_br_error_e4 | exu_i1_br_start_error_e4) &
                        ~trigger_hit_e4;
 
-   if(pt.NUM_THREADS>1) begin
+   if(`NUM_THREADS>1) begin
       // Sharing a BTB between threads leads to a corner case where 1 thread has a branch error to the same index/offset that the other thread is using to predict a loop.
       // To ensure forward progress on the thread with the error, the other thread has to be prevented from writing the BTB until forward progress is made or we halt
       assign tlu_btb_write_kill_ns = ( ((rfpc_i0_e4 & (exu_i0_br_error_e4 | exu_i0_br_start_error_e4)) | // I0 RFPC due to branch error
@@ -941,7 +941,7 @@ localparam MTDATA1_LD    = 0;
                                          internal_dbg_halt_mode_f // clear due to debug halt
                                          )
                                        );
-   end // if (pt.NUM_THREADS>1)
+   end // if (`NUM_THREADS>1)
    else
      assign tlu_btb_write_kill_ns = 1'b0;
 
@@ -1073,7 +1073,7 @@ localparam MTDATA1_LD    = 0;
                                ext_int_freeze_d1 // fast interrupt in progress
                                );
 
-if (pt.FAST_INTERRUPT_REDIRECT) begin
+if (`FAST_INTERRUPT_REDIRECT) begin
 
       rvdffie #(9)  fastint_ff (.*, .clk(free_l2clk),
                                 .din({take_ext_int_start,    take_ext_int_start_d1, take_ext_int_start_d2, take_ext_int_start_d3,
@@ -1710,7 +1710,7 @@ end
 
 
 
-if (pt.ICACHE_ECC == 1) begin
+if (`ICACHE_ECC == 1) begin
    // ----------------------------------------------------------------------
    // DICAD1 (R/W) (Only accessible in debug mode)
    // [6:0]     : ECC
@@ -1743,7 +1743,7 @@ end
    // [0]     : Go
    localparam DICAGO        = 12'h7cb;
 
-if (pt.ICACHE_ECC == 1) begin
+if (`ICACHE_ECC == 1) begin
    assign dec_tlu_ic_diag_pkt.icache_wrdata[70:0] = {      dicad1[6:0], dicad0h[31:0], dicad0[31:0]};
 end
 else begin
@@ -2351,8 +2351,8 @@ endmodule // eh2_dec_tlu_ctl
 
 module eh2_dec_timer_ctl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
   (
    input logic clk,
@@ -2396,7 +2396,7 @@ import eh2_param_pkg::*;
  logic mitctl1_0_b;
    logic mit0_match_d1;
 
-   if(pt.TIMER_LEGAL_EN) begin : internal_timers
+   if(`TIMER_LEGAL_EN) begin : internal_timers
 
    assign mit0_match_ns = (mitcnt0[31:0] >= mitb0[31:0]);
    assign mit1_match_ns = (mitcnt1[31:0] >= mitb1[31:0]);
@@ -2519,6 +2519,6 @@ import eh2_param_pkg::*;
       assign dec_timer_read_d = 1'b0;
       assign dec_timer_t0_pulse = 1'b0;
       assign dec_timer_t1_pulse = 1'b0;
-   end // else: !if(pt.TIMER_LEGAL_EN)
+   end // else: !if(`TIMER_LEGAL_EN)
 
 endmodule // dec_timer_ctl

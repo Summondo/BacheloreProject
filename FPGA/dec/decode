@@ -300,6 +300,10 @@ divu =       [0000001..........101.....0110011]
 rem =        [0000001..........110.....0110011]
 remu =       [0000001..........111.....0110011]
 
+padd =	     [0000000..................1010011]
+psub =       [0000100..................1010011]
+pmul =       [0001000..................1010011]
+pdiv =       [0001100..................1010011]
 
 .input
 
@@ -440,6 +444,11 @@ rv32i = {
       atomic
       lr
       sc
+      posit
+      padd
+      psub
+      pdiv
+      pmul
 
       i0_only
 }
@@ -523,7 +532,10 @@ rv32i[xperm_n]   =  { mul     zbp rs1 rs2 rd                       xperm_n}
 rv32i[xperm_b]   =  { mul     zbp rs1 rs2 rd                       xperm_b}
 rv32i[xperm_h]   =  { mul     zbp rs1 rs2 rd                       xperm_h}
 
-
+rv32i[padd]	 =  { alu rs1 rs2 rd posit add pm_alu i0_only     }
+rv32i[psub]      =  { alu rs1 rs2 rd posit sub pm_alu i0_only     }
+rv32i[pmul]      =  { mul rs1 rs2 rd posit                     low}
+rv32i[pdiv]      =  { div rs1 rs2 rd                  i0_only     }
 
 rv32i[div]       =  { div rs1 rs2 rd             i0_only}
 rv32i[divu]      =  { div rs1 rs2 rd unsign      i0_only}

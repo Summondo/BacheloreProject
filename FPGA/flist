@@ -21,6 +21,10 @@ $RV_ROOT/design/dec/eh2_dec_tlu_top.sv
 $RV_ROOT/design/dec/eh2_dec_csr.sv
 $RV_ROOT/design/dec/eh2_dec_trigger.sv
 $RV_ROOT/design/dec/eh2_dec.sv
+$RV_ROOT/design/exu/eh2_posit_mul.sv
+$RV_ROOT/design/exu/eh2_posit_alu.sv
+$RV_ROOT/design/exu/eh2_posit_decode.sv
+$RV_ROOT/design/exu/eh2_posit_encode.sv
 $RV_ROOT/design/exu/eh2_exu_alu_ctl.sv
 $RV_ROOT/design/exu/eh2_exu_mul_ctl.sv
 $RV_ROOT/design/exu/eh2_exu_div_ctl.sv

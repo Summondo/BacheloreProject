@@ -16,15 +16,15 @@
 
 module eh2_exu_alu_ctl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
   (
    input  logic                          clk,               // Top level clock
    input  logic                          rst_l,             // Reset
    input  logic                          scan_mode,         // Scan control
 
-   input  logic [pt.NUM_THREADS-1:0]     flush,             // Flush pipeline
+   input  logic [`NUM_THREADS-1:0]     flush,             // Flush pipeline
    input  logic                          b_enable,          // Clock enable - branch
    input  logic                          c_enable,          // Clock enable - control
    input  logic                          d_enable,          // Clock enable - data
@@ -35,11 +35,11 @@ import eh2_param_pkg::*;
    input  logic [31:0]                   b,                 // B operand
    input  logic [31:1]                   pc,                // for pc=pc+2,4 calculations
    input  eh2_predict_pkt_t             predict_p,         // Predicted branch structure
-   input  logic [pt.BTB_TOFFSET_SIZE:1]  brimm,             // Branch offset
+   input  logic [`BTB_TOFFSET_SIZE:1]  brimm,             // Branch offset
 
 
    output logic [31:0]                   out,               // final result
-   output logic [pt.NUM_THREADS-1:0]     flush_upper,       // Branch flush
+   output logic [`NUM_THREADS-1:0]     flush_upper,       // Branch flush
    output logic [31:1]                   flush_path,        // Branch flush PC
    output logic [31:1]                   pc_ff,             // flopped PC
    output logic                          pred_correct,      // NPC control
@@ -57,7 +57,7 @@ import eh2_param_pkg::*;
    logic                                 actual_taken;
    logic signed [31:0]                   a_ff;
    logic        [31:0]                   b_ff;
-   logic        [pt.BTB_TOFFSET_SIZE:1]  brimm_ff;
+   logic        [`BTB_TOFFSET_SIZE:1]  brimm_ff;
    logic        [31:1]                   pcout;
    logic                                 valid_ff;
    logic                                 cond_mispredict;
@@ -107,7 +107,7 @@ import eh2_param_pkg::*;
 
 
 
-   if (pt.BITMANIP_ZBB == 1)
+   if (`BITMANIP_ZBB == 1)
      begin
        assign ap_clz          =  ap.clz;
        assign ap_ctz          =  ap.ctz;
@@ -129,7 +129,7 @@ import eh2_param_pkg::*;
      end
 
 
-   if ( (pt.BITMANIP_ZBB == 1) | (pt.BITMANIP_ZBP == 1) )
+   if ( (`BITMANIP_ZBB == 1) | (`BITMANIP_ZBP == 1) )
      begin
        assign ap_rol          =  ap.rol;
        assign ap_ror          =  ap.ror;
@@ -147,7 +147,7 @@ import eh2_param_pkg::*;
      end
 
 
-   if (pt.BITMANIP_ZBS == 1)
+   if (`BITMANIP_ZBS == 1)
      begin
        assign ap_bset         =  ap.bset;
        assign ap_bclr         =  ap.bclr;
@@ -163,7 +163,7 @@ import eh2_param_pkg::*;
      end
 
 
-   if (pt.BITMANIP_ZBP == 1)
+   if (`BITMANIP_ZBP == 1)
      begin
        assign ap_packu        =  ap.packu;
      end
@@ -173,7 +173,7 @@ import eh2_param_pkg::*;
      end
 
 
-   if ( (pt.BITMANIP_ZBB == 1) | (pt.BITMANIP_ZBP == 1) | (pt.BITMANIP_ZBE == 1) | (pt.BITMANIP_ZBF == 1) )
+   if ( (`BITMANIP_ZBB == 1) | (`BITMANIP_ZBP == 1) | (`BITMANIP_ZBE == 1) | (`BITMANIP_ZBF == 1) )
      begin
        assign ap_pack         =  ap.pack;
        assign ap_packh        =  ap.packh;
@@ -185,7 +185,7 @@ import eh2_param_pkg::*;
      end
 
 
-   if (pt.BITMANIP_ZBA == 1)
+   if (`BITMANIP_ZBA == 1)
      begin
        assign ap_sh1add       =  ap.sh1add;
        assign ap_sh2add       =  ap.sh2add;
@@ -211,7 +211,7 @@ import eh2_param_pkg::*;
    rvdffe #(32)                        aff             (.*, .clk(clk),        .en(d_enable & valid), .din(a[31:0]),                      .dout(a_ff[31:0]));
    rvdffe #(32)                        bff             (.*, .clk(clk),        .en(d_enable & valid), .din(b[31:0]),                      .dout(b_ff[31:0]));
    rvdffpcie #(31)                     pcff            (.*, .clk(clk),        .en(d_enable),         .din(pc[31:1]),                     .dout(pc_ff[31:1]));   // all PCs run through here
-   rvdffe #(pt.BTB_TOFFSET_SIZE)       brimmff         (.*, .clk(clk),        .en(d_enable),         .din(brimm[pt.BTB_TOFFSET_SIZE:1]), .dout(brimm_ff[pt.BTB_TOFFSET_SIZE:1]));
+   rvdffe #(`BTB_TOFFSET_SIZE)       brimmff         (.*, .clk(clk),        .en(d_enable),         .din(brimm[`BTB_TOFFSET_SIZE:1]), .dout(brimm_ff[`BTB_TOFFSET_SIZE:1]));
    rvdffppie #(.WIDTH($bits(eh2_predict_pkt_t)),.LEFT(19),.RIGHT(9)) predictpacketff (.*, .clk(clk), .en(c_enable), .den(b_enable & d_enable),  .din(predict_p),  .dout(pp_ff));
 
 
@@ -511,7 +511,7 @@ import eh2_param_pkg::*;
 
    rvbradder ibradder (
                      .pc     ( pc_ff[31:1]    ),
-                     .offset ( brimm_ff[pt.BTB_TOFFSET_SIZE:1] ),
+                     .offset ( brimm_ff[`BTB_TOFFSET_SIZE:1] ),
                      .dout   ( pcout[31:1]    ));
 
 
@@ -536,7 +536,7 @@ import eh2_param_pkg::*;
 
    assign target_mispredict   =  pp_ff.pret & (pp_ff.prett[31:1] != aout[31:1]);
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
      assign flush_upper[i]    = ( ap.jal | cond_mispredict | target_mispredict) & valid_ff & (i == ap.tid) & ~flush[i];
    end
 

@@ -15,9 +15,8 @@
 
 module eh2_dec_gpr_ctl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
-
+`include "eh2_param.vh"
  )  (
     input logic       tid,
 
@@ -111,7 +110,7 @@ import eh2_param_pkg::*;
      end
    end // always_comb begin
 
-/*`ifdef RV_ASSERT_ON
+`ifdef RV_ASSERT_ON
 
    logic write_collision_unused;
 
@@ -125,6 +124,6 @@ import eh2_param_pkg::*;
    // asserting that no 2 ports will write to the same gpr simultaneously
    assert_multiple_wen_to_same_gpr: assert #0 (~( write_collision_unused ) );
 
-`endif*/
+`endif
 
 endmodule

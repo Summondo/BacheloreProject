@@ -22,7 +22,6 @@
 //********************************************************************************
 module ahb_to_axi4
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
    TAG = 1
 )
@@ -200,9 +199,9 @@ import eh2_param_pkg::*;
    rvdff_fpga #(.WIDTH(32)) haddr_ff  (.din(ahb_haddr[31:0]),    .dout(ahb_haddr_q[31:0]), .clk(ahb_addr_clk), .clken(ahb_addr_clk_en), .rawclk(clk), .*);
 
    // Address check  dccm
-   if (pt.DCCM_ENABLE == 1) begin: GenDCCM
-      rvrangecheck #(.CCM_SADR(pt.DCCM_SADR),
-                     .CCM_SIZE(pt.DCCM_SIZE)) addr_dccm_rangecheck (
+   if (`DCCM_ENABLE == 1) begin: GenDCCM
+      rvrangecheck #(.CCM_SADR(`DCCM_SADR),
+                     .CCM_SIZE(`DCCM_SIZE)) addr_dccm_rangecheck (
          .addr(ahb_haddr_q[31:0]),
          .in_range(ahb_addr_in_dccm),
          .in_region(ahb_addr_in_dccm_region_nc)
@@ -213,9 +212,9 @@ import eh2_param_pkg::*;
    end
 
    // Address check  iccm
-   if (pt.ICCM_ENABLE == 1) begin: GenICCM
-      rvrangecheck #(.CCM_SADR(pt.ICCM_SADR),
-                     .CCM_SIZE(pt.ICCM_SIZE)) addr_iccm_rangecheck (
+   if (`ICCM_ENABLE == 1) begin: GenICCM
+      rvrangecheck #(.CCM_SADR(`ICCM_SADR),
+                     .CCM_SIZE(`ICCM_SIZE)) addr_iccm_rangecheck (
          .addr(ahb_haddr_q[31:0]),
          .in_range(ahb_addr_in_iccm),
          .in_region(ahb_addr_in_iccm_region_nc)
@@ -226,8 +225,8 @@ import eh2_param_pkg::*;
    end
 
    // PIC memory address check
-   rvrangecheck #(.CCM_SADR(pt.PIC_BASE_ADDR),
-                  .CCM_SIZE(pt.PIC_SIZE)) addr_pic_rangecheck (
+   rvrangecheck #(.CCM_SADR(`PIC_BASE_ADDR),
+                  .CCM_SIZE(`PIC_SIZE)) addr_pic_rangecheck (
       .addr(ahb_haddr_q[31:0]),
       .in_range(ahb_addr_in_pic),
       .in_region(ahb_addr_in_pic_region_nc)
@@ -284,13 +283,13 @@ import eh2_param_pkg::*;
    rvclkhdr buf_rdata_cgc (.en(buf_rdata_clk_en), .l1clk(buf_rdata_clk), .*);
 `endif
 
-/*`ifdef RV_ASSERT_ON
+`ifdef RV_ASSERT_ON
    property ahb_error_protocol;
       @(posedge bus_clk) (ahb_hready & ahb_hresp) |-> (~$past(ahb_hready) & $past(ahb_hresp));
    endproperty
    assert_ahb_error_protocol: assert property (ahb_error_protocol) else
       $display("Bus Error with hReady isn't preceded with Bus Error without hready");
 
-`endif*/
+`endif
 
 endmodule // ahb_to_axi4

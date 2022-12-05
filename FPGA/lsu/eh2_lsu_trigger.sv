@@ -24,14 +24,14 @@
 //********************************************************************************
 module eh2_lsu_trigger
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )(
    input logic                    scan_mode,
    input logic                    rst_l,
    input logic                    clk_override,
    input logic                    clk,
-   input eh2_trigger_pkt_t [pt.NUM_THREADS-1:0][3:0] trigger_pkt_any, // Trigger info from the decode
+   input eh2_trigger_pkt_t [`NUM_THREADS-1:0][3:0] trigger_pkt_any, // Trigger info from the decode
    input eh2_lsu_pkt_t           lsu_pkt_dc3,            // lsu packet
    input eh2_lsu_pkt_t           lsu_pkt_dc4,            // lsu packet
    input logic [31:0]             lsu_addr_dc4,           // address
@@ -53,7 +53,7 @@ import eh2_param_pkg::*;
    // Generate the trigger enable
    always_comb begin
       trigger_enable = 1'b0;
-      for (int i=0; i<pt.NUM_THREADS; i++) begin
+      for (int i=0; i<`NUM_THREADS; i++) begin
          for (int j=0; j<4; j++) begin
             trigger_enable |= trigger_pkt_any[i][j].m;
          end

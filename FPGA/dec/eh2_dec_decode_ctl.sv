@@ -16,11 +16,11 @@
 
 module eh2_dec_decode_ctl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+parameter POSIT_LEN = 16
 )
   (
-   input logic [pt.NUM_THREADS-1:0] active_thread_l2clk,
+   input logic [`NUM_THREADS-1:0] active_thread_l2clk,
 
    input dec_i0_debug_valid_d,
    input dec_i1_debug_valid_d,
@@ -30,11 +30,11 @@ import eh2_param_pkg::*;
    input eh2_predecode_pkt_t dec_i0_predecode,
    input eh2_predecode_pkt_t dec_i1_predecode,
 
-   input logic [pt.NUM_THREADS-1:0] dec_tlu_force_halt, // invalidate nonblock load cam on a force halt event
+   input logic [`NUM_THREADS-1:0] dec_tlu_force_halt, // invalidate nonblock load cam on a force halt event
 
-   input logic [pt.NUM_THREADS-1:0] dec_tlu_debug_stall, // stall decode while waiting on core to empty
+   input logic [`NUM_THREADS-1:0] dec_tlu_debug_stall, // stall decode while waiting on core to empty
 
-   input logic [pt.NUM_THREADS-1:0] dec_tlu_flush_extint,
+   input logic [`NUM_THREADS-1:0] dec_tlu_flush_extint,
 
    input logic dec_i0_tid_d,
    input logic dec_i1_tid_d,
@@ -76,19 +76,19 @@ import eh2_param_pkg::*;
    output logic [31:1] dec_i1_pc_wb1,
 
 
-   output logic [pt.NUM_THREADS-1:0] dec_i1_cancel_e1,
+   output logic [`NUM_THREADS-1:0] dec_i1_cancel_e1,
 
    input logic [31:0] lsu_rs1_dc1,
 
    input logic                                lsu_nonblock_load_valid_dc1,     // valid nonblock load at dc3
-   input logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_tag_dc1,       // -> corresponding tag
+   input logic [`LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_tag_dc1,       // -> corresponding tag
    input logic                                lsu_nonblock_load_inv_dc2,       // invalidate request for nonblock load dc2
-   input logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_inv_tag_dc2,   // -> corresponding tag
+   input logic [`LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_inv_tag_dc2,   // -> corresponding tag
    input logic                                lsu_nonblock_load_inv_dc5,       // invalidate request for nonblock load dc5
-   input logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_inv_tag_dc5,   // -> corresponding tag
+   input logic [`LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_inv_tag_dc5,   // -> corresponding tag
    input logic                                lsu_nonblock_load_data_valid,    // valid nonblock load data back
    input logic                                lsu_nonblock_load_data_error,    // nonblock load bus error
-   input logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_data_tag,      // -> corresponding tag
+   input logic [`LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_data_tag,      // -> corresponding tag
    input logic                                lsu_nonblock_load_data_tid,
 
 
@@ -97,7 +97,7 @@ import eh2_param_pkg::*;
    input logic [3:0] dec_i0_trigger_match_d,          // i0 decode trigger matches
    input logic [3:0] dec_i1_trigger_match_d,          // i1 decode trigger matches
 
-   input logic [pt.NUM_THREADS-1:0]           dec_tlu_wr_pause_wb,                   // pause instruction at wb
+   input logic [`NUM_THREADS-1:0]           dec_tlu_wr_pause_wb,                   // pause instruction at wb
 
    input logic dec_tlu_pipelining_disable,            // pipeline disable - presync, i0 decode only
    input logic dec_tlu_dual_issue_disable,            // i0 decode only
@@ -105,9 +105,9 @@ import eh2_param_pkg::*;
 
    input logic [3:0]  lsu_trigger_match_dc4,          // lsu trigger matches
 
-   input logic[pt.NUM_THREADS-1:0] lsu_pmu_misaligned_dc3,                // perf mon: load/store misalign
+   input logic[`NUM_THREADS-1:0] lsu_pmu_misaligned_dc3,                // perf mon: load/store misalign
 
-   input logic [pt.NUM_THREADS-1:0] dec_tlu_flush_leak_one_wb,             // leak1 instruction
+   input logic [`NUM_THREADS-1:0] dec_tlu_flush_leak_one_wb,             // leak1 instruction
 
    input logic dec_debug_fence_d,                     // debug fence instruction
 
@@ -123,21 +123,21 @@ import eh2_param_pkg::*;
 
    input eh2_br_pkt_t dec_i0_brp,                         // branch packet
    input eh2_br_pkt_t dec_i1_brp,
-   input logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] dec_i0_bp_index,            // i0 branch index
-   input logic [pt.BHT_GHR_SIZE-1:0] dec_i0_bp_fghr, // BP FGHR
-   input logic [pt.BTB_BTAG_SIZE-1:0] dec_i0_bp_btag, // BP tag
-   input logic [pt.BTB_TOFFSET_SIZE-1:0] dec_i0_bp_toffset, // BP tag
-   input logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] dec_i1_bp_index,            // i0 branch index
-   input logic [pt.BHT_GHR_SIZE-1:0] dec_i1_bp_fghr, // BP FGHR
-   input logic [pt.BTB_BTAG_SIZE-1:0] dec_i1_bp_btag, // BP tag
-   input logic [pt.BTB_TOFFSET_SIZE-1:0] dec_i1_bp_toffset, // BP tag
+   input logic [`BTB_ADDR_HI:`BTB_ADDR_LO] dec_i0_bp_index,            // i0 branch index
+   input logic [`BHT_GHR_SIZE-1:0] dec_i0_bp_fghr, // BP FGHR
+   input logic [`BTB_BTAG_SIZE-1:0] dec_i0_bp_btag, // BP tag
+   input logic [`BTB_TOFFSET_SIZE-1:0] dec_i0_bp_toffset, // BP tag
+   input logic [`BTB_ADDR_HI:`BTB_ADDR_LO] dec_i1_bp_index,            // i0 branch index
+   input logic [`BHT_GHR_SIZE-1:0] dec_i1_bp_fghr, // BP FGHR
+   input logic [`BTB_BTAG_SIZE-1:0] dec_i1_bp_btag, // BP tag
+   input logic [`BTB_TOFFSET_SIZE-1:0] dec_i1_bp_toffset, // BP tag
 
-   input logic [$clog2(pt.BTB_SIZE)-1:0] dec_i0_bp_fa_index,          // Fully associt btb index (only care about i0 for errors)
+   input logic [$clog2(`BTB_SIZE)-1:0] dec_i0_bp_fa_index,          // Fully associt btb index (only care about i0 for errors)
 
-   input logic [pt.NUM_THREADS-1:0]  lsu_idle_any,                          // lsu idle: if fence instr & ~lsu_idle then stall decode
-   input logic [pt.NUM_THREADS-1:0]  lsu_load_stall_any,                    // stall any load  at decode
-   input logic [pt.NUM_THREADS-1:0]  lsu_store_stall_any,                   // stall any store at decode
-   input logic [pt.NUM_THREADS-1:0]  lsu_amo_stall_any,         // This is for blocking amo
+   input logic [`NUM_THREADS-1:0]  lsu_idle_any,                          // lsu idle: if fence instr & ~lsu_idle then stall decode
+   input logic [`NUM_THREADS-1:0]  lsu_load_stall_any,                    // stall any load  at decode
+   input logic [`NUM_THREADS-1:0]  lsu_store_stall_any,                   // stall any store at decode
+   input logic [`NUM_THREADS-1:0]  lsu_amo_stall_any,         // This is for blocking amo
 
    input logic dma_dccm_stall_any,                    // stall any load/store at decode
 
@@ -146,12 +146,12 @@ import eh2_param_pkg::*;
    input logic dec_tlu_i0_kill_writeb_wb,    // I0 is flushed, don't writeback any results to arch state
    input logic dec_tlu_i1_kill_writeb_wb,    // I1 is flushed, don't writeback any results to arch state
 
-   input logic [pt.NUM_THREADS-1:0] dec_tlu_flush_lower_wb,          // trap lower flush
+   input logic [`NUM_THREADS-1:0] dec_tlu_flush_lower_wb,          // trap lower flush
 
-   input logic [pt.NUM_THREADS-1:0] dec_tlu_flush_pause_wb,          // don't clear pause state on initial lower flush
+   input logic [`NUM_THREADS-1:0] dec_tlu_flush_pause_wb,          // don't clear pause state on initial lower flush
 
-   input logic [pt.NUM_THREADS-1:0] dec_tlu_presync_d,               // CSR read needs to be presync'd
-   input logic [pt.NUM_THREADS-1:0] dec_tlu_postsync_d,              // CSR ops that need to be postsync'd
+   input logic [`NUM_THREADS-1:0] dec_tlu_presync_d,               // CSR read needs to be presync'd
+   input logic [`NUM_THREADS-1:0] dec_tlu_postsync_d,              // CSR ops that need to be postsync'd
 
    input logic [31:0] exu_mul_result_e3,        // multiply result
 
@@ -165,8 +165,8 @@ import eh2_param_pkg::*;
 
    input logic        lsu_sc_success_dc5,   // store conditional matched ( 1 = success, which means the GPR should write 0 )
 
-   input logic [pt.NUM_THREADS-1:0] exu_i0_flush_final,         // lower flush or i0 flush at e2
-   input logic [pt.NUM_THREADS-1:0] exu_i1_flush_final,         // lower flush or i1 flush at e2
+   input logic [`NUM_THREADS-1:0] exu_i0_flush_final,         // lower flush or i0 flush at e2
+   input logic [`NUM_THREADS-1:0] exu_i1_flush_final,         // lower flush or i1 flush at e2
 
 
    input logic [31:1] exu_i0_pc_e1,        // pcs at e1
@@ -214,8 +214,8 @@ import eh2_param_pkg::*;
 
    output logic [31:0] dec_i1_immed_d,
 
-   output logic [pt.BTB_TOFFSET_SIZE:1] dec_i0_br_immed_d,    // 12b branch immediate
-   output logic [pt.BTB_TOFFSET_SIZE:1] dec_i1_br_immed_d,
+   output logic [`BTB_TOFFSET_SIZE:1] dec_i0_br_immed_d,    // 12b branch immediate
+   output logic [`BTB_TOFFSET_SIZE:1] dec_i1_br_immed_d,
 
    output eh2_alu_pkt_t i0_ap,                   // alu packets
    output eh2_alu_pkt_t i1_ap,
@@ -267,8 +267,8 @@ import eh2_param_pkg::*;
 
    output logic        dec_i0_div_d,        // chose which gpr value to use
 
-   output logic [pt.NUM_THREADS-1:0]       flush_final_e3,      // flush final at e3: i0  or i1
-   output logic [pt.NUM_THREADS-1:0]       i0_flush_final_e3,   // i0 flush final at e3
+   output logic [`NUM_THREADS-1:0]       flush_final_e3,      // flush final at e3: i0  or i1
+   output logic [`NUM_THREADS-1:0]       i0_flush_final_e3,   // i0 flush final at e3
 
 // CSR interface
    input logic [31:0]  dec_i0_csr_rddata_d,    // csr read data at wb
@@ -285,7 +285,7 @@ import eh2_param_pkg::*;
    output logic [31:0] dec_i0_csr_wrdata_wb,   // csr write data at wb
    output logic        dec_i0_csr_is_mcpc_e4,     // csr address is to MCPC
 
-   output logic [pt.NUM_THREADS-1:0] dec_csr_stall_int_ff, // csr is mie/mstatus
+   output logic [`NUM_THREADS-1:0] dec_csr_stall_int_ff, // csr is mie/mstatus
 
    output logic dec_csr_nmideleg_e4, // csr is mnmipdel
 
@@ -300,11 +300,11 @@ import eh2_param_pkg::*;
    output logic [31:1] dec_tlu_i1_pc_e4,
 
 
-   output logic [pt.NUM_THREADS-1:0][31:0] dec_illegal_inst,
+   output logic [`NUM_THREADS-1:0][31:0] dec_illegal_inst,
 
    output logic        dec_i1_valid_e1,         // i1 valid e1
 
-   output logic [pt.NUM_THREADS-1:0][31:1] pred_correct_npc_e2, // npc e2 if the prediction is correct
+   output logic [`NUM_THREADS-1:0][31:1] pred_correct_npc_e2, // npc e2 if the prediction is correct
 
    output logic        dec_i0_rs1_bypass_en_e3, // i0 rs1 bypass enables e3
    output logic        dec_i0_rs2_bypass_en_e3, // i1 rs1 bypass enables e3
@@ -330,17 +330,17 @@ import eh2_param_pkg::*;
 
    output eh2_predict_pkt_t  i0_predict_p_d,        // i0 predict packet decode
    output eh2_predict_pkt_t  i1_predict_p_d,
-   output logic [pt.BHT_GHR_SIZE-1:0]           i0_predict_fghr_d, // i0 predict fghr
-   output logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] i0_predict_index_d, // i0 predict index
-   output logic [pt.BTB_BTAG_SIZE-1:0]          i0_predict_btag_d, // i0_predict branch tag
-   output logic [pt.BTB_TOFFSET_SIZE-1:0]       i0_predict_toffset_d, // i0_predict branch tag
+   output logic [`BHT_GHR_SIZE-1:0]           i0_predict_fghr_d, // i0 predict fghr
+   output logic [`BTB_ADDR_HI:`BTB_ADDR_LO] i0_predict_index_d, // i0 predict index
+   output logic [`BTB_BTAG_SIZE-1:0]          i0_predict_btag_d, // i0_predict branch tag
+   output logic [`BTB_TOFFSET_SIZE-1:0]       i0_predict_toffset_d, // i0_predict branch tag
 
-   output logic [pt.BHT_GHR_SIZE-1:0]           i1_predict_fghr_d, // i1 predict fghr
-   output logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] i1_predict_index_d, // i1 predict index
-   output logic [pt.BTB_BTAG_SIZE-1:0]          i1_predict_btag_d, // i1_predict branch tag
-   output logic [pt.BTB_TOFFSET_SIZE-1:0]       i1_predict_toffset_d, // i1_predict branch tag
+   output logic [`BHT_GHR_SIZE-1:0]           i1_predict_fghr_d, // i1 predict fghr
+   output logic [`BTB_ADDR_HI:`BTB_ADDR_LO] i1_predict_index_d, // i1 predict index
+   output logic [`BTB_BTAG_SIZE-1:0]          i1_predict_btag_d, // i1_predict branch tag
+   output logic [`BTB_TOFFSET_SIZE-1:0]       i1_predict_toffset_d, // i1_predict branch tag
 
-   output logic [$clog2(pt.BTB_SIZE)-1:0] dec_fa_error_index, // Fully associt btb error index
+   output logic [$clog2(`BTB_SIZE)-1:0] dec_fa_error_index, // Fully associt btb error index
 
    output logic [31:0] i0_result_e4_eff,        // i0 e4 result
    output logic [31:0] i1_result_e4_eff,
@@ -351,21 +351,21 @@ import eh2_param_pkg::*;
    output logic [4:1] dec_i1_data_en,
    output logic [4:1] dec_i1_ctl_en,
 
-   output logic [pt.NUM_THREADS-1:0][1:0] dec_pmu_instr_decoded,    // number of instructions decode this cycle encoded
+   output logic [`NUM_THREADS-1:0][1:0] dec_pmu_instr_decoded,    // number of instructions decode this cycle encoded
 
-   output logic [pt.NUM_THREADS-1:0]   dec_pmu_decode_stall,     // decode is stalled
+   output logic [`NUM_THREADS-1:0]   dec_pmu_decode_stall,     // decode is stalled
 
-   output logic [pt.NUM_THREADS-1:0]      dec_pmu_presync_stall,    // decode has presync stall
-   output logic [pt.NUM_THREADS-1:0]      dec_pmu_postsync_stall,   // decode has postsync stall
+   output logic [`NUM_THREADS-1:0]      dec_pmu_presync_stall,    // decode has presync stall
+   output logic [`NUM_THREADS-1:0]      dec_pmu_postsync_stall,   // decode has postsync stall
 
-   output logic [pt.NUM_THREADS-1:0]      dec_nonblock_load_wen,        // write enable for nonblock load
-   output logic [pt.NUM_THREADS-1:0][4:0] dec_nonblock_load_waddr,      // logical write addr for nonblock load
+   output logic [`NUM_THREADS-1:0]      dec_nonblock_load_wen,        // write enable for nonblock load
+   output logic [`NUM_THREADS-1:0][4:0] dec_nonblock_load_waddr,      // logical write addr for nonblock load
 
 
-   output logic [pt.NUM_THREADS-1:0]      dec_pause_state,              // core in pause state
-   output logic [pt.NUM_THREADS-1:0]      dec_pause_state_cg,           // core in pause state for clock-gating
+   output logic [`NUM_THREADS-1:0]      dec_pause_state,              // core in pause state
+   output logic [`NUM_THREADS-1:0]      dec_pause_state_cg,           // core in pause state for clock-gating
 
-   output logic [pt.NUM_THREADS-1:0]      dec_thread_stall_in,       // thread is known to stall next cycle - eg pause
+   output logic [`NUM_THREADS-1:0]      dec_thread_stall_in,       // thread is known to stall next cycle - eg pause
 
    output logic        dec_div_active,     // non-block divide is active
    output logic        dec_div_tid,        // non-block divide tid
@@ -409,12 +409,12 @@ import eh2_param_pkg::*;
    logic               i0_presync;
    logic               i0_postsync;
 
-   logic [pt.NUM_THREADS-1:0]    presync_stall;
-   logic [pt.NUM_THREADS-1:0]    postsync_stall_in, postsync_stall;
-   logic [pt.NUM_THREADS-1:0]    base_postsync_stall_in, base_postsync_stall;
-   logic [pt.NUM_THREADS-1:0]    jal_postsync_stall_in, jal_postsync_stall;
-   logic [pt.NUM_THREADS-1:0]    prior_inflight, prior_inflight_e1e3, prior_inflight_e1e4, prior_inflight_wb;
-   logic [pt.NUM_THREADS-1:0]    prior_csr_write, prior_csr_write_e1e4;
+   logic [`NUM_THREADS-1:0]    presync_stall;
+   logic [`NUM_THREADS-1:0]    postsync_stall_in, postsync_stall;
+   logic [`NUM_THREADS-1:0]    base_postsync_stall_in, base_postsync_stall;
+   logic [`NUM_THREADS-1:0]    jal_postsync_stall_in, jal_postsync_stall;
+   logic [`NUM_THREADS-1:0]    prior_inflight, prior_inflight_e1e3, prior_inflight_e1e4, prior_inflight_wb;
+   logic [`NUM_THREADS-1:0]    prior_csr_write, prior_csr_write_e1e4;
    logic                         prior_any_csr_write_any_thread, prior_any_csr_write_any_thread_e1e4;
 
    logic     i0_csr_clr_d, i0_csr_set_d, i0_csr_write_d;
@@ -424,9 +424,9 @@ import eh2_param_pkg::*;
    logic [31:0] i0_csr_mask_e1;
    logic [31:0] i0_write_csr_data_e1;
 
-   logic [pt.NUM_THREADS-1:0][31:0] write_csr_data_in;
-   logic [pt.NUM_THREADS-1:0][31:0] write_csr_data;
-   logic [pt.NUM_THREADS-1:0]       csr_data_wen;
+   logic [`NUM_THREADS-1:0][31:0] write_csr_data_in;
+   logic [`NUM_THREADS-1:0][31:0] write_csr_data;
+   logic [`NUM_THREADS-1:0]       csr_data_wen;
 
    logic [4:0]         i0_csrimm_e1;
    logic [31:0]        i0_csr_rddata_e1;
@@ -439,17 +439,17 @@ import eh2_param_pkg::*;
 
    logic               i0_legal, i1_legal;
 
-   logic [pt.NUM_THREADS-1:0]         shift_illegal;
-   logic [pt.NUM_THREADS-1:0]         illegal_inst_en;
-   logic [pt.NUM_THREADS-1:0]         illegal_lockout_in, illegal_lockout;
+   logic [`NUM_THREADS-1:0]         shift_illegal;
+   logic [`NUM_THREADS-1:0]         illegal_inst_en;
+   logic [`NUM_THREADS-1:0]         illegal_lockout_in, illegal_lockout;
 
    logic               i0_legal_decode_d, i1_legal_decode_d;
 
    logic [31:0]        i0_result_e3_final, i1_result_e3_final;
    logic [31:0]        i0_result_wb_raw,   i1_result_wb_raw;
 
-   logic [pt.NUM_THREADS-1:0][pt.BTB_TOFFSET_SIZE:1]        last_br_immed_d, last_br_immed_e1, last_br_immed_e2;
-   logic [pt.NUM_THREADS-1:0][31:1]        last_pc_e2;
+   logic [`NUM_THREADS-1:0][`BTB_TOFFSET_SIZE:1]        last_br_immed_d, last_br_immed_e1, last_br_immed_e2;
+   logic [`NUM_THREADS-1:0][31:1]        last_pc_e2;
 
    logic        i1_depend_i0_d;
    logic        i0_rs1_depend_i0_e1, i0_rs1_depend_i0_e2, i0_rs1_depend_i0_e3, i0_rs1_depend_i0_e4, i0_rs1_depend_i0_wb;
@@ -489,7 +489,7 @@ import eh2_param_pkg::*;
    logic        i0_ret_error,   i1_ret_error;
    logic        i0_br_error, i1_br_error;
    logic        i0_br_error_all, i1_br_error_all;
-   logic [pt.BTB_TOFFSET_SIZE-1:0] i0_br_offset, i1_br_offset;
+   logic [`BTB_TOFFSET_SIZE-1:0] i0_br_offset, i1_br_offset;
 
    logic [20:1] i0_pcall_imm, i1_pcall_imm;    // predicted jal's
    logic        i0_pcall_raw,   i1_pcall_raw;
@@ -540,9 +540,9 @@ import eh2_param_pkg::*;
    logic        load_mul_rs1_bypass_e1;
    logic        load_mul_rs2_bypass_e1;
 
-   logic [pt.NUM_THREADS-1:0] leak1_i0_stall_in, leak1_i0_stall;
-   logic [pt.NUM_THREADS-1:0] leak1_i1_stall_in, leak1_i1_stall;
-   logic [pt.NUM_THREADS-1:0] leak1_mode;
+   logic [`NUM_THREADS-1:0] leak1_i0_stall_in, leak1_i0_stall;
+   logic [`NUM_THREADS-1:0] leak1_i1_stall_in, leak1_i1_stall;
+   logic [`NUM_THREADS-1:0] leak1_mode;
 
    logic        i0_csr_write_only_d;
 
@@ -568,15 +568,15 @@ import eh2_param_pkg::*;
 
    logic i0_not_alu_eff, i1_not_alu_eff;
 
-   logic [pt.NUM_THREADS-1:0]   clear_pause;
-   logic [pt.NUM_THREADS-1:0]   pause_state_in, pause_state;
-   logic [pt.NUM_THREADS-1:0]   pause_stall;
+   logic [`NUM_THREADS-1:0]   clear_pause;
+   logic [`NUM_THREADS-1:0]   pause_state_in, pause_state;
+   logic [`NUM_THREADS-1:0]   pause_stall;
 
    logic [31:1] i1_pc_wb;
 
    logic        i0_brp_valid;
 
-   logic [pt.NUM_THREADS-1:0]   lsu_idle;
+   logic [`NUM_THREADS-1:0]   lsu_idle;
    logic        i0_csr_read_e1;
    logic        i0_block_d;
    logic        i1_block_d;
@@ -585,7 +585,7 @@ import eh2_param_pkg::*;
    eh2_inst_pkt_t                  i0_itype, i1_itype;
 
    logic                            i0_br_unpred, i1_br_unpred;
-   logic [pt.NUM_THREADS-1:0]       flush_final_lower, flush_final_upper_e2;
+   logic [`NUM_THREADS-1:0]       flush_final_lower, flush_final_upper_e2;
 
    eh2_reg_pkt_t                   i0r, i1r;
    logic                            i1_cancel_d, i1_cancel_e1;
@@ -594,15 +594,15 @@ import eh2_param_pkg::*;
    logic                            nonblock_load_tid_dc1;
    logic                            i1_wen_wb, i0_wen_wb;
 
-   logic [pt.NUM_THREADS-1:0] [4:0] cam_nonblock_load_waddr;
-   logic [pt.NUM_THREADS-1:0]       cam_nonblock_load_wen;
-   logic [pt.NUM_THREADS-1:0]       cam_i0_nonblock_load_stall;
-   logic [pt.NUM_THREADS-1:0]       cam_i1_nonblock_load_stall;
-   logic [pt.NUM_THREADS-1:0]       cam_i0_load_kill_wen;
-   logic [pt.NUM_THREADS-1:0]       cam_i1_load_kill_wen;
+   logic [`NUM_THREADS-1:0] [4:0] cam_nonblock_load_waddr;
+   logic [`NUM_THREADS-1:0]       cam_nonblock_load_wen;
+   logic [`NUM_THREADS-1:0]       cam_i0_nonblock_load_stall;
+   logic [`NUM_THREADS-1:0]       cam_i1_nonblock_load_stall;
+   logic [`NUM_THREADS-1:0]       cam_i0_load_kill_wen;
+   logic [`NUM_THREADS-1:0]       cam_i1_load_kill_wen;
 
-   logic [pt.NUM_THREADS-1:0]       tlu_wr_pause_wb1;
-   logic [pt.NUM_THREADS-1:0]       tlu_wr_pause_wb2;
+   logic [`NUM_THREADS-1:0]       tlu_wr_pause_wb1;
+   logic [`NUM_THREADS-1:0]       tlu_wr_pause_wb2;
 
    logic                            debug_fence_raw;
    eh2_trap_pkt_t                  dt, e1t_in, e1t, e2t_in, e2t, e3t_in, e3t, e4t_ff, e4t;
@@ -623,22 +623,22 @@ import eh2_param_pkg::*;
    logic [31:1] i0_pc_wb, i0_pc_wb1;
    logic [31:1]           i1_pc_wb1;
 
-   logic [pt.NUM_THREADS-1:0][31:0] illegal_inst;
+   logic [`NUM_THREADS-1:0][31:0] illegal_inst;
 
-   logic [pt.NUM_THREADS-1:0] i1_flush_final_e3;
-   logic [pt.NUM_THREADS-1:0] i0_flush_final_e4;
+   logic [`NUM_THREADS-1:0] i1_flush_final_e3;
+   logic [`NUM_THREADS-1:0] i0_flush_final_e4;
 
    logic i1_block_same_thread_d;
 
-   logic [pt.NUM_THREADS-1:0] flush_lower_wb;
+   logic [`NUM_THREADS-1:0] flush_lower_wb;
 
-   logic [pt.NUM_THREADS-1:0] flush_extint;
+   logic [`NUM_THREADS-1:0] flush_extint;
 
    logic i0_csr_update_e1;
 
-   logic [pt.NUM_THREADS-1:0]       csr_update_e1;
-   logic [pt.NUM_THREADS-1:0][31:0] write_csr_data_e1;
-   logic [pt.NUM_THREADS-1:0][31:0] write_csr_data_wb;
+   logic [`NUM_THREADS-1:0]       csr_update_e1;
+   logic [`NUM_THREADS-1:0][31:0] write_csr_data_e1;
+   logic [`NUM_THREADS-1:0][31:0] write_csr_data_wb;
 
    logic i0_csr_legal_d;
 
@@ -694,22 +694,22 @@ import eh2_param_pkg::*;
 
    logic i0_legal_except_csr;
 
-   logic [pt.NUM_THREADS-1:0] flush_all;
-   logic [pt.NUM_THREADS-1:0] smt_secondary_stall_in, smt_secondary_stall, smt_secondary_stall_raw;
-   logic [pt.NUM_THREADS-1:0] set_smt_presync_stall;
-   logic [pt.NUM_THREADS-1:0] smt_presync_stall_in, smt_presync_stall, smt_presync_stall_raw;
-   logic [pt.NUM_THREADS-1:0] set_smt_csr_write_stall;
-   logic [pt.NUM_THREADS-1:0] smt_csr_write_stall_in, smt_csr_write_stall, smt_csr_write_stall_raw;
+   logic [`NUM_THREADS-1:0] flush_all;
+   logic [`NUM_THREADS-1:0] smt_secondary_stall_in, smt_secondary_stall, smt_secondary_stall_raw;
+   logic [`NUM_THREADS-1:0] set_smt_presync_stall;
+   logic [`NUM_THREADS-1:0] smt_presync_stall_in, smt_presync_stall, smt_presync_stall_raw;
+   logic [`NUM_THREADS-1:0] set_smt_csr_write_stall;
+   logic [`NUM_THREADS-1:0] smt_csr_write_stall_in, smt_csr_write_stall, smt_csr_write_stall_raw;
 
-   logic [pt.NUM_THREADS-1:0] set_smt_atomic_stall;
-   logic [pt.NUM_THREADS-1:0] smt_atomic_stall_in, smt_atomic_stall, smt_atomic_stall_raw;
+   logic [`NUM_THREADS-1:0] set_smt_atomic_stall;
+   logic [`NUM_THREADS-1:0] smt_atomic_stall_in, smt_atomic_stall, smt_atomic_stall_raw;
 
-   logic [pt.NUM_THREADS-1:0] set_smt_div_stall;
-   logic [pt.NUM_THREADS-1:0] smt_div_stall_in, smt_div_stall, smt_div_stall_raw;
+   logic [`NUM_THREADS-1:0] set_smt_div_stall;
+   logic [`NUM_THREADS-1:0] smt_div_stall_in, smt_div_stall, smt_div_stall_raw;
 
-   logic [pt.NUM_THREADS-1:0] set_smt_nonblock_load_stall;
-   logic [pt.NUM_THREADS-1:0] smt_nonblock_load_stall_in, smt_nonblock_load_stall, smt_nonblock_load_stall_raw;
-   logic [pt.NUM_THREADS-1:0] cam_nonblock_load_stall;
+   logic [`NUM_THREADS-1:0] set_smt_nonblock_load_stall;
+   logic [`NUM_THREADS-1:0] smt_nonblock_load_stall_in, smt_nonblock_load_stall, smt_nonblock_load_stall_raw;
+   logic [`NUM_THREADS-1:0] cam_nonblock_load_stall;
 
    logic nonblock_load_tid_dc2, nonblock_load_tid_dc5, i0_rs1_nonblock_load_bypass_en_d, i0_rs2_nonblock_load_bypass_en_d, i1_rs1_nonblock_load_bypass_en_d, i1_rs2_nonblock_load_bypass_en_d;
 
@@ -784,10 +784,10 @@ import eh2_param_pkg::*;
 always_comb begin
    i0_predict_p_d = '0;
 
-   i0_predict_index_d[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] = '0;
-   i0_predict_btag_d[pt.BTB_BTAG_SIZE-1:0]           = '0;
-   i0_predict_toffset_d[pt.BTB_TOFFSET_SIZE-1:0]     = '0;
-   i0_predict_fghr_d[pt.BHT_GHR_SIZE-1:0]            = '0;
+   i0_predict_index_d[`BTB_ADDR_HI:`BTB_ADDR_LO] = '0;
+   i0_predict_btag_d[`BTB_BTAG_SIZE-1:0]           = '0;
+   i0_predict_toffset_d[`BTB_TOFFSET_SIZE-1:0]     = '0;
+   i0_predict_fghr_d[`BHT_GHR_SIZE-1:0]            = '0;
 
    if (dec_i0_branch_d) begin
 
@@ -803,10 +803,10 @@ always_comb begin
       i0_predict_p_d.bank = dec_i0_brp.bank;
       i0_predict_p_d.way = dec_i0_brp.way;
 
-      i0_predict_index_d[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] =  dec_i0_bp_index;
-      i0_predict_btag_d[pt.BTB_BTAG_SIZE-1:0]           =  dec_i0_bp_btag[pt.BTB_BTAG_SIZE-1:0];
-      i0_predict_toffset_d[pt.BTB_TOFFSET_SIZE-1:0]     =      i0_br_offset[pt.BTB_TOFFSET_SIZE-1:0];
-      i0_predict_fghr_d[pt.BHT_GHR_SIZE-1:0]            =  dec_i0_bp_fghr[pt.BHT_GHR_SIZE-1:0];
+      i0_predict_index_d[`BTB_ADDR_HI:`BTB_ADDR_LO] =  dec_i0_bp_index;
+      i0_predict_btag_d[`BTB_BTAG_SIZE-1:0]           =  dec_i0_bp_btag[`BTB_BTAG_SIZE-1:0];
+      i0_predict_toffset_d[`BTB_TOFFSET_SIZE-1:0]     =      i0_br_offset[`BTB_TOFFSET_SIZE-1:0];
+      i0_predict_fghr_d[`BHT_GHR_SIZE-1:0]            =  dec_i0_bp_fghr[`BHT_GHR_SIZE-1:0];
 
    end // if (dec_i0_branch_d)
 end // always_comb begin
@@ -816,7 +816,7 @@ end // always_comb begin
    assign      i0_notbr_error = i0_brp_valid & ~(i0_dp_raw.condbr | i0_pcall_raw | i0_pja_raw | i0_pret_raw);
 
    // no toffset error for a pret
-   assign      i0_br_toffset_error = i0_brp_valid & dec_i0_brp.hist[1] & (dec_i0_bp_toffset[pt.BTB_TOFFSET_SIZE-1:0] != i0_br_offset[pt.BTB_TOFFSET_SIZE-1:0]) & !i0_pret_raw;
+   assign      i0_br_toffset_error = i0_brp_valid & dec_i0_brp.hist[1] & (dec_i0_bp_toffset[`BTB_TOFFSET_SIZE-1:0] != i0_br_offset[`BTB_TOFFSET_SIZE-1:0]) & !i0_pret_raw;
    assign      i0_ret_error = i0_brp_valid & (dec_i0_brp.ret ^ i0_pret_raw);
    assign      i0_br_error =  dec_i0_brp.br_error | i0_notbr_error | i0_br_toffset_error | i0_ret_error;
 
@@ -825,16 +825,16 @@ end // always_comb begin
    assign      i0_br_error_fast = (dec_i0_brp.br_error | dec_i0_brp.br_start_error) & ~leak1_mode[dd.i0tid];
 
    // errors go to i0 only
-  if(pt.BTB_FULLYA) begin
-      logic [pt.NUM_THREADS-1:0] i0_btb_error_found, i0_btb_error_found_f;
-      logic [pt.NUM_THREADS-1:0] [$clog2(pt.BTB_SIZE)-1:0] i0_fa_error_index_ns, dec_i0_fa_error_index;
+  if(`BTB_FULLYA) begin
+      logic [`NUM_THREADS-1:0] i0_btb_error_found, i0_btb_error_found_f;
+      logic [`NUM_THREADS-1:0] [$clog2(`BTB_SIZE)-1:0] i0_fa_error_index_ns, dec_i0_fa_error_index;
 
-     for (genvar k=0; k<pt.NUM_THREADS; k++) begin : fa_error_index
+     for (genvar k=0; k<`NUM_THREADS; k++) begin : fa_error_index
 
       assign i0_btb_error_found[k] = (dd.i0tid == k) & (i0_br_error_all | i0_btb_error_found_f[k]) & ~dec_tlu_flush_lower_wb[k];
       assign i0_fa_error_index_ns[k] = ((dd.i0tid == k) & i0_br_error_all & ~i0_btb_error_found_f[k]) ? dec_i0_bp_fa_index : dec_i0_fa_error_index[k];
 
-      rvdff #($clog2(pt.BTB_SIZE)+1) btberrorfa_f   (.*, .clk(active_clk),
+      rvdff #($clog2(`BTB_SIZE)+1) btberrorfa_f   (.*, .clk(active_clk),
                                                          .din({i0_btb_error_found[k],    i0_fa_error_index_ns[k]}),
                                                          .dout({i0_btb_error_found_f[k], dec_i0_fa_error_index[k]}));
 
@@ -850,10 +850,10 @@ end // always_comb begin
    always_comb begin
       i1_predict_p_d = '0;
 
-      i1_predict_index_d[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] = '0;
-      i1_predict_btag_d[pt.BTB_BTAG_SIZE-1:0]           = '0;
-      i1_predict_toffset_d[pt.BTB_TOFFSET_SIZE-1:0]     = '0;
-      i1_predict_fghr_d[pt.BHT_GHR_SIZE-1:0]            = '0;
+      i1_predict_index_d[`BTB_ADDR_HI:`BTB_ADDR_LO] = '0;
+      i1_predict_btag_d[`BTB_BTAG_SIZE-1:0]           = '0;
+      i1_predict_toffset_d[`BTB_TOFFSET_SIZE-1:0]     = '0;
+      i1_predict_fghr_d[`BHT_GHR_SIZE-1:0]            = '0;
 
       if (dec_i1_branch_d) begin
 
@@ -869,10 +869,10 @@ end // always_comb begin
          i1_predict_p_d.bank = dec_i1_brp.bank;
          i1_predict_p_d.way = dec_i1_brp.way;
 
-         i1_predict_index_d[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] =  dec_i1_bp_index;
-         i1_predict_btag_d[pt.BTB_BTAG_SIZE-1:0]           =  dec_i1_bp_btag[pt.BTB_BTAG_SIZE-1:0];
-         i1_predict_toffset_d[pt.BTB_TOFFSET_SIZE-1:0]     =      i1_br_offset[pt.BTB_TOFFSET_SIZE-1:0];
-         i1_predict_fghr_d[pt.BHT_GHR_SIZE-1:0]            =  dec_i1_bp_fghr[pt.BHT_GHR_SIZE-1:0];
+         i1_predict_index_d[`BTB_ADDR_HI:`BTB_ADDR_LO] =  dec_i1_bp_index;
+         i1_predict_btag_d[`BTB_BTAG_SIZE-1:0]           =  dec_i1_bp_btag[`BTB_BTAG_SIZE-1:0];
+         i1_predict_toffset_d[`BTB_TOFFSET_SIZE-1:0]     =      i1_br_offset[`BTB_TOFFSET_SIZE-1:0];
+         i1_predict_fghr_d[`BHT_GHR_SIZE-1:0]            =  dec_i1_bp_fghr[`BHT_GHR_SIZE-1:0];
       end // if (dec_i1_branch_d)
    end // always_comb begin
 
@@ -880,7 +880,7 @@ end // always_comb begin
    assign      i1_notbr_error = dec_i1_brp.valid & ~(i1_dp_raw.condbr | i1_pcall_raw | i1_pja_raw | i1_pret_raw);
 
 
-   assign      i1_br_toffset_error = dec_i1_brp.valid & dec_i1_brp.hist[1] & (dec_i1_bp_toffset[pt.BTB_TOFFSET_SIZE-1:0] != i1_br_offset[pt.BTB_TOFFSET_SIZE-1:0]) & !i1_pret_raw;
+   assign      i1_br_toffset_error = dec_i1_brp.valid & dec_i1_brp.hist[1] & (dec_i1_bp_toffset[`BTB_TOFFSET_SIZE-1:0] != i1_br_offset[`BTB_TOFFSET_SIZE-1:0]) & !i1_pret_raw;
    assign      i1_ret_error = dec_i1_brp.valid & (dec_i1_brp.ret ^ i1_pret_raw);
    assign      i1_br_error = dec_i1_brp.br_error | i1_notbr_error | i1_br_toffset_error | i1_ret_error;
 
@@ -928,7 +928,7 @@ end // always_comb begin
    end
 
 
-   assign flush_lower_wb[pt.NUM_THREADS-1:0] = dec_tlu_flush_lower_wb[pt.NUM_THREADS-1:0];
+   assign flush_lower_wb[`NUM_THREADS-1:0] = dec_tlu_flush_lower_wb[`NUM_THREADS-1:0];
 
 
    assign i0[31:0] = dec_i0_instr_d[31:0];
@@ -952,6 +952,7 @@ end // always_comb begin
       i0_ap.tid = dd.i0tid;
 
       if (i0_dp.legal & i0_dp.alu & i0_valid_d) begin
+         i0_ap.posit =  i0_dp.posit & (i0_dp.add | i0_dp.sub);
          i0_ap.add =    i0_dp.add;
          i0_ap.sub =    i0_dp.sub;
          i0_ap.land =   i0_dp.land;
@@ -1077,12 +1078,12 @@ end // always_comb begin
 
 
 
-   rvdffie #(pt.NUM_THREADS+18) misc1ff
+   rvdffie #(`NUM_THREADS+18) misc1ff
      ( .*,
-       .din({ i1_cancel_d,  dec_tlu_flush_extint[pt.NUM_THREADS-1:0], dec_i0_csr_ren_d,   i0_csr_clr_d,  i0_csr_set_d,  i0_csr_write_d,  i0_dp.csr_imm, div_active_in,
+       .din({ i1_cancel_d,  dec_tlu_flush_extint[`NUM_THREADS-1:0], dec_i0_csr_ren_d,   i0_csr_clr_d,  i0_csr_set_d,  i0_csr_write_d,  i0_dp.csr_imm, div_active_in,
               dec_i0_debug_valid_d, i0_debug_valid_e1, i0_debug_valid_e2, i0_debug_valid_e3, i0_debug_valid_e4,
               dec_i0_branch_d, dec_i0_branch_e1, dec_i0_branch_e2, dec_i1_branch_d, dec_i1_branch_e1, dec_i1_branch_e2}),
-       .dout({i1_cancel_e1,         flush_extint[pt.NUM_THREADS-1:0],     i0_csr_read_e1, i0_csr_clr_e1, i0_csr_set_e1, i0_csr_write_e1, i0_csr_imm_e1, div_active,
+       .dout({i1_cancel_e1,         flush_extint[`NUM_THREADS-1:0],     i0_csr_read_e1, i0_csr_clr_e1, i0_csr_set_e1, i0_csr_write_e1, i0_csr_imm_e1, div_active,
               i0_debug_valid_e1,    i0_debug_valid_e2, i0_debug_valid_e3, i0_debug_valid_e4, i0_debug_valid_wb,
               dec_i0_branch_e1, dec_i0_branch_e2, dec_i0_branch_e3, dec_i1_branch_e1, dec_i1_branch_e2, dec_i1_branch_e3})
        );
@@ -1093,7 +1094,7 @@ end // always_comb begin
 
       dec_i1_cancel_e1 = '0;
 
-      dec_i1_cancel_e1[e1d.i1tid] = ~(((lsu_rs1_dc1[31:28]==pt.DCCM_REGION) & pt.DCCM_ENABLE) | lsu_rs1_dc1[31:28]==pt.PIC_REGION) & i1_cancel_e1 &
+      dec_i1_cancel_e1[e1d.i1tid] = ~(((lsu_rs1_dc1[31:28]==`DCCM_REGION) & `DCCM_ENABLE) | lsu_rs1_dc1[31:28]==`PIC_REGION) & i1_cancel_e1 &
                                     ~flush_final_e3[e1d.i1tid] &
                                     ~flush_lower_wb[e1d.i1tid];
    end
@@ -1107,7 +1108,7 @@ end // always_comb begin
    assign nonblock_load_tid_dc5 = wbd.lsu_tid;
 
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin : cam
+   for (genvar i=0; i<`NUM_THREADS; i++) begin : cam
 
       eh2_dec_cam #() cam (
                         .tid                     (1'(i)),
@@ -1127,8 +1128,8 @@ end // always_comb begin
    end
 
 
-   assign dec_nonblock_load_waddr[pt.NUM_THREADS-1:0]  = cam_nonblock_load_waddr[pt.NUM_THREADS-1:0];
-   assign dec_nonblock_load_wen[pt.NUM_THREADS-1:0]    = cam_nonblock_load_wen[pt.NUM_THREADS-1:0];
+   assign dec_nonblock_load_waddr[`NUM_THREADS-1:0]  = cam_nonblock_load_waddr[`NUM_THREADS-1:0];
+   assign dec_nonblock_load_wen[`NUM_THREADS-1:0]    = cam_nonblock_load_wen[`NUM_THREADS-1:0];
 
 // END non block load cam logic
 
@@ -1200,7 +1201,7 @@ end // always_comb begin
    eh2_dec_dec_ctl i1_dec (.inst(i1[31:0]),.predecode(dec_i1_predecode),.out(i1_dp_raw));
 
 // genvar the flops
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
 
 
       rvdffie #(8) bundle1_ff (.*,
@@ -1223,7 +1224,7 @@ end // always_comb begin
 // thread the leak1 logic
 // leak1 needed for debug single-step
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
 
       assign leak1_i1_stall_in[i] = (dec_tlu_flush_leak_one_wb[i] | (leak1_i1_stall[i] & ~flush_lower_wb[i]));
 
@@ -1243,7 +1244,7 @@ end // always_comb begin
 
 
    // if the btb toffset size is set to 12, clip here
-if(pt.BTB_TOFFSET_SIZE==12) begin
+if(`BTB_TOFFSET_SIZE==12) begin
    logic        i0_pcall_12b_offset, i1_pcall_12b_offset;
    assign i0_pcall_12b_offset = (i0_pcall_imm[12]) ? (i0_pcall_imm[20:13] == 8'hff) : (i0_pcall_imm[20:13] == 8'h0);
    assign i0_pcall_case  = i0_pcall_12b_offset & i0_dp_raw.imm20 &  (i0r.rd[4:0] == 5'd1 | i0r.rd[4:0] == 5'd5);
@@ -1275,8 +1276,8 @@ end
    assign i1_pja_raw = i1_dp_raw.jal &   i1_pja_case;
    assign i1_pja     = i1_dp.jal     &   i1_pja_case;
 
-   assign i0_br_offset[pt.BTB_TOFFSET_SIZE-1:0] = (i0_pcall_raw | i0_pja_raw) ? i0_pcall_imm[pt.BTB_TOFFSET_SIZE:1] : { {pt.BTB_TOFFSET_SIZE-11{i0[31]}},i0[7],i0[30:25],i0[11:8]};
-   assign i1_br_offset[pt.BTB_TOFFSET_SIZE-1:0] = (i1_pcall_raw | i1_pja_raw) ? i1_pcall_imm[pt.BTB_TOFFSET_SIZE:1] : { {pt.BTB_TOFFSET_SIZE-11{i1[31]}},i1[7],i1[30:25],i1[11:8]};
+   assign i0_br_offset[`BTB_TOFFSET_SIZE-1:0] = (i0_pcall_raw | i0_pja_raw) ? i0_pcall_imm[`BTB_TOFFSET_SIZE:1] : { {`BTB_TOFFSET_SIZE-11{i0[31]}},i0[7],i0[30:25],i0[11:8]};
+   assign i1_br_offset[`BTB_TOFFSET_SIZE-1:0] = (i1_pcall_raw | i1_pja_raw) ? i1_pcall_imm[`BTB_TOFFSET_SIZE:1] : { {`BTB_TOFFSET_SIZE-11{i1[31]}},i1[7],i1[30:25],i1[11:8]};
 
    assign i0_pret_case = (i0_dp_raw.jal & i0_dp_raw.imm12 & (i0r.rd[4:0] == 5'b0) & (i0r.rs1[4:0] == 5'd1 | i0r.rs1[4:0] == 5'd5));  // jalr with rd==0, rs1==1 or rs1==5 is a ret
    assign i1_pret_case = (i1_dp_raw.jal & i1_dp_raw.imm12 & (i1r.rd[4:0] == 5'b0) & (i1r.rs1[4:0] == 5'd1 | i1r.rs1[4:0] == 5'd5));  // jalr with rd==0, rs1==1 or rs1==5 is a ret
@@ -1326,6 +1327,8 @@ end
       if ((i0_dp.legal && i0_dp.mul && i0_valid_d) || (i1_dp.legal && i1_dp.mul && i1_valid_d)) begin
          mul_p.valid = mul_decode_d;
 
+         mul_p.posit = i0_dp.mul & i0_dp.posit;
+
          mul_p.rs1_sign    =   (i0_dp.mul) ? i0_dp.rs1_sign     :   i1_dp.rs1_sign;
          mul_p.rs2_sign    =   (i0_dp.mul) ? i0_dp.rs2_sign     :   i1_dp.rs2_sign;
          mul_p.low         =   (i0_dp.mul) ? i0_dp.low          :   i1_dp.low;
@@ -1356,11 +1359,11 @@ end
 
 
 
-   assign dec_extint_stall = |flush_extint[pt.NUM_THREADS-1:0];
+   assign dec_extint_stall = |flush_extint[`NUM_THREADS-1:0];
 
-/*`ifdef RV_ASSERT_ON
-   assert_dec_flush_extint_onehot:          assert #0 ($onehot0(dec_tlu_flush_extint[pt.NUM_THREADS-1:0]));
-`endif*/
+`ifdef RV_ASSERT_ON
+   assert_dec_flush_extint_onehot:          assert #0 ($onehot0(dec_tlu_flush_extint[`NUM_THREADS-1:0]));
+`endif
 
 
    always_comb  begin
@@ -1467,7 +1470,7 @@ end
    // If we are writing MIE or MSTATUS, hold off the external interrupt for a cycle on the write.
    // this assumes CSRs only done in i0 pipe
    // Note: WB kill only applies if E4 has the same tid
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
 
       assign dec_csr_stall_int_ff[i] = (i==e4d.i0tid) & ((e4d.i0csrwaddr[11:0] == 12'h300) | (e4d.i0csrwaddr[11:0] == 12'h304)) & e4d.i0csrwen & e4d.i0valid & (~dec_tlu_i0_kill_writeb_wb | (e4d.i0tid != wbd.i0tid));
 
@@ -1492,14 +1495,14 @@ end
 
 
    // clock-gating for pause state
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
 
       assign dec_pause_state_cg[i] = pause_state[i] & ~tlu_wr_pause_wb1[i] & ~tlu_wr_pause_wb2[i];
 
    end
 
 
-   assign dec_pause_state[pt.NUM_THREADS-1:0] = pause_state[pt.NUM_THREADS-1:0];
+   assign dec_pause_state[`NUM_THREADS-1:0] = pause_state[`NUM_THREADS-1:0];
 
 
 
@@ -1510,7 +1513,7 @@ end
 
 
    // it is illegal for 2 csr read/writes for same thread in same cycle
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
 
       assign csr_update_e1[i] = (e1d.i0tid==i) & i0_csr_update_e1;
 
@@ -1560,7 +1563,7 @@ end
 
    // all conditional branches are currently predict_nt
    // change this to generate the sequential address for all other cases for NPC requirements at commit
-   assign dec_i0_br_immed_d[pt.BTB_TOFFSET_SIZE:1] = (i0_ap.predict_nt & ~i0_dp.jal) ? i0_br_offset[pt.BTB_TOFFSET_SIZE-1:0] : {{pt.BTB_TOFFSET_SIZE-2{1'b0}},i0_ap_pc4,i0_ap_pc2};
+   assign dec_i0_br_immed_d[`BTB_TOFFSET_SIZE:1] = (i0_ap.predict_nt & ~i0_dp.jal) ? i0_br_offset[`BTB_TOFFSET_SIZE-1:0] : {{`BTB_TOFFSET_SIZE-2{1'b0}},i0_ap_pc4,i0_ap_pc2};
 
 
    assign dec_i1_rs1_en_d = i1_dp.rs1 & (i1r.rs1[4:0] != 5'd0) & i1_valid_d;
@@ -1581,7 +1584,7 @@ end
 
 
    // jal is always +2 or +4
-   assign dec_i1_br_immed_d[pt.BTB_TOFFSET_SIZE:1] = (i1_ap.predict_nt & ~i1_dp.jal) ? i1_br_offset[pt.BTB_TOFFSET_SIZE-1:0] : {{pt.BTB_TOFFSET_SIZE-2{1'b0}},i1_ap_pc4,i1_ap_pc2};
+   assign dec_i1_br_immed_d[`BTB_TOFFSET_SIZE:1] = (i1_ap.predict_nt & ~i1_dp.jal) ? i1_br_offset[`BTB_TOFFSET_SIZE-1:0] : {{`BTB_TOFFSET_SIZE-2{1'b0}},i1_ap_pc4,i1_ap_pc2};
 
 
 
@@ -1707,7 +1710,7 @@ end
 
 
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
       assign dec_thread_stall_in[i] =
                                      // exact 1 cycle stall
                                       (i0_valid_d & i0_mul_block_thread_1cycle_d & (dd.i0tid==i)) |
@@ -1737,7 +1740,7 @@ end
    end
 
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
 
       assign flush_all[i] = flush_lower_wb[i] | flush_final_e3[i];
 
@@ -1808,7 +1811,7 @@ end
    assign i0_csr_legal_d = dec_i0_csr_legal_d;
 
 
-   if (pt.ATOMIC_ENABLE == 0)
+   if (`ATOMIC_ENABLE == 0)
      begin
        assign i0_atomic_legal      =  ~(i0_dp.atomic);
        assign i1_atomic_legal      =  ~(i1_dp.atomic);
@@ -1820,7 +1823,7 @@ end
      end
 
 
-   if       (pt.BITMANIP_ZBB == 1)
+   if       (`BITMANIP_ZBB == 1)
      begin
        assign i0_bitmanip_zbb_legal      =  1'b1;
        assign i1_bitmanip_zbb_legal      =  1'b1;
@@ -1832,7 +1835,7 @@ end
      end
 
 
-   if       (pt.BITMANIP_ZBS == 1)
+   if       (`BITMANIP_ZBS == 1)
      begin
        assign i0_bitmanip_zbs_legal      =  1'b1;
        assign i1_bitmanip_zbs_legal      =  1'b1;
@@ -1844,7 +1847,7 @@ end
      end
 
 
-   if       (pt.BITMANIP_ZBE == 1)
+   if       (`BITMANIP_ZBE == 1)
      begin
        assign i0_bitmanip_zbe_legal      =  1'b1;
        assign i1_bitmanip_zbe_legal      =  1'b1;
@@ -1856,7 +1859,7 @@ end
      end
 
 
-   if       (pt.BITMANIP_ZBC == 1)
+   if       (`BITMANIP_ZBC == 1)
      begin
        assign i0_bitmanip_zbc_legal      =  1'b1;
        assign i1_bitmanip_zbc_legal      =  1'b1;
@@ -1868,7 +1871,7 @@ end
      end
 
 
-   if       (pt.BITMANIP_ZBP == 1)
+   if       (`BITMANIP_ZBP == 1)
      begin
        assign i0_bitmanip_zbp_legal      =  1'b1;
        assign i1_bitmanip_zbp_legal      =  1'b1;
@@ -1880,7 +1883,7 @@ end
      end
 
 
-   if       (pt.BITMANIP_ZBR == 1)
+   if       (`BITMANIP_ZBR == 1)
      begin
        assign i0_bitmanip_zbr_legal      =  1'b1;
        assign i1_bitmanip_zbr_legal      =  1'b1;
@@ -1892,7 +1895,7 @@ end
      end
 
 
-   if       (pt.BITMANIP_ZBF == 1)
+   if       (`BITMANIP_ZBF == 1)
      begin
        assign i0_bitmanip_zbf_legal      =  1'b1;
        assign i1_bitmanip_zbf_legal      =  1'b1;
@@ -1904,7 +1907,7 @@ end
      end
 
 
-   if (pt.BITMANIP_ZBA == 1)
+   if (`BITMANIP_ZBA == 1)
      begin
        assign i0_bitmanip_zba_legal      =  1'b1;
        assign i1_bitmanip_zba_legal      =  1'b1;
@@ -1916,7 +1919,7 @@ end
      end
 
 
-   if     ( (pt.BITMANIP_ZBB == 1) | (pt.BITMANIP_ZBP == 1) )
+   if     ( (`BITMANIP_ZBB == 1) | (`BITMANIP_ZBP == 1) )
      begin
        assign i0_bitmanip_zbb_zbp_legal  =  1'b1;
        assign i1_bitmanip_zbb_zbp_legal  =  1'b1;
@@ -1928,7 +1931,7 @@ end
      end
 
 
-   if     ( (pt.BITMANIP_ZBP == 1) | (pt.BITMANIP_ZBE == 1)  | (pt.BITMANIP_ZBF == 1))
+   if     ( (`BITMANIP_ZBP == 1) | (`BITMANIP_ZBE == 1)  | (`BITMANIP_ZBF == 1))
      begin
        assign i0_bitmanip_zbp_zbe_zbf_legal      =  1'b1;
        assign i1_bitmanip_zbp_zbe_zbf_legal      =  1'b1;
@@ -1940,7 +1943,7 @@ end
      end
 
 
-   if     ( (pt.BITMANIP_ZBB == 1) | (pt.BITMANIP_ZBP == 1) | (pt.BITMANIP_ZBE == 1)  | (pt.BITMANIP_ZBF == 1))
+   if     ( (`BITMANIP_ZBB == 1) | (`BITMANIP_ZBP == 1) | (`BITMANIP_ZBE == 1)  | (`BITMANIP_ZBF == 1))
      begin
        assign i0_bitmanip_zbb_zbp_zbe_zbf_legal  =  1'b1;
        assign i1_bitmanip_zbb_zbp_zbe_zbf_legal  =  1'b1;
@@ -1970,7 +1973,7 @@ end
 
    assign i0_inst_d[31:0] = (dec_i0_pc4_d) ? i0[31:0] : {16'b0, dec_i0_cinst_d[15:0] };
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin : illegal
+   for (genvar i=0; i<`NUM_THREADS; i++) begin : illegal
 
       assign shift_illegal[i] = dec_i0_decode_d & ~i0_legal & (i == dd.i0tid);
 
@@ -1987,7 +1990,7 @@ end
 
    end
 
-   assign dec_illegal_inst[pt.NUM_THREADS-1:0] = illegal_inst[pt.NUM_THREADS-1:0];
+   assign dec_illegal_inst[`NUM_THREADS-1:0] = illegal_inst[`NUM_THREADS-1:0];
 
 
 
@@ -2014,11 +2017,11 @@ end
 
 
    // performance monitor signals
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
       assign dec_pmu_instr_decoded[i][1:0] = { dec_i1_decode_d & (dd.i1tid==i), dec_i0_decode_d & (dd.i0tid==i) };
    end
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
       assign dec_pmu_decode_stall[i] = ((i == dd.i0tid) & i0_valid_d & ~dec_i0_decode_d) |
                                        ((i == dd.i1tid) & i1_valid_d & ~dec_i1_decode_d & (dd.i0tid!=dd.i1tid));
 
@@ -2034,7 +2037,7 @@ end
 
    // thread presyncs and postsyncs
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
       // lets make ebreak, ecall, mret postsync, so break sync into pre and post
 
       assign presync_stall[i] = i0_valid_d & i0_presync & (dd.i0tid==i) & prior_inflight[i];
@@ -2113,7 +2116,7 @@ end
                          (i1_legal_decode_d & i1_dp.mul & ~i1_br_error_all);
 
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
 
 
       assign flush_final_e3[i] = i0_flush_final_e3[i] | i1_flush_final_e3[i];
@@ -2468,7 +2471,7 @@ end
                                          (~i0_dp.lsu & i1_dp.store & (i1_rs2_depth_d[3:0] == 4'd3) & i1_rs2_class_d.load) |
                                          (~i0_dp.lsu & i1_dp.store & (i1_rs2_depth_d[3:0] == 4'd4) & i1_rs2_class_d.load);
 
-if (pt.LOAD_TO_USE_PLUS1 == 1)
+if (`LOAD_TO_USE_PLUS1 == 1)
  begin
    assign load_ldst_bypass_c1        =  (             (i0_dp.load | i0_dp.store) & (i0_rs1_depth_d[3:0] == 4'd5) & i0_rs1_class_d.load) |
                                         (             (i0_dp.load | i0_dp.store) & (i0_rs1_depth_d[3:0] == 4'd6) & i0_rs1_class_d.load) |
@@ -2519,7 +2522,7 @@ else
    assign i1_not_alu_eff = ~i1_dp.alu;
 
 // stores will bypass load data in the lsu pipe
-if (pt.LOAD_TO_USE_PLUS1 == 1)
+if (`LOAD_TO_USE_PLUS1 == 1)
  begin
    assign i0_load_block_d = (i0_not_alu_eff & i0_rs1_class_d.load & i0_rs1_match_e1                            ) |
                             (i0_not_alu_eff & i0_rs1_class_d.load & i0_rs1_match_e2 & ~i0_dp.mul               ) | // can bypass load to address of load/store
@@ -2712,7 +2715,8 @@ else
    assign dd.i0valid =  dec_i0_decode_d;  // has final flush in it
    assign dd.i0tid   =  dec_i0_tid_d;
 
-   assign dd.i0mul  = i0_dp.mul    & i0_legal_decode_d & ~i0_br_error_all;
+   assign dd.i0posit = i0_dp.posit & i0_legal_decode_d & ~i0_br_error_all;
+   assign dd.i0mul   = i0_dp.mul   & i0_legal_decode_d & ~i0_br_error_all;
    assign dd.i0load  = i0_dp.load  & i0_legal_decode_d & ~i0_br_error_all;
    assign dd.i0store = i0_dp.store & i0_legal_decode_d & ~i0_br_error_all;
    assign dd.i0sc    = i0_dp.sc    & i0_legal_decode_d & ~i0_br_error_all;
@@ -3036,21 +3040,21 @@ else
 
    // generate the correct npc for correct br predictions
 
-   for (genvar i=0; i<pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i<`NUM_THREADS; i++) begin
 
-      assign last_br_immed_d[i][pt.BTB_TOFFSET_SIZE:1] = (i1_legal_decode_d & (dd.i1tid==i)) ?
-                                                         ((i1_ap.predict_nt)                 ? {{pt.BTB_TOFFSET_SIZE-2{1'b0}},i1_ap_pc4,i1_ap_pc2} :  (i1_ap.predict_t)                  ? i1_br_offset[pt.BTB_TOFFSET_SIZE-1:0] : '0 ) :
-                                                         ((i0_ap.predict_nt & (dd.i0tid==i)) ? {{pt.BTB_TOFFSET_SIZE-2{1'b0}},i0_ap_pc4,i0_ap_pc2} : ((i0_ap.predict_t & (dd.i0tid==i))  ? i0_br_offset[pt.BTB_TOFFSET_SIZE-1:0] : '0 ));
+      assign last_br_immed_d[i][`BTB_TOFFSET_SIZE:1] = (i1_legal_decode_d & (dd.i1tid==i)) ?
+                                                         ((i1_ap.predict_nt)                 ? {{`BTB_TOFFSET_SIZE-2{1'b0}},i1_ap_pc4,i1_ap_pc2} :  (i1_ap.predict_t)                  ? i1_br_offset[`BTB_TOFFSET_SIZE-1:0] : '0 ) :
+                                                         ((i0_ap.predict_nt & (dd.i0tid==i)) ? {{`BTB_TOFFSET_SIZE-2{1'b0}},i0_ap_pc4,i0_ap_pc2} : ((i0_ap.predict_t & (dd.i0tid==i))  ? i0_br_offset[`BTB_TOFFSET_SIZE-1:0] : '0 ));
 
-      rvdffe #(pt.BTB_TOFFSET_SIZE) e1brpcff (.*, .en(i0_e1_data_en | i1_e1_data_en), .din(last_br_immed_d[i][pt.BTB_TOFFSET_SIZE:1] ), .dout(last_br_immed_e1[i][pt.BTB_TOFFSET_SIZE:1]));
-      rvdffe #(pt.BTB_TOFFSET_SIZE) e2brpcff (.*, .en(i0_e2_data_en | i1_e2_data_en), .din(last_br_immed_e1[i][pt.BTB_TOFFSET_SIZE:1]), .dout(last_br_immed_e2[i][pt.BTB_TOFFSET_SIZE:1]));
+      rvdffe #(`BTB_TOFFSET_SIZE) e1brpcff (.*, .en(i0_e1_data_en | i1_e1_data_en), .din(last_br_immed_d[i][`BTB_TOFFSET_SIZE:1] ), .dout(last_br_immed_e1[i][`BTB_TOFFSET_SIZE:1]));
+      rvdffe #(`BTB_TOFFSET_SIZE) e2brpcff (.*, .en(i0_e2_data_en | i1_e2_data_en), .din(last_br_immed_e1[i][`BTB_TOFFSET_SIZE:1]), .dout(last_br_immed_e2[i][`BTB_TOFFSET_SIZE:1]));
 
 
       assign last_pc_e2[i][31:1] = (e2d.i1valid & (e2d.i1tid==i) & dec_i1_branch_e2) ? i1_pc_e2[31:1] : (dec_i0_branch_e2) ? i0_pc_e2[31:1] : '0;
 
       rvbradder ibradder_correct (
                                   .pc(last_pc_e2[i][31:1]),
-                                  .offset(last_br_immed_e2[i][pt.BTB_TOFFSET_SIZE:1]),
+                                  .offset(last_br_immed_e2[i][`BTB_TOFFSET_SIZE:1]),
                                   .dout(pred_correct_npc_e2[i][31:1])
                                   );
 
@@ -3175,8 +3179,8 @@ endmodule
 
 module eh2_dec_cam
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )  (
    input logic  clk,
    input logic  scan_mode,
@@ -3200,17 +3204,17 @@ import eh2_param_pkg::*;
    input eh2_reg_pkt_t i1r,
 
    input logic                                lsu_nonblock_load_valid_dc1,     // valid nonblock load at dc3
-   input logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_tag_dc1,       // -> corresponding tag
+   input logic [`LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_tag_dc1,       // -> corresponding tag
 
    input logic                                lsu_nonblock_load_inv_dc2,       // invalidate request for nonblock load dc2
-   input logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_inv_tag_dc2,   // -> corresponding tag
+   input logic [`LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_inv_tag_dc2,   // -> corresponding tag
 
    input logic                                lsu_nonblock_load_inv_dc5,       // invalidate request for nonblock load dc5
-   input logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_inv_tag_dc5,   // -> corresponding tag
+   input logic [`LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_inv_tag_dc5,   // -> corresponding tag
 
    input logic                                lsu_nonblock_load_data_valid,    // valid nonblock load data back
    input logic                                lsu_nonblock_load_data_error,    // nonblock load bus error
-   input logic [pt.LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_data_tag,      // -> corresponding tag
+   input logic [`LSU_NUM_NBLOAD_WIDTH-1:0]  lsu_nonblock_load_data_tag,      // -> corresponding tag
 
 
    input logic [4:0] nonblock_load_rd,
@@ -3236,9 +3240,9 @@ import eh2_param_pkg::*;
    output logic      nonblock_load_stall
    );
 
-   localparam NBLOAD_SIZE     = pt.LSU_NUM_NBLOAD;
-   localparam NBLOAD_SIZE_MSB = int'(pt.LSU_NUM_NBLOAD)-1;
-   localparam NBLOAD_TAG_MSB  = pt.LSU_NUM_NBLOAD_WIDTH-1;
+   localparam NBLOAD_SIZE     = `LSU_NUM_NBLOAD;
+   localparam NBLOAD_SIZE_MSB = int'(`LSU_NUM_NBLOAD)-1;
+   localparam NBLOAD_TAG_MSB  = `LSU_NUM_NBLOAD_WIDTH-1;
 
    logic                     cam_write,     cam_inv_dc2_reset,     cam_inv_dc5_reset,     cam_data_reset;
    logic [NBLOAD_TAG_MSB:0]  cam_write_tag, cam_inv_dc2_reset_tag, cam_inv_dc5_reset_tag, cam_data_reset_tag;
@@ -3307,12 +3311,12 @@ import eh2_param_pkg::*;
 
    // checks
 
-/*`ifdef RV_ASSERT_ON
+`ifdef RV_ASSERT_ON
    assert_dec_data_valid_data_error_onehot: assert #0 ($onehot0({lsu_nonblock_load_data_valid,lsu_nonblock_load_data_error}));
    assert_dec_cam_dc2_inv_reset_onehot:     assert #0 ($onehot0(cam_inv_dc2_reset_val[NBLOAD_SIZE_MSB:0]));
    assert_dec_cam_dc5_inv_reset_onehot:     assert #0 ($onehot0(cam_inv_dc5_reset_val[NBLOAD_SIZE_MSB:0]));
    assert_dec_cam_data_reset_onehot:        assert #0 ($onehot0(cam_data_reset_val[NBLOAD_SIZE_MSB:0]));
-`endif*/
+`endif
 
    // all these signals are threaded
 
@@ -3330,7 +3334,7 @@ import eh2_param_pkg::*;
 
          cam[i] = cam_raw[i];
 
-         if (pt.LOAD_TO_USE_BUS_PLUS1==0 & cam_data_reset_val[i])
+         if (`LOAD_TO_USE_BUS_PLUS1==0 & cam_data_reset_val[i])
            cam[i].valid = 1'b0;
 
          cam_in[i] = cam[i];
@@ -3344,7 +3348,7 @@ import eh2_param_pkg::*;
          end
          else if ( (cam_inv_dc2_reset_val[i]) |
                    (cam_inv_dc5_reset_val[i]) |
-                   (pt.LOAD_TO_USE_BUS_PLUS1==1 & cam_data_reset_val[i]) |
+                   (`LOAD_TO_USE_BUS_PLUS1==1 & cam_data_reset_val[i]) |
                    (i0_wen_wb & (wbd.i0rd[4:0] == cam[i].rd[4:0]) & (wbd.i0tid == tid) & cam[i].wb) |
                    (i1_wen_wb & (wbd.i1rd[4:0] == cam[i].rd[4:0]) & (wbd.i1tid == tid) & cam[i].wb) )
            cam_in[i].valid = 1'b0;
@@ -3375,9 +3379,9 @@ import eh2_param_pkg::*;
 
    assign load_data_tag[NBLOAD_TAG_MSB:0] = lsu_nonblock_load_data_tag[NBLOAD_TAG_MSB:0];
 
-/*`ifdef RV_ASSERT_ON
+`ifdef RV_ASSERT_ON
    assert_dec_cam_nonblock_load_write_onehot:   assert #0 ($onehot0(nonblock_load_write[NBLOAD_SIZE_MSB:0]));
-`endif*/
+`endif
 
 
    assign nonblock_load_cancel = ((wbd.i0rd[4:0] == nonblock_load_waddr[4:0]) & (wbd.i0tid == tid) & (wbd.i0tid == lsu_nonblock_load_data_tid) & i0_wen_wb) |    // cancel if any younger inst (including another nonblock) committing this cycle
@@ -3489,29 +3493,31 @@ assign out.legal = predecode.legal1 | predecode.legal2 | predecode.legal3 | pred
 // general decode equations
 
 assign out.alu = (!i[5]&i[2]) | (i[30]&i[24]&i[23]&!i[22]&!i[21]&!i[20]&i[14]&!i[5]
-    &i[4]) | (i[30]&!i[27]&!i[24]&i[4]) | (!i[30]&!i[25]&i[13]&i[12]) | (
-    !i[29]&!i[27]&!i[5]&i[4]) | (!i[29]&!i[25]&!i[13]&!i[12]&i[4]) | (
-    i[27]&i[25]&i[14]&i[4]) | (i[29]&i[27]&!i[14]&i[12]&i[4]) | (!i[27]
-    &i[14]&!i[5]&i[4]) | (i[30]&!i[29]&!i[13]&i[4]) | (!i[27]&!i[25]&i[5]
-    &i[4]) | (i[13]&!i[5]&i[4]) | (!i[3]&i[2]) | (i[6]) | (!i[30]&i[29]
-    &!i[24]&!i[23]&i[22]&i[21]&i[20]&!i[5]&i[4]) | (!i[12]&!i[5]&i[4]);
+    &i[4]) | (i[30]&!i[27]&!i[24]&i[4]) | (!i[30]&!i[25]&i[13]&i[12]&i[5]) | (
+    i[29]&!i[27]&i[14]&i[4]) | (i[27]&i[25]&i[14]&i[4]) | (!i[29]&i[27]
+    &!i[13]&!i[12]&i[5]&i[4]) | (i[29]&i[27]&!i[14]&i[12]&i[4]) | (i[30]
+    &!i[29]&!i[13]&i[4]) | (!i[29]&!i[27]&!i[6]&!i[5]&i[4]) | (!i[27]
+    &!i[25]&i[5]&i[4]) | (i[6]&i[5]) | (!i[12]&!i[6]&!i[5]&i[4]) | (
+    i[13]&!i[6]&!i[5]&i[4]) | (!i[3]&i[2]) | (!i[30]&i[29]&!i[24]&!i[23]
+    &i[22]&i[21]&i[20]&!i[5]&i[4]) | (!i[28]&i[6]);
 
-assign out.rs1 = (!i[13]&i[11]&!i[2]) | (!i[6]&i[5]&i[3]) | (!i[13]&i[10]&!i[2]) | (
-    i[19]&i[13]&!i[2]) | (!i[13]&i[9]&!i[2]) | (i[18]&i[13]&!i[2]) | (
-    !i[13]&i[8]&!i[2]) | (i[17]&i[13]&!i[2]) | (!i[13]&i[7]&!i[2]) | (
-    i[16]&i[13]&!i[2]) | (i[15]&i[13]&!i[2]) | (!i[4]&!i[2]) | (!i[14]
-    &!i[13]&i[6]&!i[3]) | (!i[6]&!i[2]);
+assign out.rs1 = (!i[13]&i[11]&!i[2]) | (!i[5]&!i[2]) | (!i[6]&i[5]&i[3]) | (!i[13]
+    &i[10]&!i[2]) | (i[19]&i[13]&!i[2]) | (!i[13]&i[9]&!i[2]) | (i[18]
+    &i[13]&!i[2]) | (!i[13]&i[8]&!i[2]) | (i[17]&i[13]&!i[2]) | (!i[13]
+    &i[7]&!i[2]) | (i[16]&i[13]&!i[2]) | (i[15]&i[13]&!i[2]) | (!i[4]
+    &!i[2]) | (!i[14]&!i[13]&i[6]&!i[3]) | (!i[6]&!i[2]);
 
 assign out.rs2 = (i[27]&!i[6]&i[5]&i[3]) | (!i[28]&!i[6]&i[5]&i[3]) | (i[5]&!i[4]
-    &!i[2]) | (!i[6]&i[5]&!i[2]);
+    &!i[2]) | (!i[6]&i[5]&!i[2]) | (i[6]&!i[5]);
 
-assign out.imm12 = (!i[4]&!i[3]&i[2]) | (i[13]&!i[5]&i[4]&!i[2]) | (!i[13]&!i[12]
-    &i[6]&i[4]) | (!i[12]&!i[5]&i[4]&!i[2]);
+assign out.imm12 = (!i[4]&!i[3]&i[2]) | (i[13]&!i[6]&!i[5]&i[4]&!i[2]) | (!i[13]
+    &!i[12]&i[6]&i[5]&i[4]) | (!i[12]&!i[6]&!i[5]&i[4]&!i[2]);
 
 assign out.rd = (!i[5]&!i[2]) | (i[5]&i[2]) | (i[4]);
 
-assign out.shimm5 = (!i[29]&!i[13]&i[12]&!i[5]&i[4]&!i[2]) | (i[27]&!i[13]&i[12]
-    &!i[5]&i[4]&!i[2]) | (i[14]&!i[13]&i[12]&!i[5]&i[4]&!i[2]);
+assign out.shimm5 = (!i[29]&!i[13]&i[12]&!i[6]&!i[5]&i[4]&!i[2]) | (i[27]&!i[13]
+    &i[12]&!i[6]&!i[5]&i[4]&!i[2]) | (i[14]&!i[13]&i[12]&!i[6]&!i[5]&i[4]
+    &!i[2]);
 
 assign out.imm20 = (i[6]&i[3]) | (i[4]&i[2]);
 
@@ -3523,23 +3529,28 @@ assign out.load = (!i[28]&!i[6]&i[5]&i[3]) | (!i[27]&!i[6]&i[5]&i[3]) | (!i[5]&!
 assign out.store = (i[27]&!i[6]&i[5]&i[3]) | (!i[28]&!i[6]&i[5]&i[3]) | (!i[6]&i[5]
     &!i[4]&!i[2]);
 
-assign out.add = (!i[14]&!i[13]&!i[12]&!i[5]&i[4]) | (!i[5]&!i[3]&i[2]) | (!i[30]
-    &!i[25]&!i[14]&!i[13]&!i[12]&!i[6]&i[4]&!i[2]);
+//assign out.lsu = (!i[6]&!i[4]&!i[2]) | (!i[6]&i[5]&!i[4]);
 
-assign out.sub = (i[30]&!i[14]&!i[12]&!i[6]&i[5]&i[4]&!i[2]) | (!i[29]&!i[25]&!i[14]
-    &i[13]&!i[6]&i[4]&!i[2]) | (i[27]&i[25]&i[14]&!i[6]&i[5]&!i[2]) | (
-    !i[14]&i[13]&!i[5]&i[4]&!i[2]) | (i[6]&!i[4]&!i[2]);
+assign out.add = (!i[14]&!i[13]&!i[12]&!i[6]&!i[5]&i[4]) | (!i[5]&!i[3]&i[2]) | (
+    !i[30]&!i[25]&!i[14]&!i[13]&!i[12]&!i[6]&i[4]&!i[2]) | (!i[28]&!i[27]
+    &i[6]&!i[5]);
+
+assign out.sub = (i[30]&!i[14]&!i[12]&!i[6]&i[5]&i[4]&!i[2]) | (!i[14]&i[13]&!i[6]
+    &!i[5]&i[4]&!i[2]) | (!i[29]&!i[25]&!i[14]&i[13]&!i[6]&i[4]&!i[2]) | (
+    i[27]&i[25]&i[14]&!i[6]&i[5]&!i[2]) | (!i[28]&i[27]&i[6]&!i[5]) | (
+    i[6]&!i[4]&!i[2]);
 
 assign out.land = (!i[27]&!i[25]&i[14]&i[13]&i[12]&!i[6]&!i[2]) | (i[14]&i[13]&i[12]
-    &!i[5]&!i[2]);
+    &!i[6]&!i[5]&!i[2]);
 
-assign out.lor = (!i[5]&i[3]) | (!i[29]&!i[27]&!i[25]&i[14]&i[13]&!i[12]&i[4]&!i[2]) | (
-    i[5]&i[4]&i[2]) | (!i[12]&i[6]&i[4]) | (i[13]&i[6]&i[4]) | (i[14]
-    &i[13]&!i[12]&!i[5]&!i[2]) | (i[7]&i[6]&i[4]) | (i[8]&i[6]&i[4]) | (
-    i[9]&i[6]&i[4]) | (i[10]&i[6]&i[4]) | (i[11]&i[6]&i[4]);
+assign out.lor = (!i[5]&i[3]) | (!i[29]&!i[27]&!i[25]&i[14]&i[13]&!i[12]&!i[6]&!i[2]) | (
+    i[5]&i[4]&i[2]) | (!i[12]&i[6]&i[5]&i[4]) | (i[13]&i[6]&i[5]&i[4]) | (
+    i[14]&i[13]&!i[12]&!i[6]&!i[5]&!i[2]) | (i[7]&i[6]&i[5]&i[4]) | (
+    i[8]&i[6]&i[5]&i[4]) | (i[9]&i[6]&i[5]&i[4]) | (i[10]&i[6]&i[5]&i[4]) | (
+    i[11]&i[6]&i[5]&i[4]);
 
-assign out.lxor = (!i[29]&!i[27]&!i[25]&i[14]&!i[13]&!i[12]&i[4]&!i[2]) | (i[14]
-    &!i[13]&!i[12]&!i[5]&i[4]&!i[2]);
+assign out.lxor = (!i[29]&!i[27]&!i[25]&i[14]&!i[13]&!i[12]&i[5]&i[4]&!i[2]) | (
+    i[14]&!i[13]&!i[12]&!i[6]&!i[5]&i[4]&!i[2]);
 
 assign out.sll = (!i[29]&!i[27]&!i[25]&!i[14]&!i[13]&i[12]&!i[6]&i[4]&!i[2]);
 
@@ -3547,10 +3558,10 @@ assign out.sra = (i[30]&!i[29]&!i[27]&!i[13]&i[12]&!i[6]&i[4]&!i[2]);
 
 assign out.srl = (!i[30]&!i[27]&!i[25]&i[14]&!i[13]&i[12]&!i[6]&i[4]&!i[2]);
 
-assign out.slt = (!i[29]&!i[25]&!i[14]&i[13]&!i[6]&i[4]&!i[2]) | (!i[14]&i[13]&!i[5]
-    &i[4]&!i[2]);
+assign out.slt = (!i[14]&i[13]&!i[6]&!i[5]&i[4]&!i[2]) | (!i[29]&!i[25]&!i[14]&i[13]
+    &!i[6]&i[4]&!i[2]);
 
-assign out.unsign = (i[31]&i[30]&!i[6]&i[3]) | (!i[14]&i[13]&i[12]&!i[5]&!i[2]) | (
+assign out.unsign = (i[31]&i[30]&!i[6]&i[3]) | (i[25]&!i[14]&i[13]&i[12]&!i[5]&!i[2]) | (
     i[14]&!i[5]&!i[4]) | (i[13]&i[6]&!i[4]&!i[2]) | (i[25]&i[14]&i[12]
     &!i[6]&i[5]&!i[2]) | (!i[25]&!i[14]&i[13]&i[12]&!i[6]&!i[2]);
 
@@ -3572,39 +3583,40 @@ assign out.half = (i[12]&!i[6]&!i[4]&!i[2]);
 
 assign out.word = (i[13]&!i[6]&!i[4]);
 
-assign out.csr_read = (i[13]&i[6]&i[4]) | (i[7]&i[6]&i[4]) | (i[8]&i[6]&i[4]) | (
-    i[9]&i[6]&i[4]) | (i[10]&i[6]&i[4]) | (i[11]&i[6]&i[4]);
+assign out.csr_read = (i[13]&i[6]&i[5]&i[4]) | (i[7]&i[6]&i[5]&i[4]) | (i[8]&i[6]
+    &i[5]&i[4]) | (i[9]&i[6]&i[5]&i[4]) | (i[10]&i[6]&i[5]&i[4]) | (
+    i[11]&i[6]&i[5]&i[4]);
 
-assign out.csr_clr = (i[15]&i[13]&i[12]&i[6]&i[4]) | (i[16]&i[13]&i[12]&i[6]&i[4]) | (
-    i[17]&i[13]&i[12]&i[6]&i[4]) | (i[18]&i[13]&i[12]&i[6]&i[4]) | (
-    i[19]&i[13]&i[12]&i[6]&i[4]);
+assign out.csr_clr = (i[15]&i[13]&i[12]&i[6]&i[5]&i[4]) | (i[16]&i[13]&i[12]&i[6]
+    &i[5]&i[4]) | (i[17]&i[13]&i[12]&i[6]&i[5]&i[4]) | (i[18]&i[13]&i[12]
+    &i[6]&i[5]&i[4]) | (i[19]&i[13]&i[12]&i[6]&i[5]&i[4]);
 
-assign out.csr_set = (i[15]&!i[12]&i[6]&i[4]) | (i[16]&!i[12]&i[6]&i[4]) | (i[17]
-    &!i[12]&i[6]&i[4]) | (i[18]&!i[12]&i[6]&i[4]) | (i[19]&!i[12]&i[6]
-    &i[4]);
+assign out.csr_set = (i[15]&!i[12]&i[6]&i[5]&i[4]) | (i[16]&!i[12]&i[6]&i[5]&i[4]) | (
+    i[17]&!i[12]&i[6]&i[5]&i[4]) | (i[18]&!i[12]&i[6]&i[5]&i[4]) | (
+    i[19]&!i[12]&i[6]&i[5]&i[4]);
 
-assign out.csr_write = (!i[13]&i[12]&i[6]&i[4]);
+assign out.csr_write = (!i[13]&i[12]&i[6]&i[5]&i[4]);
 
-assign out.csr_imm = (i[14]&!i[13]&i[6]&i[4]) | (i[15]&i[14]&i[6]&i[4]) | (i[16]
-    &i[14]&i[6]&i[4]) | (i[17]&i[14]&i[6]&i[4]) | (i[18]&i[14]&i[6]&i[4]) | (
-    i[19]&i[14]&i[6]&i[4]);
+assign out.csr_imm = (i[14]&!i[13]&i[6]&i[5]&i[4]) | (i[15]&i[14]&i[6]&i[5]&i[4]) | (
+    i[16]&i[14]&i[6]&i[5]&i[4]) | (i[17]&i[14]&i[6]&i[5]&i[4]) | (i[18]
+    &i[14]&i[6]&i[5]&i[4]) | (i[19]&i[14]&i[6]&i[5]&i[4]);
 
-assign out.presync = (!i[6]&i[3]) | (!i[13]&i[7]&i[6]&i[4]) | (!i[13]&i[8]&i[6]&i[4]) | (
-    !i[13]&i[9]&i[6]&i[4]) | (!i[13]&i[10]&i[6]&i[4]) | (!i[13]&i[11]
-    &i[6]&i[4]) | (i[15]&i[13]&i[6]&i[4]) | (i[16]&i[13]&i[6]&i[4]) | (
-    i[17]&i[13]&i[6]&i[4]) | (i[18]&i[13]&i[6]&i[4]) | (i[19]&i[13]&i[6]
-    &i[4]);
+assign out.presync = (!i[6]&i[3]) | (!i[13]&i[7]&i[6]&i[5]&i[4]) | (!i[13]&i[8]&i[6]
+    &i[5]&i[4]) | (!i[13]&i[9]&i[6]&i[5]&i[4]) | (!i[13]&i[10]&i[6]&i[5]
+    &i[4]) | (!i[13]&i[11]&i[6]&i[5]&i[4]) | (i[15]&i[13]&i[6]&i[5]&i[4]) | (
+    i[16]&i[13]&i[6]&i[5]&i[4]) | (i[17]&i[13]&i[6]&i[5]&i[4]) | (i[18]
+    &i[13]&i[6]&i[5]&i[4]) | (i[19]&i[13]&i[6]&i[5]&i[4]);
 
-assign out.postsync = (i[12]&!i[5]&i[3]) | (!i[22]&!i[13]&!i[12]&i[6]&i[4]) | (
-    i[28]&i[27]&!i[6]&i[3]) | (!i[13]&i[7]&i[6]&i[4]) | (!i[13]&i[8]&i[6]
-    &i[4]) | (!i[13]&i[9]&i[6]&i[4]) | (!i[13]&i[10]&i[6]&i[4]) | (!i[13]
-    &i[11]&i[6]&i[4]) | (i[15]&i[13]&i[6]&i[4]) | (i[16]&i[13]&i[6]&i[4]) | (
-    i[17]&i[13]&i[6]&i[4]) | (i[18]&i[13]&i[6]&i[4]) | (i[19]&i[13]&i[6]
-    &i[4]);
+assign out.postsync = (i[12]&!i[5]&i[3]) | (!i[22]&!i[13]&!i[12]&i[6]&i[5]&i[4]) | (
+    i[28]&i[27]&!i[6]&i[3]) | (!i[13]&i[7]&i[6]&i[5]&i[4]) | (!i[13]&i[8]
+    &i[6]&i[5]&i[4]) | (!i[13]&i[9]&i[6]&i[5]&i[4]) | (!i[13]&i[10]&i[6]
+    &i[5]&i[4]) | (!i[13]&i[11]&i[6]&i[5]&i[4]) | (i[15]&i[13]&i[6]&i[5]
+    &i[4]) | (i[16]&i[13]&i[6]&i[5]&i[4]) | (i[17]&i[13]&i[6]&i[5]&i[4]) | (
+    i[18]&i[13]&i[6]&i[5]&i[4]) | (i[19]&i[13]&i[6]&i[5]&i[4]);
 
-assign out.ebreak = (!i[22]&i[20]&!i[13]&!i[12]&i[6]&i[4]);
+assign out.ebreak = (!i[22]&i[20]&!i[13]&!i[12]&i[6]&i[5]&i[4]);
 
-assign out.ecall = (!i[21]&!i[20]&!i[13]&!i[12]&i[6]&i[4]);
+assign out.ecall = (!i[21]&!i[20]&!i[13]&!i[12]&i[6]&i[5]&i[4]);
 
 assign out.mret = (i[29]&!i[13]&!i[12]&i[6]&i[4]);
 
@@ -3613,9 +3625,10 @@ assign out.rs1_sign = (!i[27]&i[25]&!i[14]&i[13]&!i[12]&!i[6]&i[5]&i[4]&!i[2]) |
 
 assign out.rs2_sign = (!i[27]&i[25]&!i[14]&!i[13]&i[12]&!i[6]&i[4]&!i[2]);
 
-assign out.low = (i[25]&!i[14]&!i[13]&!i[12]&i[5]&i[4]&!i[2]);
+assign out.low = (i[25]&!i[14]&!i[13]&!i[12]&i[5]&i[4]&!i[2]) | (i[28]&!i[27]&i[6]
+    &!i[5]);
 
-assign out.div = (!i[27]&i[25]&i[14]&!i[6]&i[5]&!i[2]);
+assign out.div = (i[28]&i[27]&i[6]&!i[5]) | (!i[27]&i[25]&i[14]&!i[6]&i[5]&!i[2]);
 
 assign out.rem = (!i[27]&i[25]&i[14]&i[13]&!i[6]&i[5]&!i[2]);
 
@@ -3737,10 +3750,10 @@ assign out.sh3add = (i[29]&!i[27]&i[14]&i[13]&!i[6]&i[5]&!i[2]);
 
 assign out.zba = (i[29]&!i[27]&!i[12]&!i[6]&i[5]&i[4]&!i[2]);
 
-assign out.pm_alu = (i[28]&i[20]&!i[13]&!i[12]&i[4]) | (!i[30]&!i[29]&!i[27]&!i[25]
-    &!i[6]&i[4]) | (!i[29]&!i[27]&!i[25]&!i[13]&i[12]&!i[6]&i[4]) | (
-    !i[29]&!i[27]&!i[25]&!i[14]&!i[6]&i[4]) | (i[13]&!i[5]&i[4]) | (i[4]
-    &i[2]) | (!i[12]&!i[5]&i[4]);
+assign out.pm_alu = (i[28]&i[20]&!i[13]&!i[12]&i[5]&i[4]) | (!i[30]&!i[29]&!i[27]
+    &!i[25]&!i[6]&i[4]) | (!i[29]&!i[27]&!i[25]&!i[13]&i[12]&!i[6]&i[4]) | (
+    !i[29]&!i[27]&!i[25]&!i[14]&!i[6]&i[4]) | (i[13]&!i[6]&!i[5]&i[4]) | (
+    !i[12]&!i[6]&!i[5]&i[4]) | (i[4]&i[2]) | (!i[28]&i[6]&!i[5]);
 
 assign out.atomic = (!i[6]&i[5]&i[3]);
 
@@ -3748,6 +3761,6 @@ assign out.lr = (i[28]&!i[27]&!i[6]&i[3]);
 
 assign out.sc = (i[28]&i[27]&!i[6]&i[3]);
 
-
+assign out.posit = (!i[27]&i[6]&!i[5]) | (!i[28]&i[6]&!i[5]);
 
 endmodule

@@ -24,11 +24,11 @@
 //********************************************************************************
 module eh2_dec_trigger
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 ) (
 
-   input eh2_trigger_pkt_t [pt.NUM_THREADS-1:0] [3:0] trigger_pkt_any,           // Packet from tlu. 'select':0-pc,1-Opcode  'Execute' needs to be set for dec triggers to fire. 'match'-1 do mask, 0: full match
+   input eh2_trigger_pkt_t [`NUM_THREADS-1:0] [3:0] trigger_pkt_any,           // Packet from tlu. 'select':0-pc,1-Opcode  'Execute' needs to be set for dec triggers to fire. 'match'-1 do mask, 0: full match
    input logic [31:1]                                   dec_i0_pc_d,                    // i0 pc
    input logic [31:1]                                   dec_i1_pc_d,                    // i1 pc
    input eh2_alu_pkt_t                                 i0_ap,                          // alu packet

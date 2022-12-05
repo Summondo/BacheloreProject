@@ -27,8 +27,8 @@
 //********************************************************************************
 module eh2_lsu_lsc_ctl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )(
    input logic                   scan_mode,
    input logic                   clk_override,
@@ -76,11 +76,11 @@ import eh2_param_pkg::*;
    output logic                  lsu_single_ecc_error_dc5,
    output logic                  lsu_double_ecc_error_dc5,
 
-   input logic [pt.NUM_THREADS-1:0] flush_dc2_up,
-   input logic [pt.NUM_THREADS-1:0] flush_dc3,
-   input logic [pt.NUM_THREADS-1:0] flush_dc4,
-   input logic [pt.NUM_THREADS-1:0] flush_dc5,
-   input logic [pt.NUM_THREADS-1:0] dec_tlu_lr_reset_wb,
+   input logic [`NUM_THREADS-1:0] flush_dc2_up,
+   input logic [`NUM_THREADS-1:0] flush_dc3,
+   input logic [`NUM_THREADS-1:0] flush_dc4,
+   input logic [`NUM_THREADS-1:0] flush_dc5,
+   input logic [`NUM_THREADS-1:0] dec_tlu_lr_reset_wb,
 
    input  logic [31:0]           lsu_dccm_data_dc3,
    input  logic [31:0]           lsu_dccm_data_corr_dc3,
@@ -142,7 +142,7 @@ import eh2_param_pkg::*;
    output logic                  addr_external_dc1,
    output logic                  addr_external_dc3,
    output logic                  lsu_sc_success_dc5,
-   output logic [pt.NUM_THREADS-1:0]            lr_vld,   // needed for clk gating
+   output logic [`NUM_THREADS-1:0]            lr_vld,   // needed for clk gating
 
    // DMA slave
    input logic                   dma_dccm_req,
@@ -154,7 +154,7 @@ import eh2_param_pkg::*;
    input logic                   dma_mem_addr_in_dccm
 );
 
-   localparam THREADS          = pt.NUM_THREADS;
+   localparam THREADS          = `NUM_THREADS;
 
    logic [31:3]        end_addr_pre_dc2, end_addr_pre_dc3, end_addr_pre_dc4, end_addr_pre_dc5;
    logic [31:0]        core_start_addr_dc1;
@@ -200,7 +200,7 @@ import eh2_param_pkg::*;
    //----------------------------------------Logic starts here---------------------------------------------------
    //------------------------------------------------------------------------------------------------------------
 
-   if (pt.LOAD_TO_USE_PLUS1 == 1) begin: GenL2U_1
+   if (`LOAD_TO_USE_PLUS1 == 1) begin: GenL2U_1
       assign lsu_rs1_d[31:0] = lsu_pkt_dc1_in.load_ldst_bypass_c1 ? lsu_result_dc3[31:0] :  exu_lsu_rs1_d[31:0];
       assign rs1_dc1[31:0]   = rs1_dc1_raw[31:0];
    end else begin: GenL2U_0
@@ -402,7 +402,7 @@ import eh2_param_pkg::*;
    //               4) Mret, Interrup or Exception
    //
    // Other Thread :1) Store or AMO to this location ( 31:2 match )
-   if (pt.ATOMIC_ENABLE == 1) begin: GenAtomic
+   if (`ATOMIC_ENABLE == 1) begin: GenAtomic
       logic [THREADS-1:0] [31:2] lr_addr;   // Per Thread LR stations
       logic [THREADS-1:0]        lr_wr_en;   // set and reset logic
       logic                      tid_dc5;
@@ -430,7 +430,7 @@ import eh2_param_pkg::*;
    end // block: GenAtomic
    else begin: GenNoAtomic
       assign lsu_sc_success_dc5 = 1'b0;
-      assign lr_vld[pt.NUM_THREADS-1:0] = '0;
+      assign lr_vld[`NUM_THREADS-1:0] = '0;
    end
 
 endmodule

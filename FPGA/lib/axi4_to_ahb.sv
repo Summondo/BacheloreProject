@@ -207,7 +207,7 @@ import eh2_pkg::*;
    endfunction // get_write_addr
 
    // Function to get the next byte pointer
-   function automatic logic [2:0] get_nxtbyte_ptr (input logic [2:0] current_byte_ptr, input logic [7:0] byteen, input logic get_next);
+   function automatic logic [2:0] get_nxtbyte_ptr (logic [2:0] current_byte_ptr, logic [7:0] byteen, logic get_next);
       logic [2:0] start_ptr;
       logic       found;
       found = '0;
@@ -460,7 +460,7 @@ import eh2_pkg::*;
    rvclkhdr ahbm_data_cgc (.en(ahbm_data_clken), .l1clk(ahbm_data_clk), .*);
 `endif
 
-/*`ifdef RV_ASSERT_ON
+`ifdef RV_ASSERT_ON
    property ahb_trxn_aligned;
      @(posedge ahbm_clk) ahb_htrans[1]  |-> ((ahb_hsize[2:0] == 3'h0)                              |
                                         ((ahb_hsize[2:0] == 3'h1) & (ahb_haddr[0] == 1'b0))   |
@@ -475,6 +475,6 @@ import eh2_pkg::*;
    endproperty
    assert_ahb_error_protocol: assert property (ahb_error_protocol) else
       $display("Bus Error with hReady isn't preceded with Bus Error without hready");
-`endif*/
+`endif
 
 endmodule // axi4_to_ahb

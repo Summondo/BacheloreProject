@@ -16,8 +16,8 @@
 
 module eh2_exu_mul_ctl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
   (
    input logic          clk,              // Top level clock
@@ -90,7 +90,7 @@ import eh2_param_pkg::*;
    logic                ap_bfp_e2;
 
 
-   if (pt.BITMANIP_ZBE == 1)
+   if (`BITMANIP_ZBE == 1)
      begin
        assign ap_bcompress_e2   =  mp_e2.bcompress;
        assign ap_bdecompress_e2 =  mp_e2.bdecompress;
@@ -101,7 +101,7 @@ import eh2_param_pkg::*;
        assign ap_bdecompress_e2 =  1'b0;
      end
 
-   if (pt.BITMANIP_ZBC == 1)
+   if (`BITMANIP_ZBC == 1)
      begin
        assign ap_clmul_e2     =  mp_e2.clmul;
        assign ap_clmulh_e2    =  mp_e2.clmulh;
@@ -114,7 +114,7 @@ import eh2_param_pkg::*;
        assign ap_clmulr_e2    =  1'b0;
      end
 
-   if (pt.BITMANIP_ZBP == 1)
+   if (`BITMANIP_ZBP == 1)
      begin
        assign ap_grev_e2      =  mp_e2.grev;
        assign ap_gorc_e2      =  mp_e2.gorc;
@@ -135,7 +135,7 @@ import eh2_param_pkg::*;
        assign ap_xperm_h_e2   =  1'b0;
      end
 
-   if (pt.BITMANIP_ZBR == 1)
+   if (`BITMANIP_ZBR == 1)
      begin
        assign ap_crc32_b_e2   =  mp_e2.crc32_b;
        assign ap_crc32_h_e2   =  mp_e2.crc32_h;
@@ -154,7 +154,7 @@ import eh2_param_pkg::*;
        assign ap_crc32c_w_e2  =  1'b0;
      end
 
-   if (pt.BITMANIP_ZBF == 1)
+   if (`BITMANIP_ZBF == 1)
      begin
        assign ap_bfp_e2       =  mp_e2.bfp;
      end

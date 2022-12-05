@@ -24,8 +24,8 @@
 // //********************************************************************************
 module eh2_lsu_stbuf
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
 (
    input logic                          clk,                                // core clock
@@ -47,8 +47,8 @@ import eh2_param_pkg::*;
    input logic                          addr_in_dccm_dc4,                   // address is in dccm
    input logic                          addr_in_dccm_dc5,                   // address is in dccm
    input logic                          addr_in_pic_dc2,                    // address in pic
-   input logic [pt.DCCM_DATA_WIDTH-1:0] dccm_datafn_hi_dc5,                 // data from the dccm
-   input logic [pt.DCCM_DATA_WIDTH-1:0] dccm_datafn_lo_dc5,                 // data from the dccm
+   input logic [`DCCM_DATA_WIDTH-1:0] dccm_datafn_hi_dc5,                 // data from the dccm
+   input logic [`DCCM_DATA_WIDTH-1:0] dccm_datafn_lo_dc5,                 // data from the dccm
    input logic [63:0]                   store_data_ext_dc3, store_data_ext_dc4, store_data_ext_dc5,   // goes to the stbuf for load-store fwdding
 
    input logic                          lsu_commit_dc5,                     // lsu commits
@@ -56,20 +56,20 @@ import eh2_param_pkg::*;
    // Store Buffer output
    output logic                          stbuf_reqvld_any,                  // stbuf is draining
    output logic                          stbuf_reqvld_flushed_any,          // stbuf is flushed
-   output logic [pt.LSU_SB_BITS-1:0]     stbuf_addr_any,                    // address
-   output logic [pt.DCCM_DATA_WIDTH-1:0] stbuf_data_any,                    // stbuf data
+   output logic [`LSU_SB_BITS-1:0]     stbuf_addr_any,                    // address
+   output logic [`DCCM_DATA_WIDTH-1:0] stbuf_data_any,                    // stbuf data
 
    input  logic                          lsu_stbuf_commit_any,              // pop the stbuf as it commite
-   output logic [pt.NUM_THREADS-1:0]     lsu_stbuf_empty_any,               // stbuf is empty
-   output logic [pt.NUM_THREADS-1:0]     lsu_stbuf_full_any,                // stbuf is full
+   output logic [`NUM_THREADS-1:0]     lsu_stbuf_empty_any,               // stbuf is empty
+   output logic [`NUM_THREADS-1:0]     lsu_stbuf_full_any,                // stbuf is full
 
-   input logic [pt.LSU_SB_BITS-1:0]      lsu_addr_dc1,                      // lsu address
+   input logic [`LSU_SB_BITS-1:0]      lsu_addr_dc1,                      // lsu address
    input logic [31:0]                    lsu_addr_dc2,
    input logic [31:0]                    lsu_addr_dc3,
    input logic [31:0]                    lsu_addr_dc4,
    input logic [31:0]                    lsu_addr_dc5,
 
-   input logic [pt.LSU_SB_BITS-1:0]      end_addr_dc1,                      // lsu end addrress - needed to check unaligned
+   input logic [`LSU_SB_BITS-1:0]      end_addr_dc1,                      // lsu end addrress - needed to check unaligned
    input logic [31:0]                    end_addr_dc2,
    input logic [31:0]                    end_addr_dc3,
    input logic [31:0]                    end_addr_dc4,
@@ -86,22 +86,22 @@ import eh2_param_pkg::*;
    output logic                          picm_fwd_en_dc2,
    output logic [31:0]                   picm_fwd_data_dc2,
 
-   output logic [pt.DCCM_DATA_WIDTH-1:0] stbuf_fwddata_hi_dc3,     // stbuf data
-   output logic [pt.DCCM_DATA_WIDTH-1:0] stbuf_fwddata_lo_dc3,
-   output logic [pt.DCCM_BYTE_WIDTH-1:0] stbuf_fwdbyteen_hi_dc3,
-   output logic [pt.DCCM_BYTE_WIDTH-1:0] stbuf_fwdbyteen_lo_dc3
+   output logic [`DCCM_DATA_WIDTH-1:0] stbuf_fwddata_hi_dc3,     // stbuf data
+   output logic [`DCCM_DATA_WIDTH-1:0] stbuf_fwddata_lo_dc3,
+   output logic [`DCCM_BYTE_WIDTH-1:0] stbuf_fwdbyteen_hi_dc3,
+   output logic [`DCCM_BYTE_WIDTH-1:0] stbuf_fwdbyteen_lo_dc3
 
 );
 
-   localparam DEPTH      = pt.LSU_STBUF_DEPTH;
-   localparam DATA_WIDTH = pt.DCCM_DATA_WIDTH;
-   localparam BYTE_WIDTH = pt.DCCM_BYTE_WIDTH;
+   localparam DEPTH      = `LSU_STBUF_DEPTH;
+   localparam DATA_WIDTH = `DCCM_DATA_WIDTH;
+   localparam BYTE_WIDTH = `DCCM_BYTE_WIDTH;
    localparam DEPTH_LOG2 = $clog2(DEPTH);
 
    // These are the fields in the store queue
    logic [DEPTH-1:0]                     stbuf_vld;
    logic [DEPTH-1:0]                     stbuf_dma_kill;
-   logic [DEPTH-1:0][pt.LSU_SB_BITS-1:0] stbuf_addr;
+   logic [DEPTH-1:0][`LSU_SB_BITS-1:0] stbuf_addr;
    logic [DEPTH-1:0][BYTE_WIDTH-1:0]     stbuf_byteen;
    logic [DEPTH-1:0][DATA_WIDTH-1:0]     stbuf_data;
    logic [DEPTH-1:0]                     stbuf_tid;
@@ -110,7 +110,7 @@ import eh2_param_pkg::*;
    logic [DEPTH-1:0]                     stbuf_wr_en;
    logic [DEPTH-1:0]                     stbuf_dma_kill_en;
    logic [DEPTH-1:0]                     stbuf_reset;
-   logic [DEPTH-1:0][pt.LSU_SB_BITS-1:0] stbuf_addrin;
+   logic [DEPTH-1:0][`LSU_SB_BITS-1:0] stbuf_addrin;
    logic [DEPTH-1:0][DATA_WIDTH-1:0]     stbuf_datain;
    logic [DEPTH-1:0][BYTE_WIDTH-1:0]     stbuf_byteenin;
 
@@ -127,12 +127,12 @@ import eh2_param_pkg::*;
    logic                              dccm_st_nodma_dc2, dccm_st_nodma_dc3, dccm_st_nodma_dc4, dccm_st_nodma_dc5;
 
    logic [3:0]                        stbuf_total_specvld_any;
-   logic [pt.NUM_THREADS-1:0][3:0]    stbuf_numvld_any, stbuf_specvld_any, stbuf_specvld_anyQ, stbuf_tidvld_any;
-   logic [pt.NUM_THREADS-1:0][1:0]    stbuf_specvld_dc1, stbuf_specvld_dc2, stbuf_specvld_dc3, stbuf_specvld_dc4, stbuf_specvld_dc5;
+   logic [`NUM_THREADS-1:0][3:0]    stbuf_numvld_any, stbuf_specvld_any, stbuf_specvld_anyQ, stbuf_tidvld_any;
+   logic [`NUM_THREADS-1:0][1:0]    stbuf_specvld_dc1, stbuf_specvld_dc2, stbuf_specvld_dc3, stbuf_specvld_dc4, stbuf_specvld_dc5;
 
    logic                              cmpen_hi_dc2, cmpen_lo_dc2;
 
-   logic [pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)]  cmpaddr_hi_dc2, cmpaddr_lo_dc2;
+   logic [`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)]  cmpaddr_hi_dc2, cmpaddr_lo_dc2;
 
    logic                              stbuf_fwddata_lo_en, stbuf_fwddata_hi_en;
    // variables to detect matching from the store queue
@@ -180,7 +180,7 @@ import eh2_param_pkg::*;
    // ------------ NEEDED FOR VERIF PROBE  -------
    // --------------------------------------------
    logic [7:0]            store_byteen_ext_dc3, ldst_byteen_tmp_dc3;
-   logic [pt.DCCM_BYTE_WIDTH-1:0] stbuf_byteen_any;
+   logic [`DCCM_BYTE_WIDTH-1:0] stbuf_byteen_any;
 
     assign ldst_byteen_tmp_dc3[7:0] = ({8{lsu_pkt_dc3.by}}   & 8'b0000_0001) |
                                       ({8{lsu_pkt_dc3.half}} & 8'b0000_0011) |
@@ -212,15 +212,15 @@ import eh2_param_pkg::*;
    assign ldst_dual_dc1          = core_ldst_dual_dc1;
 
    // Merge store data and sec data
-   for (genvar i=0; i<pt.DCCM_BYTE_WIDTH; i++) begin
+   for (genvar i=0; i<`DCCM_BYTE_WIDTH; i++) begin
       assign store_ecc_datafn_hi_dc5[(8*i)+7:(8*i)] = dccm_datafn_hi_dc5[(8*i)+7:(8*i)];
       assign store_ecc_datafn_lo_dc5[(8*i)+7:(8*i)] = dccm_datafn_lo_dc5[(8*i)+7:(8*i)];
    end
 
   // Store Buffer coalescing
    for (genvar i=0; i<DEPTH; i++) begin: FindMatchEntry
-       assign store_matchvec_lo_dc5[i] = (stbuf_addr[i][pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] == lsu_addr_dc5[pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)]) & stbuf_vld[i] & ~stbuf_dma_kill[i] & lsu_commit_dc5 & ~stbuf_reset[i];
-       assign store_matchvec_hi_dc5[i] = (stbuf_addr[i][pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] == end_addr_dc5[pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)]) & stbuf_vld[i] & ~stbuf_dma_kill[i] & lsu_commit_dc5 & ldst_dual_dc5 & ~stbuf_reset[i];
+       assign store_matchvec_lo_dc5[i] = (stbuf_addr[i][`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] == lsu_addr_dc5[`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)]) & stbuf_vld[i] & ~stbuf_dma_kill[i] & lsu_commit_dc5 & ~stbuf_reset[i];
+       assign store_matchvec_hi_dc5[i] = (stbuf_addr[i][`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] == end_addr_dc5[`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)]) & stbuf_vld[i] & ~stbuf_dma_kill[i] & lsu_commit_dc5 & ldst_dual_dc5 & ~stbuf_reset[i];
    end: FindMatchEntry
 
    assign store_coalesce_lo_dc5 = |store_matchvec_lo_dc5[DEPTH-1:0];
@@ -243,7 +243,7 @@ import eh2_param_pkg::*;
       // Mux select for start/end address
       assign sel_lo[i]                         = ((~ldst_dual_dc5 | store_stbuf_reqvld_dc5) & (i == WrPtr[DEPTH_LOG2-1:0]) & ~store_coalesce_lo_dc5) |   // lo allocated new entry
                                                  store_matchvec_lo_dc5[i];                                                                                                           // lo coalesced in to this entry
-      assign stbuf_addrin[i][pt.LSU_SB_BITS-1:0]  = sel_lo[i] ? lsu_addr_dc5[pt.LSU_SB_BITS-1:0]       : end_addr_dc5[pt.LSU_SB_BITS-1:0];
+      assign stbuf_addrin[i][`LSU_SB_BITS-1:0]  = sel_lo[i] ? lsu_addr_dc5[`LSU_SB_BITS-1:0]       : end_addr_dc5[`LSU_SB_BITS-1:0];
       assign stbuf_byteenin[i][BYTE_WIDTH-1:0] = sel_lo[i] ? (stbuf_byteen[i][BYTE_WIDTH-1:0] | store_byteen_lo_dc5[BYTE_WIDTH-1:0])          : (stbuf_byteen[i][BYTE_WIDTH-1:0] | store_byteen_hi_dc5[BYTE_WIDTH-1:0]);
       assign stbuf_datain[i][7:0]              = sel_lo[i] ? ((~stbuf_byteen[i][0] | store_byteen_lo_dc5[0]) ? store_ecc_datafn_lo_dc5[7:0]   : stbuf_data[i][7:0])    :
                                                              ((~stbuf_byteen[i][0] | store_byteen_hi_dc5[0]) ? store_ecc_datafn_hi_dc5[7:0]   : stbuf_data[i][7:0]);
@@ -256,7 +256,7 @@ import eh2_param_pkg::*;
 
       rvdffsc #(.WIDTH(1))              stbuf_vldff    (.din(1'b1),                                .dout(stbuf_vld[i]),                      .en(stbuf_wr_en[i]),       .clear(stbuf_reset[i]), .clk(lsu_free_c2_clk),  .*);
       rvdffsc #(.WIDTH(1))              stbuf_killff   (.din(1'b1),                                .dout(stbuf_dma_kill[i]),                 .en(stbuf_dma_kill_en[i]), .clear(stbuf_reset[i]), .clk(lsu_free_c2_clk),  .*);
-      rvdffe  #(.WIDTH(pt.LSU_SB_BITS)) stbuf_addrff   (.din(stbuf_addrin[i][pt.LSU_SB_BITS-1:0]), .dout(stbuf_addr[i][pt.LSU_SB_BITS-1:0]), .en(stbuf_wr_en[i]),                                                       .*);
+      rvdffe  #(.WIDTH(`LSU_SB_BITS)) stbuf_addrff   (.din(stbuf_addrin[i][`LSU_SB_BITS-1:0]), .dout(stbuf_addr[i][`LSU_SB_BITS-1:0]), .en(stbuf_wr_en[i]),                                                       .*);
       rvdffsc #(.WIDTH(BYTE_WIDTH))     stbuf_byteenff (.din(stbuf_byteenin[i][BYTE_WIDTH-1:0]),   .dout(stbuf_byteen[i][BYTE_WIDTH-1:0]),   .en(stbuf_wr_en[i]),       .clear(stbuf_reset[i]), .clk(lsu_stbuf_c1_clk), .*);
       rvdffe  #(.WIDTH(DATA_WIDTH))     stbuf_dataff   (.din(stbuf_datain[i][DATA_WIDTH-1:0]),     .dout(stbuf_data[i][DATA_WIDTH-1:0]),     .en(stbuf_wr_en[i]),                                                       .*);
       rvdffsc #(.WIDTH(1))              stbuf_tidff    (.din(lsu_pkt_dc5.tid),                     .dout(stbuf_tid[i]),                      .en(stbuf_wr_en[i]),       .clear(stbuf_reset[i]), .clk(lsu_free_c2_clk),  .*);
@@ -264,7 +264,7 @@ import eh2_param_pkg::*;
    // Store Buffer drain logic
    assign stbuf_reqvld_flushed_any            = stbuf_vld[RdPtr] & stbuf_dma_kill[RdPtr];
    assign stbuf_reqvld_any                    = stbuf_vld[RdPtr] & ~stbuf_dma_kill[RdPtr] & ~(|stbuf_dma_kill_en[DEPTH-1:0]);  // Don't drain if some kill bit is being set this cycle
-   assign stbuf_addr_any[pt.LSU_SB_BITS-1:0]  = stbuf_addr[RdPtr][pt.LSU_SB_BITS-1:0];
+   assign stbuf_addr_any[`LSU_SB_BITS-1:0]  = stbuf_addr[RdPtr][`LSU_SB_BITS-1:0];
    assign stbuf_data_any[DATA_WIDTH-1:0]      = stbuf_data[RdPtr][DATA_WIDTH-1:0];
 
    // Update the RdPtr/WrPtr logic
@@ -275,8 +275,8 @@ import eh2_param_pkg::*;
    assign NxtRdPtr[DEPTH_LOG2-1:0] = RdPtrPlus1[DEPTH_LOG2-1:0];
 
    always_comb begin
-      stbuf_numvld_any[pt.NUM_THREADS-1:0] = '0;
-      for (int i=0; i<pt.NUM_THREADS; i++) begin
+      stbuf_numvld_any[`NUM_THREADS-1:0] = '0;
+      for (int i=0; i<`NUM_THREADS; i++) begin
          for (int j=0; j<DEPTH; j++) begin
             stbuf_numvld_any[i][3:0] += {3'b0, (stbuf_vld[j] & (stbuf_tid[j] == 1'(i)))};
          end
@@ -289,7 +289,7 @@ import eh2_param_pkg::*;
    assign dccm_st_nodma_dc4 = lsu_pkt_dc4.valid & lsu_pkt_dc4.store & ~lsu_pkt_dc4.dma & addr_in_dccm_dc4;
    assign dccm_st_nodma_dc5 = lsu_pkt_dc5.valid & lsu_pkt_dc5.store & ~lsu_pkt_dc5.dma & addr_in_dccm_dc5;
 
-   for (genvar i=0; i <pt.NUM_THREADS; i++) begin
+   for (genvar i=0; i <`NUM_THREADS; i++) begin
        assign stbuf_specvld_dc1[i][1:0] = {1'b0,(isst_nodma_dc1    & (lsu_pkt_dc1_pre.tid == 1'(i)))} << (isst_nodma_dc1    & ldst_dual_dc1);    // Gate dual with isldst to avoid X propagation
        assign stbuf_specvld_dc2[i][1:0] = {1'b0,(dccm_st_nodma_dc2 & (lsu_pkt_dc2.tid == 1'(i)))}     << (dccm_st_nodma_dc2 & ldst_dual_dc2);
        assign stbuf_specvld_dc3[i][1:0] = {1'b0,(dccm_st_nodma_dc3 & (lsu_pkt_dc3.tid == 1'(i)))}     << (dccm_st_nodma_dc3 & ldst_dual_dc3);
@@ -302,7 +302,7 @@ import eh2_param_pkg::*;
        assign stbuf_tidvld_any[i][3:0] = stbuf_specvld_anyQ[i][3:0] + {2'b0,stbuf_specvld_dc1[i][1:0]};
 
        // Full 1. Thread has it's max entries 2. Total entries are max entries
-       assign lsu_stbuf_full_any[i]     = ((pt.NUM_THREADS > 1) & (stbuf_tidvld_any[i][3:0] >= (DEPTH - 2))) | (stbuf_total_specvld_any[3:0] > (DEPTH - 2));
+       assign lsu_stbuf_full_any[i]     = ((`NUM_THREADS > 1) & (stbuf_tidvld_any[i][3:0] >= (DEPTH - 2))) | (stbuf_total_specvld_any[3:0] > (DEPTH - 2));
        assign lsu_stbuf_empty_any[i]    = (stbuf_numvld_any[i][3:0] == 4'b0);
 
       rvdff #(.WIDTH(4)) stbuf_specvldff (.din(stbuf_specvld_any[i][3:0]), .dout(stbuf_specvld_anyQ[i][3:0]), .clk(lsu_free_c2_clk), .*);
@@ -311,25 +311,25 @@ import eh2_param_pkg::*;
    // Total consumed entries
    always_comb begin
       stbuf_total_specvld_any[3:0] = '0;
-      for (int i=0; i<pt.NUM_THREADS; i++) begin
+      for (int i=0; i<`NUM_THREADS; i++) begin
          stbuf_total_specvld_any[3:0] += stbuf_tidvld_any[i][3:0];
       end
    end
 
    // Load forwarding logic from the store queue
    assign cmpen_hi_dc2                                     = lsu_cmpen_dc2 & ldst_dual_dc2;
-   assign cmpaddr_hi_dc2[pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] = end_addr_dc2[pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)];
+   assign cmpaddr_hi_dc2[`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] = end_addr_dc2[`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)];
 
    assign cmpen_lo_dc2                                     = lsu_cmpen_dc2;
-   assign cmpaddr_lo_dc2[pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] = lsu_addr_dc2[pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)];
+   assign cmpaddr_lo_dc2[`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] = lsu_addr_dc2[`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)];
 
    always_comb begin: GenLdFwd
       stbuf_fwdbyteen_hi_dc2[BYTE_WIDTH-1:0]   = '0;
       stbuf_fwdbyteen_lo_dc2[BYTE_WIDTH-1:0]   = '0;
 
       for (int i=0; i<DEPTH; i++) begin
-         stbuf_match_hi[i] = (stbuf_addr[i][pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] == cmpaddr_hi_dc2[pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)]) & stbuf_vld[i] & ~stbuf_dma_kill[i] & addr_in_dccm_dc2;
-         stbuf_match_lo[i] = (stbuf_addr[i][pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] == cmpaddr_lo_dc2[pt.LSU_SB_BITS-1:$clog2(BYTE_WIDTH)]) & stbuf_vld[i] & ~stbuf_dma_kill[i] &  addr_in_dccm_dc2;
+         stbuf_match_hi[i] = (stbuf_addr[i][`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] == cmpaddr_hi_dc2[`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)]) & stbuf_vld[i] & ~stbuf_dma_kill[i] & addr_in_dccm_dc2;
+         stbuf_match_lo[i] = (stbuf_addr[i][`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)] == cmpaddr_lo_dc2[`LSU_SB_BITS-1:$clog2(BYTE_WIDTH)]) & stbuf_vld[i] & ~stbuf_dma_kill[i] &  addr_in_dccm_dc2;
 
          // Kill the store buffer entry if there is a dma store since it already updated the dccm
          stbuf_dma_kill_en[i] = (stbuf_match_hi[i] | stbuf_match_lo[i]) & lsu_pkt_dc2.valid & lsu_pkt_dc2.dma & lsu_pkt_dc2.store;

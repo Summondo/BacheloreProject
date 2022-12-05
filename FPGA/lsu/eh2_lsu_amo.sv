@@ -24,8 +24,8 @@
 //********************************************************************************
 module eh2_lsu_amo
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )(
 
    input eh2_lsu_pkt_t  lsu_pkt_dc3,                 // packet in dc3

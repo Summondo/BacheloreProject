@@ -22,8 +22,8 @@
 
 module eh2_ifu_ifc_ctl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
   (
    input logic clk,
@@ -67,8 +67,8 @@ import eh2_param_pkg::*;
    output logic [31:1] fetch_addr_bf, // fetch addr F1
    output logic [31:1] fetch_addr_f2,
 
-   output [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] fetch_btb_rd_addr_f1, // btb read hash
-   output [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] fetch_btb_rd_addr_p1_f1, // btb read hash
+   output [`BTB_ADDR_HI:`BTB_ADDR_LO] fetch_btb_rd_addr_f1, // btb read hash
+   output [`BTB_ADDR_HI:`BTB_ADDR_LO] fetch_btb_rd_addr_p1_f1, // btb read hash
 
    output logic  fetch_req_bf,
    output logic  fetch_req_f1,  // fetch request valid F1
@@ -114,7 +114,7 @@ import eh2_param_pkg::*;
    logic         iccm_acc_in_region_f1;
    logic [31:1]  exu_flush_path_final_early_f;
 
-   if (pt.ICCM_ENABLE == 1)
+   if (`ICCM_ENABLE == 1)
      begin
         logic iccm_acc_in_region_f1;
         logic iccm_acc_in_range_f1;
@@ -156,7 +156,7 @@ import eh2_param_pkg::*;
 
 logic dec_tlu_flush_noredir_wb_f, flush_noredir, ic_crit_wd_rdy_qual, flush_lower_qual;
    logic [31:1] fetch_addr_bf_pre;
-if(pt.BTB_USE_SRAM) begin
+if(`BTB_USE_SRAM) begin
 
    // hold the early flush path
    rvdffe #(31) faddmiss_ff (.*, .en(exu_flush_final_early), .din(exu_flush_path_final_early[31:1]), .dout(exu_flush_path_final_early_f[31:1]));
@@ -227,11 +227,11 @@ else begin // NOT SRAM
    assign kill_fetch = '0;
 
 
-end // else: !if(pt.BTB_USE_SRAM)
+end // else: !if(`BTB_USE_SRAM)
 
    assign fetch_addr_next[31:3] = fetch_addr_f1[31:3] + 29'b1;
 
-   assign line_wrap = (fetch_addr_next[pt.ICACHE_TAG_INDEX_LO] ^ fetch_addr_f1[pt.ICACHE_TAG_INDEX_LO]);
+   assign line_wrap = (fetch_addr_next[`ICACHE_TAG_INDEX_LO] ^ fetch_addr_f1[`ICACHE_TAG_INDEX_LO]);
 // For verilator.... jb
    assign fetch_addr_next_2_1[2:1] = line_wrap ? 2'b0 : fetch_addr_f1[2:1];
 
@@ -300,7 +300,7 @@ end // else: !if(pt.BTB_USE_SRAM)
    rvdff #(2) fsm_ff (.*, .clk(active_clk), .din({next_state[1:0]}), .dout({state[1:0]}));
    rvdff #(6) fbwrite_ff (.*, .clk(active_clk), .din({fb_full_f1_ns, fb_write_ns[4:0]}), .dout({fb_full_f1, fb_write_f1[4:0]}));
 
-if(pt.NUM_THREADS > 1) begin : ignoreconsume
+if(`NUM_THREADS > 1) begin : ignoreconsume
    assign pmu_fetch_stall = wfm |
                                 (fetch_req_f1_raw &
                                 ( (fb_full_f1 & ~(flush_fb)) |
@@ -330,7 +330,7 @@ else begin
                            ~flush_noredir );
 end
 
-   if(pt.BTB_USE_SRAM) begin
+   if(`BTB_USE_SRAM) begin
       assign ready = fetch_req_bf &
                      ~(fb_full_f1 & ~(ifu_fb_consume2 | ifu_fb_consume1 | flush_fb));
    end
@@ -354,16 +354,16 @@ end
 
    // timing fix attempt
    logic [31:3] fetch_addr_p1_f1;
-   eh2_btb_addr_hash #() f1hash(.pc(fetch_addr_f1[pt.BTB_INDEX3_HI:pt.BTB_INDEX1_LO]), .hash(fetch_btb_rd_addr_f1[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO]));
+   eh2_btb_addr_hash #() f1hash(.pc(fetch_addr_f1[`BTB_INDEX3_HI:`BTB_INDEX1_LO]), .hash(fetch_btb_rd_addr_f1[`BTB_ADDR_HI:`BTB_ADDR_LO]));
    assign fetch_addr_p1_f1[31:3] = fetch_addr_f1[31:3] + 29'b1;
-   eh2_btb_addr_hash #() f1hash_p1(.pc(fetch_addr_p1_f1[pt.BTB_INDEX3_HI:pt.BTB_INDEX1_LO]), .hash(fetch_btb_rd_addr_p1_f1[pt.BTB_ADDR_HI:pt.BTB_ADDR_LO]));
+   eh2_btb_addr_hash #() f1hash_p1(.pc(fetch_addr_p1_f1[`BTB_INDEX3_HI:`BTB_INDEX1_LO]), .hash(fetch_btb_rd_addr_p1_f1[`BTB_ADDR_HI:`BTB_ADDR_LO]));
 
 
 
-if (pt.ICCM_ENABLE == 1)
+if (`ICCM_ENABLE == 1)
  begin
-   rvrangecheck #( .CCM_SADR    (pt.ICCM_SADR),
-                   .CCM_SIZE    (pt.ICCM_SIZE) ) iccm_rangecheck (
+   rvrangecheck #( .CCM_SADR    (`ICCM_SADR),
+                   .CCM_SIZE    (`ICCM_SIZE) ) iccm_rangecheck (
                                                                      .addr     ({fetch_addr_f1[31:1],1'b0}) ,
                                                                      .in_range (iccm_acc_in_range_f1) ,
                                                                      .in_region(iccm_acc_in_region_f1)
@@ -374,7 +374,7 @@ if (pt.ICCM_ENABLE == 1)
 
    assign region_acc_fault_f1 = ~iccm_acc_in_range_f1 & iccm_acc_in_region_f1 ;
 
-    if(pt.NUM_THREADS > 1) begin
+    if(`NUM_THREADS > 1) begin
    assign dma_access_ok = ( (~iccm_access_f1 |
                                  (fb_full_f1) |
                                  wfm |

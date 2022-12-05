@@ -15,8 +15,8 @@
 
 module eh2_dec_ib_ctl
 import eh2_pkg::*;
-import eh2_param_pkg::*;
 #(
+`include "eh2_param.vh"
 )
   (
    input logic   active_clk,                    // free clk
@@ -42,17 +42,17 @@ import eh2_param_pkg::*;
 
    input eh2_br_pkt_t i0_brp,                      // i0 branch packet from aligner
    input eh2_br_pkt_t i1_brp,
-   input logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] ifu_i0_bp_index, // BP index
-   input logic [pt.BHT_GHR_SIZE-1:0] ifu_i0_bp_fghr, // BP FGHR
-   input logic [pt.BTB_BTAG_SIZE-1:0] ifu_i0_bp_btag, // BP tag
-   input logic [pt.BTB_TOFFSET_SIZE-1:0] ifu_i0_bp_toffset, // BP tag
-   input logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] ifu_i1_bp_index, // BP index
-   input logic [pt.BHT_GHR_SIZE-1:0] ifu_i1_bp_fghr, // BP FGHR
-   input logic [pt.BTB_BTAG_SIZE-1:0] ifu_i1_bp_btag, // BP tag
-   input logic [pt.BTB_TOFFSET_SIZE-1:0] ifu_i1_bp_toffset, // BP tag
+   input logic [`BTB_ADDR_HI:`BTB_ADDR_LO] ifu_i0_bp_index, // BP index
+   input logic [`BHT_GHR_SIZE-1:0] ifu_i0_bp_fghr, // BP FGHR
+   input logic [`BTB_BTAG_SIZE-1:0] ifu_i0_bp_btag, // BP tag
+   input logic [`BTB_TOFFSET_SIZE-1:0] ifu_i0_bp_toffset, // BP tag
+   input logic [`BTB_ADDR_HI:`BTB_ADDR_LO] ifu_i1_bp_index, // BP index
+   input logic [`BHT_GHR_SIZE-1:0] ifu_i1_bp_fghr, // BP FGHR
+   input logic [`BTB_BTAG_SIZE-1:0] ifu_i1_bp_btag, // BP tag
+   input logic [`BTB_TOFFSET_SIZE-1:0] ifu_i1_bp_toffset, // BP tag
 
-   input logic [$clog2(pt.BTB_SIZE)-1:0] ifu_i0_bp_fa_index,
-   input logic [$clog2(pt.BTB_SIZE)-1:0] ifu_i1_bp_fa_index,
+   input logic [$clog2(`BTB_SIZE)-1:0] ifu_i0_bp_fa_index,
+   input logic [$clog2(`BTB_SIZE)-1:0] ifu_i1_bp_fa_index,
 
    input logic   ifu_i0_pc4,                   // i0 is 4B inst else 2B
    input logic   ifu_i1_pc4,
@@ -103,16 +103,16 @@ import eh2_param_pkg::*;
 
    output eh2_br_pkt_t i0_br_p,                 // i0 branch packet at decode
    output eh2_br_pkt_t i1_br_p,
-   output logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] i0_bp_index,   // i0 branch index
-   output logic [pt.BHT_GHR_SIZE-1:0]           i0_bp_fghr,    // BP FGHR
-   output logic [pt.BTB_BTAG_SIZE-1:0]          i0_bp_btag,    // BP tag
-   output logic [pt.BTB_TOFFSET_SIZE-1:0]       i0_bp_toffset, // BP tag
-   output logic [pt.BTB_ADDR_HI:pt.BTB_ADDR_LO] i1_bp_index,   // i0 branch index
-   output logic [pt.BHT_GHR_SIZE-1:0]           i1_bp_fghr,    // BP FGHR
-   output logic [pt.BTB_BTAG_SIZE-1:0]          i1_bp_btag,    // BP tag
-   output logic [pt.BTB_TOFFSET_SIZE-1:0]       i1_bp_toffset, // BP tag
+   output logic [`BTB_ADDR_HI:`BTB_ADDR_LO] i0_bp_index,   // i0 branch index
+   output logic [`BHT_GHR_SIZE-1:0]           i0_bp_fghr,    // BP FGHR
+   output logic [`BTB_BTAG_SIZE-1:0]          i0_bp_btag,    // BP tag
+   output logic [`BTB_TOFFSET_SIZE-1:0]       i0_bp_toffset, // BP tag
+   output logic [`BTB_ADDR_HI:`BTB_ADDR_LO] i1_bp_index,   // i0 branch index
+   output logic [`BHT_GHR_SIZE-1:0]           i1_bp_fghr,    // BP FGHR
+   output logic [`BTB_BTAG_SIZE-1:0]          i1_bp_btag,    // BP tag
+   output logic [`BTB_TOFFSET_SIZE-1:0]       i1_bp_toffset, // BP tag
 
-   output logic [$clog2(pt.BTB_SIZE)-1:0] i0_bp_fa_index,
+   output logic [$clog2(`BTB_SIZE)-1:0] i0_bp_fa_index,
 
    output logic i0_icaf_d,                 // i0 instruction access fault at decode
    output logic i1_icaf_d,
@@ -182,7 +182,7 @@ import eh2_param_pkg::*;
    logic                       debug_fence_in;
    logic [1:0]   align_val;
 
-   localparam BRWIDTH = pt.BTB_ADDR_HI-pt.BTB_ADDR_LO+1+pt.BHT_GHR_SIZE+pt.BTB_BTAG_SIZE+pt.BTB_TOFFSET_SIZE+($clog2(pt.BTB_SIZE) * pt.BTB_FULLYA);
+   localparam BRWIDTH = `BTB_ADDR_HI-`BTB_ADDR_LO+1+`BHT_GHR_SIZE+`BTB_BTAG_SIZE+`BTB_TOFFSET_SIZE+($clog2(`BTB_SIZE) * `BTB_FULLYA);
 
    logic [BRWIDTH-1:0]  bp3_in, bp3_final, bp3,
                         bp2_in, bp2_final, bp2,
@@ -433,7 +433,7 @@ import eh2_param_pkg::*;
 
    // branch prediction
 
-   if(pt.BTB_FULLYA) begin
+   if(`BTB_FULLYA) begin
       assign ifu_i0_brdata = {ifu_i0_bp_fa_index, ifu_i0_bp_index, ifu_i0_bp_fghr, ifu_i0_bp_btag, ifu_i0_bp_toffset};
       assign ifu_i1_brdata = {ifu_i1_bp_fa_index, ifu_i1_bp_index, ifu_i1_bp_fghr, ifu_i1_bp_btag, ifu_i1_bp_toffset};
    end
@@ -476,8 +476,8 @@ import eh2_param_pkg::*;
 
    rvdffe #(BRWIDTH) bp0indexff (.*, .en(ibwrite[0]), .din(bp0_final), .dout(bp0));
 
-   if(pt.BTB_FULLYA) begin
-      logic [$clog2(pt.BTB_SIZE)-1:0] i1_bp_fa_index_unused;
+   if(`BTB_FULLYA) begin
+      logic [$clog2(`BTB_SIZE)-1:0] i1_bp_fa_index_unused;
       assign {i1_bp_fa_index_unused, i1_bp_index, i1_bp_fghr, i1_bp_btag, i1_bp_toffset} = bp1;
       assign {i0_bp_fa_index, i0_bp_index, i0_bp_fghr, i0_bp_btag, i0_bp_toffset} = bp0;
    end

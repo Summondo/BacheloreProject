@@ -13,21 +13,34 @@ _start:
     li  x1, 0x00006508
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
-
+    nop
+    nop
 
     //--------------------------------------------------------------------------------------------------
     li x15, 0x00000021 //
     li  x1, 0x00000021 //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00000091 //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x0000007B //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x000000F4 //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
 
@@ -36,14 +49,26 @@ _start:
     li  x1, 0x00000091 //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00000091 //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x0000007B //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x000000F4 //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
     //--------------------------------------------------------------------------------------------------
@@ -51,14 +76,26 @@ _start:
     li  x1, 0x0000007B //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00000091 //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x0000007B //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x000000F4 //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
     //--------------------------------------------------------------------------------------------------
@@ -66,11 +103,20 @@ _start:
     li  x1, 0x000000F4 //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00000091 //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000007B //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x000000F4 //
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8

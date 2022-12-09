@@ -13,6 +13,9 @@ _start:
     li x15, 0x00006508
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
 
 
     //Signed multiplied with special numbers--------------------------------------------------------------------------------------------------
@@ -20,20 +23,38 @@ _start:
     li  x1, 0x0000F4AB //Signed number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x000001F5 //Unsigned number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00000000 //Zero
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00008000 //Infinity
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00000001 //Min pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00007FFE //Max pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
 
@@ -42,20 +63,38 @@ _start:
     li  x1, 0x0000F4AB //Signed number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x000001F5 //Unsigned number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00000000 //Zero
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00008000 //Infinity
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00000001 //Min pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00007FFE //Max pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
 
@@ -64,20 +103,38 @@ _start:
     li  x1, 0x0000F4AB //Signed number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x000001F5 //Unsigned number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00000000 //Zero
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00008000 //Infinity
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00000001 //Min pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00007FFE //Max pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
     //Infinity multiplied with special numbers--------------------------------------------------------------------------------------------------
@@ -85,20 +142,38 @@ _start:
     li  x1, 0x0000F4AB //Signed number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x000001F5 //Unsigned number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00000000 //Zero
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00008000 //Infinity
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00000001 //Min pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00007FFE //Max pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
     //Min positive multiplied with special numbers--------------------------------------------------------------------------------------------------
@@ -106,20 +181,38 @@ _start:
     li  x1, 0x0000F4AB //Signed number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x000001F5 //Unsigned number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00000000 //Zero
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00008000 //Infinity
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00000001 //Min pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00007FFE //Max pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
     //Max positive multiplied with special numbers--------------------------------------------------------------------------------------------------
@@ -127,17 +220,32 @@ _start:
     li  x1, 0x0000F4AB //Signed number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x000001F5 //Unsigned number
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00000000 //Zero
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00008000 //Infinity
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li  x1, 0x00000001 //Min pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li  x1, 0x00007FFE //Max pos
     .long 0x08F08453 //PSUB  rs1 1, rs2 15, rd 8

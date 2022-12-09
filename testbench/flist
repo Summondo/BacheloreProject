@@ -27,6 +27,7 @@ $RV_ROOT/design/exu/eh2_exu_alu_ctl.sv
 $RV_ROOT/design/exu/eh2_exu_mul_ctl.sv
 $RV_ROOT/design/exu/eh2_exu_div_ctl.sv
 $RV_ROOT/design/exu/eh2_exu.sv
+$RV_ROOT/design/dec/LOD.sv
 $RV_ROOT/design/exu/eh2_posit_mul.sv
 $RV_ROOT/design/exu/eh2_posit_alu.sv
 $RV_ROOT/design/exu/eh2_posit_decode.sv
@@ -55,7 +56,6 @@ $RV_ROOT/testbench/axi_lsu_dma_bridge.sv
 $RV_ROOT/testbench/remote_bitbang.cc
 $RV_ROOT/testbench/SimJTAG.cc
 $RV_ROOT/testbench/SimJTAG.v
-
 
 $RV_ROOT/design/exu/float.sv
 $RV_ROOT/design/exu/floatAdd.sv

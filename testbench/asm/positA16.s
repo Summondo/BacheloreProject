@@ -13,6 +13,9 @@ _start:
     li  x1, 0x00006508
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
 
 
     //Only regime bits--------------------------------------------------------------------------------------------------
@@ -20,26 +23,50 @@ _start:
     li  x1, 0x00000001 //Only Regime
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00007FFB //No fraction
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x000044F2 //One positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00006C27 //Small positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00007FD4 //Big positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000381A //One negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00000B0F //Small negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000004F //Big negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
     //No fraction bits--------------------------------------------------------------------------------------------------
@@ -47,26 +74,50 @@ _start:
     li  x1, 0x00007FFB //No fraction
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00007FFB //No fraction
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x000044F2 //One positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00006C27 //Small positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00007FD4 //Big positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000381A //One negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00000B0F //Small negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000004F //Big negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
     //One positive regime bit--------------------------------------------------------------------------------------------------
@@ -74,26 +125,50 @@ _start:
     li  x1, 0x000044F2 //One positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00007FFB //No fraction
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x000044F2 //One positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00006C27 //Small positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00007FD4 //Big positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000381A //One negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00000B0F //Small negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000004F //Big negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
     //Small positive regime bit--------------------------------------------------------------------------------------------------
@@ -101,26 +176,50 @@ _start:
     li  x1, 0x00006C27 //Small positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00007FFB //No fraction
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x000044F2 //One positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00006C27 //Small positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00007FD4 //Big positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000381A //One negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00000B0F //Small negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000004F //Big negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
 
     //Big positive regime bit--------------------------------------------------------------------------------------------------
@@ -128,101 +227,194 @@ _start:
     li  x1, 0x00007FD4 //Big positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00007FFB //No fraction
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x000044F2 //One positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00006C27 //Small positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00007FD4 //Big positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000381A //One negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00000B0F //Small negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000004F //Big negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     //One negative regime bit--------------------------------------------------------------------------------------------------
     li x15, 0x00000001 //Only Regime
     li  x1, 0x0000381A //One negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00007FFB //No fraction
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x000044F2 //One positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00006C27 //Small positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00007FD4 //Big positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000381A //One negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00000B0F //Small negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000004F //Big negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     //Small negative regime bit--------------------------------------------------------------------------------------------------
     li x15, 0x00000001 //Only Regime
     li  x1, 0x00000B0F //Small negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00007FFB //No fraction
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x000044F2 //One positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00006C27 //Small positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00007FD4 //Big positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000381A //One negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00000B0F //Small negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000004F //Big negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     //Big negative regime bit--------------------------------------------------------------------------------------------------
     li x15, 0x00000001 //Only Regime
     li  x1, 0x0000004F //Big negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00007FFB //No fraction
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x000044F2 //One positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00006C27 //Small positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x00007FD4 //Big positive regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x0000381A //One negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
 
+    nop
+    nop
+
     li x15, 0x00000B0F //Small negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
+
+    nop
+    nop
 
     li x15, 0x0000004F //Big negative regime bit
     .long 0x00F08453   //PADD  rs1 1, rs2 15, rd 8
